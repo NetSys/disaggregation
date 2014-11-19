@@ -60,12 +60,24 @@ def gen_flows(u):
 
       if len(job.map_tasks) == 0 or len(job.reduce_tasks) == 0:
         if task.file_bytes_read > 0:
-          record = Flow_record(task.start_time, task.self_id, task.self_id, task.file_bytes_read, "file_read")
-          add_flow(record, container)
+          num_of_blocks = task.file_bytes_read/hdfs_block_size + 1
+          for i in range(0, num_of_blocks):
+	    if i == num_of_blocks -1:
+              read_size = task.file_bytes_read%hdfs_block_size
+            else:
+              read_size = hdfs_block_size   
+            record = Flow_record(task.start_time, task.self_id, task.self_id, read_size, "file_read")
+            add_flow(record, container)
 
         if task.file_bytes_written > 0:
-          record = Flow_record(task.start_time + task.cpu_ms, task.self_id, task.self_id, task.file_bytes_written, "file_written")
-          add_flow(record, container)
+          num_of_blocks = task.file_bytes_written/hdfs_block_size + 1
+          for i in range(0, num_of_blocks):
+            if i == num_of_blocks-1:
+               write_size = task.file_bytes_written%hdfs_block_size
+            else:
+               write_size = hdfs_block_size    
+            record = Flow_record(task.start_time + task.cpu_ms, task.self_id, task.self_id, hdfs_block_size, "file_written")
+            add_flow(record, container)
 
       else:
         if task.rec_type == "ReduceAttempt" and task.reduce_shuffle_bytes > 0:
@@ -125,7 +137,7 @@ def gen_flows(u):
     flow_dist_file.write(line_to_write + "\n")
   flow_dist_file.close()
 
-  flow_file = open("../ramdisk/sortedflows.txt","w")
+  flow_file = open("../../ramdisk/sortedflows.txt","w")
   for r in container.flows:
     flow_file.write(str(r) + "\n")
   flow_file.close()
@@ -151,7 +163,7 @@ def add_flow(flow, container):
 
 
 def main(argv):
-  u = Cluster("../ramdisk/1h.txt")
+  u = Cluster("../../ramdisk/2min.txt")
   gen_flows(u)
 
 if __name__ == "__main__" :

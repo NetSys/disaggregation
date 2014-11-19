@@ -5,7 +5,7 @@ import sys
 import random
 
 class Cluster:
-  def __init__(self, file="../ramdisk/16_17_SortedStart.txt"):
+  def __init__(self, file="../../ramdisk/16_17_SortedStart.txt"):
     self.jobs = {}
     self.servers = {}
     self.servers_list = []
