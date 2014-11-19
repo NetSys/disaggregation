@@ -1,0 +1,47 @@
+from task import *
+from job import *
+from lib import *
+import sys
+import random
+
+class Cluster:
+  def __init__(self, file="../ramdisk/16_17_SortedStart.txt"):
+    self.jobs = {}
+    self.servers = {}
+    self.servers_list = []
+    self.total_tasks = 0
+    trace = open(file)
+
+    for line in trace:
+      task = Task(line)
+      self.total_tasks += 1
+
+      if not task.job_id in self.jobs:
+        self.jobs[task.job_id] = Job(task.job_id)
+      self.jobs[task.job_id].add_task(task)
+
+
+      if task.self_id not in self.servers:
+        self.servers[task.self_id] = 1
+        self.servers_list.append(task.self_id)
+
+      for other_id in task.other_ids:
+        if other_id not in self.servers:
+          self.servers[other_id] = 1
+          self.servers_list.append(other_id)
+
+
+
+    trace.close()
+
+  def get_rand_server(self):
+    return self.servers_list[random.randint(0, len(self.servers_list) - 1)]
+
+
+def main(argv):
+  u = Cluster()
+
+if __name__ == "__main__":
+  main(sys.argv[1:])
+
+

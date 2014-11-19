@@ -1,0 +1,6 @@
+*.pyc
+*~
+16_17_SortedStart.txt
+*.o
+*.ko
+pcm/
