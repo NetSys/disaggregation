@@ -5,7 +5,10 @@ import math
 import sys
 
 class Flow_record:
+  count = 0
   def __init__(self, time, from_id, to_id, size, rec_type):
+    self.id = Flow_record.count
+    Flow_record.count += 1
     self.time = time
     self.from_id = from_id
     self.to_id = to_id
@@ -14,6 +17,9 @@ class Flow_record:
 
   def __str__(self):
     return str(self.time) + "," + self.from_id + "," + self.to_id + "," + str(self.size) + "," + self.rec_type
+
+  def to_ns2_str(self):
+    return " ".join([str(self.id), str(self.time), "0", str(self.size), "0", "0", self.from_id, self.to_id])
 
   @classmethod
   def from_str(cls, record):
@@ -42,9 +48,10 @@ class FlowContainer:
                }
 
 def gen_flows(u):
-  print "gen_flows Version:", 18
+  print "gen_flows Version:", 19
 
-  hdfs_block_size = 1024*1024*128
+  hdfs_block_size_mb = 0.1
+  hdfs_block_size = int(1024*1024*hdfs_block_size_mb)
   percent_local_read = 0.9
 
 
@@ -130,16 +137,16 @@ def gen_flows(u):
 
   print "Finished sorting"
 
-  flow_dist_file = open("gen_flows_dist.txt", "w")
+  flow_dist_file = open(u.name + "_dist.txt", "w")
   for fsize in sorted(container.flow_size_count):
     line_to_write = str(fsize) + " " + " ".join(map(str, container.flow_size_count[fsize]))
     print line_to_write
     flow_dist_file.write(line_to_write + "\n")
   flow_dist_file.close()
 
-  flow_file = open("../../ramdisk/sortedflows.txt","w")
+  flow_file = open("../../ramdisk/" + u.name + "_" + str(hdfs_block_size_mb) +"_sortedflows.txt","w")
   for r in container.flows:
-    flow_file.write(str(r) + "\n")
+    flow_file.write(r.to_ns2_str() + "\n")
   flow_file.close()
 
 
