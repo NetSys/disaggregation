@@ -23,9 +23,9 @@ MODULE_LICENSE("Dual BSD/GPL");
 
 static int major_num = 0;
 module_param(major_num, int, 0);
-
-static int npages = 2048 * 1024;
-module_param(npages, int, 0);
+ 
+static int npages = 2048 * 1024; 
+module_param(npages, int, 0); 
 
 /*
  * We can tweak our hardware sector size, but the kernel talks to us
@@ -34,7 +34,7 @@ module_param(npages, int, 0);
 #define KERNEL_SECTOR_SIZE 	512
 #define SECTORS_PER_PAGE	(PAGE_SIZE / KERNEL_SECTOR_SIZE)
 /*
- * Our request queue.
+ * Our request queue
  */
 static struct request_queue *Queue;
 
@@ -47,6 +47,8 @@ static struct rmem_device {
 	u8 **data;
 	struct gendisk *gd;
 } device;
+
+bool inject_latency = false;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
@@ -70,7 +72,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 	int i;
 	int page;
 	int npage;
-	u64 begin;
+	u64 begin = 0ULL;
 
 	if (sector % SECTORS_PER_PAGE != 0 || nsect % SECTORS_PER_PAGE != 0) {
 		pr_err("incorrect align: %lu %lu %d\n", sector, nsect, write);
@@ -85,7 +87,8 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		return;
 	}
 
-	begin = sched_clock();
+	if(inject_latency)
+		begin = sched_clock();
 
 	if (write) {
 		spin_lock(&tx_lock);
@@ -94,10 +97,12 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			copy_page(dev->data[page + i], buffer + PAGE_SIZE * i);
 		atomic64_add(npage * PAGE_SIZE, &counter_write);
 
-		while ((sched_clock() - begin) < 
-				((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) {
-			/* wait for transmission delay */
-			;
+		if(inject_latency){
+			while ((sched_clock() - begin) < 
+					((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) {
+				/* wait for transmission delay */
+				;
+			}
 		}
 
 		spin_unlock(&tx_lock);
@@ -108,10 +113,12 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			copy_page(buffer + PAGE_SIZE * i, dev->data[page + i]);
 		atomic64_add(npage * PAGE_SIZE, &counter_read);
 		
-		while ((sched_clock() - begin) < 
-				((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) {
-			/* wait for transmission delay */
-			;
+		if (inject_latency){
+			while ((sched_clock() - begin) < 
+					((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) {
+				/* wait for transmission delay */
+				;
+			}
 		}
 
 		spin_unlock(&rx_lock);

@@ -40,19 +40,30 @@ class FlowContainer:
                "file_written":1,
                "Map_file_write":2,
                "Reduce_file_read":3,
-               "hdfs_read_local": 4,
-               "hdfs_read_remote":5,
-               "hdfs_written_local": 6,
-               "hdfs_written_remote1":7,
-               "hdfs_written_remote2":7
+               "Map_CPU_Mem_read":4,
+               "Map_CPU_Mem_write":5,
+               "Reduce_CPU_Mem_read":4,
+               "Reduce_CPU_Mem_write":5,
+               "hdfs_read_local": 6,
+               "hdfs_read_remote":7,
+               "hdfs_written_local": 8,
+               "hdfs_written_remote1":9,
+               "hdfs_written_remote2":9
                }
 
 def gen_flows(u):
   print "gen_flows Version:", 19
 
-  hdfs_block_size_mb = 0.1
+  hdfs_block_size_mb = 1
   hdfs_block_size = int(1024*1024*hdfs_block_size_mb)
+  mem_page_size = 4096
   percent_local_read = 0.9
+
+  map_read_ratio = (391 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
+  map_write_ratio = (430 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
+
+  reduce_read_ratio = (100 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
+  reduce_write_ratio = (110 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
 
 
   next_percent = 0.01
@@ -95,6 +106,56 @@ def gen_flows(u):
             read_record = Flow_record(task.start_time, storage_node, task.self_id, reduce_flow_size, "Reduce_file_read")
             add_flow(write_record, container)
             add_flow(read_record, container)
+
+
+      if task.map_input_bytes > 0:
+        cpu_ram_read_blocks = int(task.map_input_bytes * map_read_ratio / mem_page_size)
+        cpu_ram_write_blocks = int(task.map_input_bytes * map_write_ratio / mem_page_size)
+        for i in range(0, cpu_ram_read_blocks):
+          read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
+                                    task.self_id,
+                                    u.get_rand_server(),
+                                    mem_page_size,
+                                    "Map_CPU_Mem_read"
+                                    )
+          add_flow(read_record, container)
+
+        for i in range(0, cpu_ram_write_blocks):
+          write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
+                                    u.get_rand_server(),
+                                    task.self_id,
+                                    mem_page_size,
+                                    "Map_CPU_Mem_write"
+                                    )
+          add_flow(write_record, container)
+
+
+      if task.reduce_shuffle_bytes > 0:
+        cpu_ram_read_blocks = int(task.reduce_shuffle_bytes * reduce_read_ratio / mem_page_size)
+        cpu_ram_write_blocks = int(task.reduce_shuffle_bytes * reduce_write_ratio / mem_page_size)
+        for i in range(0, cpu_ram_read_blocks):
+          read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
+                                    task.self_id,
+                                    u.get_rand_server(),
+                                    mem_page_size,
+                                    "Reduce_CPU_Mem_read"
+                                    )
+          add_flow(read_record, container)
+
+        for i in range(0, cpu_ram_write_blocks):
+          write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
+                                    u.get_rand_server(),
+                                    task.self_id,
+                                    mem_page_size,
+                                    "Reduce_CPU_Mem_write"
+                                    )
+          add_flow(write_record, container)
+
+
+
+
+
+
 
 
       if task.hdfs_bytes_read > 0:
@@ -159,7 +220,7 @@ def add_flow(flow, container):
   flowSizeKey = int(round(pow(10,round(math.log10(flow.size),1)),0))
 
   if flowSizeKey not in container.flow_size_count:
-    container.flow_size_count[flowSizeKey] = [0,0,0,0,0,0,0,0]
+    container.flow_size_count[flowSizeKey] = [0,0,0,0,0,0,0,0,0,0]
   container.flow_size_count[flowSizeKey][container.name_dict[flow.rec_type]] += 1
 
 
