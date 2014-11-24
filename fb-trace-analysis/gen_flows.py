@@ -4,8 +4,12 @@ import random
 import math
 import sys
 
+
+
+
 class Flow_record:
   count = 0
+  write_records_to_file = True
   def __init__(self, time, from_id, to_id, size, rec_type):
     self.id = Flow_record.count
     Flow_record.count += 1
@@ -84,7 +88,7 @@ def gen_flows(u):
               read_size = task.file_bytes_read%hdfs_block_size
             else:
               read_size = hdfs_block_size   
-            record = Flow_record(task.start_time, task.self_id, task.self_id, read_size, "file_read")
+            record = Flow_record(task.start_time, task.self_id + "_disk", task.self_id + "_mem", read_size, "file_read")
             add_flow(record, container)
 
         if task.file_bytes_written > 0:
@@ -94,7 +98,7 @@ def gen_flows(u):
                write_size = task.file_bytes_written%hdfs_block_size
             else:
                write_size = hdfs_block_size    
-            record = Flow_record(task.start_time + task.cpu_ms, task.self_id, task.self_id, hdfs_block_size, "file_written")
+            record = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", task.self_id + "_disk", hdfs_block_size, "file_written")
             add_flow(record, container)
 
       else:
@@ -102,8 +106,8 @@ def gen_flows(u):
           reduce_flow_size = task.reduce_shuffle_bytes / len(job.map_tasks)
           for mapper in job.map_tasks.itervalues():
             storage_node = u.get_rand_server()
-            write_record = Flow_record(mapper.start_time + mapper.cpu_ms, mapper.self_id, storage_node, reduce_flow_size, "Map_file_write")
-            read_record = Flow_record(task.start_time, storage_node, task.self_id, reduce_flow_size, "Reduce_file_read")
+            write_record = Flow_record(mapper.start_time + mapper.cpu_ms, mapper.self_id + "_cpu", storage_node + "_mem", reduce_flow_size, "Map_file_write")
+            read_record = Flow_record(task.start_time, storage_node + "_mem", task.self_id + "_cpu", reduce_flow_size, "Reduce_file_read")
             add_flow(write_record, container)
             add_flow(read_record, container)
 
@@ -113,8 +117,8 @@ def gen_flows(u):
         cpu_ram_write_blocks = int(task.map_input_bytes * map_write_ratio / mem_page_size)
         for i in range(0, cpu_ram_read_blocks):
           read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
-                                    task.self_id,
-                                    u.get_rand_server(),
+                                    task.self_id + "_mem",
+                                    u.get_rand_server() + "_cpu",
                                     mem_page_size,
                                     "Map_CPU_Mem_read"
                                     )
@@ -122,8 +126,8 @@ def gen_flows(u):
 
         for i in range(0, cpu_ram_write_blocks):
           write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
-                                    u.get_rand_server(),
-                                    task.self_id,
+                                    u.get_rand_server() + "_cpu",
+                                    task.self_id + "_mem",
                                     mem_page_size,
                                     "Map_CPU_Mem_write"
                                     )
@@ -135,8 +139,8 @@ def gen_flows(u):
         cpu_ram_write_blocks = int(task.reduce_shuffle_bytes * reduce_write_ratio / mem_page_size)
         for i in range(0, cpu_ram_read_blocks):
           read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
-                                    task.self_id,
-                                    u.get_rand_server(),
+                                    task.self_id + "_mem",
+                                    u.get_rand_server() + "_cpu",
                                     mem_page_size,
                                     "Reduce_CPU_Mem_read"
                                     )
@@ -144,8 +148,8 @@ def gen_flows(u):
 
         for i in range(0, cpu_ram_write_blocks):
           write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
-                                    u.get_rand_server(),
-                                    task.self_id,
+                                    u.get_rand_server() + "_cpu",
+                                    task.self_id + "_mem",
                                     mem_page_size,
                                     "Reduce_CPU_Mem_write"
                                     )
@@ -174,7 +178,7 @@ def gen_flows(u):
               source = task.other_ids[i%len(task.other_ids)]
             else:
               source = u.get_rand_server()
-          record = Flow_record(task.start_time, source, task.self_id, read_size, rec_type)
+          record = Flow_record(task.start_time, source + "_disk", task.self_id + "_mem", read_size, rec_type)
           add_flow(record, container)
 
 
@@ -186,9 +190,9 @@ def gen_flows(u):
           else:
             write_size = hdfs_block_size
           if write_size > 0:
-            record1 = Flow_record(task.start_time + task.cpu_ms, task.self_id, task.self_id, write_size, "hdfs_written_local")
-            record2 = Flow_record(task.start_time + task.cpu_ms, task.self_id, u.get_rand_server(), write_size, "hdfs_written_remote1")
-            record3 = Flow_record(task.start_time + task.cpu_ms, task.self_id, u.get_rand_server(), write_size, "hdfs_written_remote2")
+            record1 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", task.self_id + "_disk", write_size, "hdfs_written_local")
+            record2 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote1")
+            record3 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote2")
             add_flow(record1, container)
             add_flow(record2, container)
             add_flow(record3, container)
@@ -215,7 +219,8 @@ def gen_flows(u):
 
 
 def add_flow(flow, container):
-  container.flows.append(flow)
+  if Flow_record.write_records_to_file:
+    container.flows.append(flow)
 
   flowSizeKey = int(round(pow(10,round(math.log10(flow.size),1)),0))
 
@@ -231,7 +236,9 @@ def add_flow(flow, container):
 
 
 def main(argv):
-  u = Cluster("../../ramdisk/2min.txt")
+  if len(argv) > 0 and argv[0] == "-s":
+    Flow_record.write_records_to_file = False
+  u = Cluster("../../ramdisk/1h.txt")
   gen_flows(u)
 
 if __name__ == "__main__" :

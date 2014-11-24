@@ -19,6 +19,11 @@
 #include <linux/blkdev.h>
 #include <linux/hdreg.h>
 
+
+#include <linux/time.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+
 MODULE_LICENSE("Dual BSD/GPL");
 
 static int major_num = 0;
@@ -63,6 +68,14 @@ atomic64_t counter_write;
 spinlock_t rx_lock;
 spinlock_t tx_lock;
 
+#define LOG_BATCH_SIZE	1048576
+long request_log[LOG_BATCH_SIZE];
+int log_head = 0;
+int log_tail = 0;
+u64 overflow = 0;
+
+
+
 /*
  * Handle an I/O request.
  */
@@ -73,6 +86,8 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 	int page;
 	int npage;
 	u64 begin = 0ULL;
+	struct timeval tms;
+	long timestamp;
 
 	if (sector % SECTORS_PER_PAGE != 0 || nsect % SECTORS_PER_PAGE != 0) {
 		pr_err("incorrect align: %lu %lu %d\n", sector, nsect, write);
@@ -86,6 +101,9 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		printk (KERN_NOTICE "rmem: Beyond-end write (%d %d %d)\n", page, npage, npages);
 		return;
 	}
+
+	do_gettimeofday(&tms);
+	timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 
 	if(inject_latency)
 		begin = sched_clock();
@@ -105,6 +123,8 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
+		
+
 		spin_unlock(&tx_lock);
 	} else {
 		spin_lock(&rx_lock);
@@ -121,19 +141,29 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
+		timestamp = timestamp * -1;
+
 		spin_unlock(&rx_lock);
 	}
+
+	request_log[log_head] = timestamp;
+	log_head = (log_head + 1)%LOG_BATCH_SIZE;
+	if(log_head == log_tail)
+		overflow = 1;
+		
 }
 
 static void rmem_request(struct request_queue *q) 
 {
 	struct request *req;
-	u64 begin;
+	u64 begin = 0ULL;
 
-	begin = sched_clock();
-	while ((sched_clock() - begin) < latency_ns) {
-		/* wait for RTT latency */
-		;
+	if(inject_latency){
+		begin = sched_clock();
+		while ((sched_clock() - begin) < latency_ns) {
+			/* wait for RTT latency */
+			;
+		}
 	}
 
 	req = blk_fetch_request(q);
@@ -208,6 +238,13 @@ static ctl_table rmem_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
 	},
+	{
+		.procname	= "overflow",
+		.data		= &overflow,
+		.maxlen		= sizeof(overflow),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
 	{ }
 };
 
@@ -230,12 +267,41 @@ static ctl_table dev_root[] = {
 };
 
 static struct ctl_table_header *sysctl_header;
+static struct proc_dir_entry* log_file;
+
+static int log_show(struct seq_file *m, void *v)
+{
+    while(log_tail != log_head){
+        seq_printf(m, "%ld\n", request_log[log_tail]);
+        log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
+    }
+    return 0;
+}
+
+static int log_open(struct inode *inode, struct file *file)
+{
+    return single_open(file, log_show, NULL);
+}
+
+static const struct file_operations log_fops = {
+	.owner	= THIS_MODULE,
+	.open	= log_open,
+	.read	= seq_read,
+	.llseek	= seq_lseek,
+	.release= single_release,
+};
 
 static int __init rmem_init(void) {
 	int i;
 
 	spin_lock_init(&rx_lock);
 	spin_lock_init(&tx_lock);
+
+	log_file = proc_create("rmem_log", 0, NULL, &log_fops);
+
+	if (!log_file) {
+		return -ENOMEM;
+	}
 
 	/*
 	 * Set up our internal device.
