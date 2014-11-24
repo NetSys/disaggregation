@@ -34,10 +34,10 @@ extern uint32_t num_outstanding_packets;
 extern uint32_t max_outstanding_packets;
 extern DCExpParams params;
 extern void add_to_event_queue(Event *);
-extern void read_experiment_parameters(std::string conf_filename);
+extern void read_experiment_parameters(std::string conf_filename, uint32_t exp_type);
+extern uint32_t duplicated_packets_received;
 
-
-
+extern double start_time;
 
 /* pFabric Experiments */
 /* Reads flow information from an input trace */
@@ -51,11 +51,13 @@ void read_flows_to_schedule(std::string filename, uint32_t num_lines,
     input >> id;
     input >> start_time;
     input >> temp;
-    input >> temp; size = (uint32_t) (params.mss * temp);
+    //in peter's trace, size is given in bytes, not packets
+    //input >> temp; //for size in packets
+    input >> size; //size = (uint32_t) (params.mss * temp);
     input >> temp; input >> temp;
     input >> s >> d;
 
-  //  std::cout << id << " " << start_time << " " << size << " " << s << " " << d << "\n";
+    std::cout << "Flow " << id << " " << start_time << " " << size << " " << s << " " << d << "\n";
     flows_to_schedule.push_back(Factory::get_flow(id, start_time, size,
       topo->hosts[s], topo->hosts[d], params.flow_type));
   }
@@ -100,13 +102,13 @@ void generate_flows_to_schedule(std::string filename, uint32_t num_flows,
 }
 
 
-void calculateDeadPackets(PFabricTopology *topo) {
-  uint32_t totalSentFromHosts = 0;
+void printQueueStatistics(PFabricTopology *topo) {
+  double totalSentFromHosts = 0;
   for (std::vector<Host*>::iterator h = (topo->hosts).begin(); h != (topo->hosts).end(); h++) {
     totalSentFromHosts += (*h)->queue->b_departures;
   }
 
-  uint32_t totalSentToHosts = 0;
+  double totalSentToHosts = 0;
   for (std::vector<AggSwitch*>::iterator tor = (topo->agg_switches).begin(); tor != (topo->agg_switches).end(); tor++) {
     std::vector<Queue*> host_facing_queues;
     for (std::vector<Queue*>::iterator q = ((*tor)->queues).begin(); q != ((*tor)->queues).end(); q++) {
@@ -122,7 +124,14 @@ void calculateDeadPackets(PFabricTopology *topo) {
   for (std::deque<Flow*>::iterator f = flows_to_schedule.begin(); f != flows_to_schedule.end(); f++) {
     total_bytes += (*f)->size;
   }
-  std::cout << "DeadPackets " << 100.0 * (dead_bytes/total_bytes) << std::endl;
+
+  double simulation_time = current_time - start_time;
+  double utilization = (totalSentFromHosts * 8.0 / 144.0) / simulation_time;
+
+  std::cout << "DeadPackets " << 100.0 * (dead_bytes/total_bytes)
+    << " DuplicatedPackets "
+    << 100.0 * duplicated_packets_received * 1460.0 / total_bytes
+    << " Utilization " << utilization / 1000000000 << std::endl;
 }
 
 
@@ -132,7 +141,7 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
     return;
   }
   std::string conf_filename(argv[2]);
-  read_experiment_parameters(conf_filename);
+  read_experiment_parameters(conf_filename, exp_type);
   params.num_hosts = 144;
   params.num_agg_switches = 9;
   params.num_core_switches = 4;
@@ -191,5 +200,5 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
   }
   std::cout << "AverageFCT " << sum / flows_sorted.size() <<
     " MeanSlowdown " << sum_norm / flows_sorted.size() << "\n";
-  calculateDeadPackets(topo);
+  printQueueStatistics(topo);
 }

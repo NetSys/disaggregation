@@ -13,12 +13,19 @@ extern DCExpParams params;
 /* Turbo Queue */
 TurboQueue::TurboQueue(uint32_t id, double rate, uint32_t limit_bytes)
  : Queue(id, rate, limit_bytes) {
+   interested = false;
 }
 void TurboQueue::enque(Packet *packet) {
-  /*if (id == 2 && packet->size > 100) {
-    std::cout << get_current_time() << " " << id << " Enqueing " <<
-      packet->seq_no << " " << src->id << " " << dst->id << "\n";
-  }*/
+  if (interested) std::cout << 1000000.0 * get_current_time() << " " << id << " Enqueing " << packet->flow->id << " " << packet->seq_no << "\n";
+
+  // if (interested && packet->flow->id == 0) {
+  //   std::cout << "enq 0: ";
+  //   for (uint32_t i = 0; i < packets.size(); i++) {
+  //     std::cout << packets[i]->flow->id << " ";
+  //   }
+  //   std::cout << "; " << busy << "\n";
+  // }
+
   p_arrivals += 1;
   b_arrivals += packet->size;
   packets.push_back(packet);
@@ -45,6 +52,9 @@ void TurboQueue::enque(Packet *packet) {
     }
     bytes_in_queue -= packets[worst_index]->size;
     packets.erase(packets.begin() + worst_index);
+
+    // if (interested) std::cout << 1e6*get_current_time() << " Drop Happened " << worst_packet->flow->id << " " << worst_packet->seq_no << "\n";
+
     drop(worst_packet);
 
   }
@@ -52,6 +62,8 @@ void TurboQueue::enque(Packet *packet) {
 }
 
 Packet * TurboQueue::deque() {
+  // for (uint32_t )
+
   if (bytes_in_queue > 0) {
     uint32_t best_priority = UINT_MAX;
     Packet *best_packet = NULL;
@@ -81,10 +93,11 @@ Packet * TurboQueue::deque() {
 
     p_departures += 1;
     b_departures += p->size;
-    /*if (p->size > 100 && id == 2) {
-      std::cout << 1000000 * get_current_time() << " " << id << " Dequeing " <<
-        p->seq_no << " " << p->flow->id << "\n";
-    }*/
+
+    if (interested) {
+      std::cout << 1e6 * get_current_time() << " " << id << " Dequeing " << p->seq_no << " " << p->flow->id << "\n";
+
+    }
     return p;
   }
   else {

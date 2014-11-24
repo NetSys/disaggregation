@@ -83,7 +83,7 @@ access_record request_log[LOG_BATCH_SIZE];
 int log_head = 0;
 int log_tail = 0;
 u64 overflow = 0;
-u64 version = 1;
+u64 version = 5;
 
 
 /*
@@ -300,11 +300,14 @@ static struct proc_dir_entry* log_file;
 
 static int log_show(struct seq_file *m, void *v)
 {
-    while(log_tail != log_head){
-        seq_printf(m, "%ld %d %d %lu\n", request_log[log_tail].timestamp, 
+	int i;
+	spin_lock(&log_lock);
+    for(i = 0; i < 10 && log_tail != log_head; i++){
+        seq_printf(m, "%d %ld %d %d %lu\n", log_tail, request_log[log_tail].timestamp, 
         		request_log[log_tail].page, request_log[log_tail].length, PAGE_SIZE); 
         log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
     }
+	spin_unlock(&log_lock);
     return 0;
 } 
 

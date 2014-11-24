@@ -37,11 +37,11 @@ extern DCExpParams params;
 extern double get_current_time(); // TODOm
 extern void add_to_event_queue(Event *);
 extern int get_event_queue_size();
-
-
+uint32_t duplicated_packets_received = 0;
+double start_time = -1;
 
 /* Read parameters from a config file */
-void read_experiment_parameters(std::string conf_filename) {
+void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
   std::ifstream input(conf_filename);
 
   std::string temp;
@@ -54,7 +54,14 @@ void read_experiment_parameters(std::string conf_filename) {
   input >> temp; input >> params.queue_type;
   input >> temp; input >> params.flow_type;
 
-  input >> temp; input >> params.num_flows_to_run;
+  input >> temp;
+
+  if (exp_type == DC_EXP_CONTINUOUS_FLOWMODEL) {
+    input >> params.end_time;
+  }
+  else {
+    input >> params.num_flows_to_run;
+  }
   input >> temp; input >> params.cdf_or_flow_trace;
   input >> temp; input >> params.cut_through;
   input >> temp; input >> params.mean_flow_size;
@@ -76,6 +83,9 @@ void run_scenario() {
     Event *ev = event_queue.top();
     event_queue.pop();
     current_time = ev->time;
+    if (start_time < 0) {
+      start_time = current_time;
+    }
     //event_queue.pop();    //std::cout << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
       delete ev; //TODO: Smarter
@@ -88,12 +98,14 @@ void run_scenario() {
 
 
 extern void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type);
+extern void run_continuous_experiment(int argc, char **argv);
 extern void run_single_link_experiment(int argc, char ** argv);
 extern void run_single_sender_receiver_exp(int argc, char ** argv);
 extern void run_nto1_experiment(int argc, char ** argv);
 
 int main (int argc, char ** argv) {
-  srand(time(NULL));
+  //srand(time(NULL));
+  srand(0);
   std::cout.precision(15);
 
   uint32_t exp_type = atoi(argv[1]);
@@ -101,6 +113,9 @@ int main (int argc, char ** argv) {
     case DC_EXP_WITH_TRACE:
     case DC_EXP_WITHOUT_TRACE:
       run_pFabric_experiment(argc, argv, exp_type);
+      break;
+    case DC_EXP_CONTINUOUS_FLOWMODEL:
+      run_continuous_experiment(argc, argv);
       break;
     case SINGLE_LINK_EXP_IONSTYLE:
       run_single_link_experiment(argc, argv);

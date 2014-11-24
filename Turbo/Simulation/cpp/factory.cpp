@@ -4,6 +4,7 @@
 Queue* Factory::get_queue(uint32_t id, double rate,
                         uint32_t queue_size, uint32_t type,
                         double drop_prob) { // Default drop_prob is 0.0
+
   switch(type) {
     case DROPTAIL_QUEUE:
       return new Queue(id, rate, queue_size);
@@ -50,10 +51,26 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
       return new TurboFlowStopOnTimeout(id, start_time, size,
         src, dst);
       break;
-    case TURBO_FLOW_PER_PKT_TIMEOUT:
+    case TURBO_FLOW_PERPACKET_TIMEOUT:
       return new TurboFlowPerPacketTimeout(id, start_time, size,
         src, dst);
       break;
+    case TURBO_FLOW_LONGFLOWS_LOW:
+      return new TurboFlowLongFlowsGetLowPriority(id, start_time, size, src, dst);
+      break;
+    case PFABRIC_FLOW_NO_SLOWSTART:
+      return new PFabricFlowNoSlowStart(id, start_time, size, src, dst);
+      break;
+    /*
+    case TURBO_FLOW_PERPACKET_TIMEOUT_WITHPROBING:
+      return new TurboFlowPerPacketTimeoutWithProbing(id, start_time, size,
+        src, dst);
+      break;
+    case TURBO_FLOW_PERPACKET_TIMEOUT_WITHRAREPROBING:
+      return new TurboFlowPerPacketTimeoutWithRareProbing(id, start_time, size,
+        src, dst);
+      break;
+    */
   }
   assert(false);
   return NULL;
