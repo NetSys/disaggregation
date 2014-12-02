@@ -95,11 +95,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="gen_flows.py" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="gen_flows.py" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/gen_flows.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="-6.2058825" vertical-offset="3434" max-vertical-offset="3795">
-                  <caret line="243" column="27" selection-start-line="243" selection-start-column="27" selection-end-line="243" selection-end-column="27" />
+                <state vertical-scroll-proportion="0.58171743" vertical-offset="540" max-vertical-offset="4305">
+                  <caret line="50" column="39" selection-start-line="50" selection-start-column="39" selection-end-line="50" selection-end-column="39" />
                   <folding>
                     <element signature="e#0#21#0" expanded="true" />
                   </folding>
@@ -107,10 +107,10 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="sync.sh" pinned="false" current="true" current-in-tab="true">
+          <file leaf-file-name="sync.sh" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/sync.sh">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.30379745" vertical-offset="0" max-vertical-offset="395">
+                <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="210">
                   <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
                   <folding />
                 </state>
@@ -124,8 +124,8 @@
           <file leaf-file-name="gen_flows_size.py" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/gen_flows_size.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.23636363" vertical-offset="252" max-vertical-offset="780">
-                  <caret line="27" column="44" selection-start-line="27" selection-start-column="44" selection-end-line="27" selection-end-column="44" />
+                <state vertical-scroll-proportion="0.8272727" vertical-offset="252" max-vertical-offset="780">
+                  <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -159,7 +159,7 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="64" />
+    <option name="x" value="1344" />
     <option name="y" value="-4" />
     <option name="width" value="1537" />
     <option name="height" value="905" />
@@ -359,7 +359,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="64" y="-4" width="1537" height="905" extended-state="6" />
+    <frame x="1344" y="-4" width="1537" height="905" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -669,14 +669,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gen_flows_size.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.23636363" vertical-offset="252" max-vertical-offset="780">
-          <caret line="27" column="44" selection-start-line="27" selection-start-column="44" selection-end-line="27" selection-end-column="44" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cluster.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="270" max-vertical-offset="765">
@@ -693,21 +685,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gen_flows.py">
+    <entry file="file://$PROJECT_DIR$/sync.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-6.2058825" vertical-offset="3434" max-vertical-offset="3795">
-          <caret line="243" column="27" selection-start-line="243" selection-start-column="27" selection-end-line="243" selection-end-column="27" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="210">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sync.sh">
+    <entry file="file://$PROJECT_DIR$/gen_flows_size.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.30379745" vertical-offset="0" max-vertical-offset="395">
-          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.8272727" vertical-offset="252" max-vertical-offset="780">
+          <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gen_flows.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.58171743" vertical-offset="540" max-vertical-offset="4305">
+          <caret line="50" column="39" selection-start-line="50" selection-start-column="39" selection-end-line="50" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

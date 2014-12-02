@@ -40,6 +40,8 @@ class FlowContainer:
   def __init__(self):
     self.flows = []
     self.flow_size_count = {}
+    self.flow_size_in_packet_count = {}
+    self.flow_count = 0
     self.name_dict = {"file_read":0,
                "file_written":1,
                "Map_file_write":2,
@@ -55,10 +57,9 @@ class FlowContainer:
                "hdfs_written_remote2":9
                }
 
-def gen_flows(u):
-  print "gen_flows Version:", 19
+def gen_flows(u, hdfs_block_size_mb = 1):
+  print "gen_flows Version:", 20
 
-  hdfs_block_size_mb = 1
   hdfs_block_size = int(1024*1024*hdfs_block_size_mb)
   mem_page_size = 4096
   percent_local_read = 0.9
@@ -77,7 +78,7 @@ def gen_flows(u):
     for task in job.tasks.itervalues():
       count += 1
       if float(count)/u.total_tasks > next_percent:
-        print "Finished", next_percent, "(", count, "/", u.total_tasks, ") Flows added:", len(container.flows)
+        print "Finished", next_percent, "(", count, "/", u.total_tasks, ") Flows added:", container.flow_count
         next_percent += 0.01
 
       if len(job.map_tasks) == 0 or len(job.reduce_tasks) == 0:
@@ -105,11 +106,17 @@ def gen_flows(u):
         if task.rec_type == "ReduceAttempt" and task.reduce_shuffle_bytes > 0:
           reduce_flow_size = task.reduce_shuffle_bytes / len(job.map_tasks)
           for mapper in job.map_tasks.itervalues():
-            storage_node = u.get_rand_server()
-            write_record = Flow_record(mapper.start_time + mapper.cpu_ms, mapper.self_id + "_cpu", storage_node + "_mem", reduce_flow_size, "Map_file_write")
-            read_record = Flow_record(task.start_time, storage_node + "_mem", task.self_id + "_cpu", reduce_flow_size, "Reduce_file_read")
-            add_flow(write_record, container)
-            add_flow(read_record, container)
+            num_of_blocks = int(reduce_flow_size / hdfs_block_size + 1)
+            for i in range(0, num_of_blocks):
+              if i == num_of_blocks - 1:
+                io_size = reduce_flow_size % hdfs_block_size
+              else:
+                io_size = hdfs_block_size
+              storage_node = u.get_rand_server()
+              write_record = Flow_record(mapper.start_time + mapper.cpu_ms, mapper.self_id + "_cpu", storage_node + "_mem", io_size, "Map_file_write")
+              read_record = Flow_record(task.start_time, storage_node + "_mem", task.self_id + "_cpu", io_size, "Reduce_file_read")
+              add_flow(write_record, container)
+              add_flow(read_record, container)
 
 
       if task.map_input_bytes > 0:
@@ -202,12 +209,21 @@ def gen_flows(u):
 
   print "Finished sorting"
 
-  flow_dist_file = open(u.name + "_dist.txt", "w")
+  flow_detail_dist_file = open("results/" + u.name + "_" + str(hdfs_block_size_mb) + "_detail_dist.txt", "w")
   for fsize in sorted(container.flow_size_count):
-    line_to_write = str(fsize) + " " + " ".join(map(str, container.flow_size_count[fsize]))
-    print line_to_write
-    flow_dist_file.write(line_to_write + "\n")
-  flow_dist_file.close()
+    detail_line_to_write = str(fsize) + " " + " ".join(map(str, container.flow_size_count[fsize]))
+    print detail_line_to_write
+    flow_detail_dist_file.write(detail_line_to_write + "\n")
+  flow_detail_dist_file.close()
+
+
+  flow_dist_in_packet_file = open("results/" + u.name + "_" + str(hdfs_block_size_mb) + "_dist_in_packet.txt", "w")
+  for fsize in sorted(container.flow_size_in_packet_count):
+    sum_line_to_write = str(fsize) + " " + str(reduce(lambda x,y: x + y, container.flow_size_in_packet_count[fsize])/float(container.flow_count))
+    flow_dist_in_packet_file.write(sum_line_to_write + "\n")
+  flow_dist_in_packet_file.close()
+
+
 
   flow_file = open("../../ramdisk/" + u.name + "_" + str(hdfs_block_size_mb) +"_sortedflows.txt","w")
   for r in container.flows:
@@ -219,6 +235,7 @@ def gen_flows(u):
 
 
 def add_flow(flow, container):
+  container.flow_count +=1
   if Flow_record.write_records_to_file:
     container.flows.append(flow)
 
@@ -230,6 +247,14 @@ def add_flow(flow, container):
 
 
 
+  num_pkts = int(flow.size/1460+1)
+  base = int(math.pow(10, int(math.floor(math.log10(num_pkts)))))
+  flowSizeInPktKey = num_pkts/base*base
+
+  if flowSizeInPktKey not in container.flow_size_in_packet_count:
+    container.flow_size_in_packet_count[flowSizeInPktKey] = [0,0,0,0,0,0,0,0,0,0]
+  container.flow_size_in_packet_count[flowSizeInPktKey][container.name_dict[flow.rec_type]] += 1
+
 
 
 
@@ -237,9 +262,18 @@ def add_flow(flow, container):
 
 def main(argv):
   if len(argv) > 0 and argv[0] == "-s":
+    print "No trace file will be produced"
     Flow_record.write_records_to_file = False
+  else:
+    print "A trade file will be produced"
+
   u = Cluster("../../ramdisk/1h.txt")
-  gen_flows(u)
+
+
+  gen_flows(u,  hdfs_block_size_mb = 1)
+  gen_flows(u,  hdfs_block_size_mb = 16)
+  gen_flows(u,  hdfs_block_size_mb = 64)
+  gen_flows(u,  hdfs_block_size_mb = 128)
 
 if __name__ == "__main__" :
   main(sys.argv[1:])
