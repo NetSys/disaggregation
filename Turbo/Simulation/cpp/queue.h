@@ -35,10 +35,11 @@ public:
   Node *src;
   Node *dst;
 
-  uint32_t b_arrivals, b_departures;
-  uint32_t p_arrivals, p_departures;
+  uint64_t b_arrivals, b_departures;
+  uint64_t p_arrivals, p_departures;
 
   double propagation_delay;
+  bool interested;
 
 };
 

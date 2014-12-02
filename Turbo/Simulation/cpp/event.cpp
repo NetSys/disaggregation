@@ -97,13 +97,17 @@ FlowFinishedEvent::FlowFinishedEvent(double time, Flow *flow)
 FlowFinishedEvent::~FlowFinishedEvent() {
 }
 void FlowFinishedEvent::process_event() {
-  std::cout << flow->id << " " << flow->size << " " << flow->src->id << " " <<
-    flow->dst->id << " " << 1000000 * flow->start_time << " " <<
-    1000000 * flow->finish_time << " " <<
-    1000000.0 * flow->flow_completion_time << " " <<
-    topology->get_oracle_fct(flow) << " " <<
-    1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) <<
-    std::endl;
+  std::cout
+    << flow->id << " "
+    << flow->size << " "
+    << flow->src->id << " "
+    << flow->dst->id << " "
+    << 1000000 * flow->start_time << " "
+    << 1000000 * flow->finish_time << " "
+    << 1000000.0 * flow->flow_completion_time << " "
+    << topology->get_oracle_fct(flow) << " "
+    << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow)
+    << std::endl;
 }
 
 
@@ -156,6 +160,7 @@ void QueueProcessingEvent::process_event() {
     Queue *next_hop = topology->get_next_hop(packet, queue);
     double td = queue->get_transmission_delay(packet->size);
     double pd = queue->propagation_delay;
+    //double additional_delay = 1e-10;
     queue->queue_proc_event = new QueueProcessingEvent(time + td, queue);
     add_to_event_queue(queue->queue_proc_event);
     if (next_hop == NULL) {
@@ -211,8 +216,8 @@ void FlowCreationForInitializationEvent::process_event() {
   uint32_t size = nv_bytes->value() * 1460;
   flows_to_schedule.push_back(Factory::get_flow(id, time, size,
                                                 src, dst, params.flow_type));
-  //std::cout << 1000000.0 * time << " Generating new flow " << id << " of size "
-  //  << size << " between " << src->id << " " << dst->id << "\n";
+  std::cout << 1000000.0 * time << " Generating new flow " << id << " of size "
+   << size << " between " << src->id << " " << dst->id << "\n";
 
   double tnext = time + nv_intarr->value();
   add_to_event_queue(new FlowCreationForInitializationEvent(tnext,
@@ -221,6 +226,33 @@ void FlowCreationForInitializationEvent::process_event() {
 }
 
 
+FlowCreationForInitializationEventWithTimeLimit::FlowCreationForInitializationEventWithTimeLimit(
+  double time_limit, double time, Host *src, Host *dst,
+  EmpiricalRandomVariable *nv_bytes, ExponentialRandomVariable *nv_intarr
+)
+  : FlowCreationForInitializationEvent(time, src, dst, nv_bytes, nv_intarr) {
+    this->time_limit = time_limit;
+}
+
+void FlowCreationForInitializationEventWithTimeLimit::process_event() {
+  uint32_t id = flows_to_schedule.size();
+  uint32_t size = nv_bytes->value() * 1460;
+
+  flows_to_schedule.push_back(
+    Factory::get_flow(id, time, size, src, dst, params.flow_type)
+  );
+
+  std::cout << 1000000.0 * time << " Generating new flow " << id << " of size "
+   << size << " between " << src->id << " " << dst->id << "\n";
+
+  double tnext = time + nv_intarr->value();
+  if (tnext < time_limit)
+    add_to_event_queue(
+      new FlowCreationForInitializationEventWithTimeLimit(
+        time_limit, tnext, src, dst, nv_bytes, nv_intarr
+      )
+    );
+}
 
 
 LoggingEvent::LoggingEvent(double time) : Event(LOGGING, time){
@@ -233,18 +265,26 @@ void LoggingEvent::process_event() {
   double current_time = get_current_time();
   bool finished_simulation = true;
   uint32_t second_num_outstanding = 0;
+  uint32_t num_unfinished_flows = 0;
+  uint32_t started_flows = 0;
   for (uint32_t i = 0; i < flows_to_schedule.size(); i++) {
     Flow *f = flows_to_schedule[i];
-    if (!f->finished) {
+    if (finished_simulation && !f->finished) {
       finished_simulation = false;
     }
     if (f->start_time < current_time) {
       second_num_outstanding += (f->size - f->received_bytes);
+      started_flows ++;
+      if (!f->finished) {
+        num_unfinished_flows ++;
+      }
     }
   }
   std::cerr << current_time*1000000.0
     << " MaxPacketOutstanding " << max_outstanding_packets
-    << " NumPacketOutstanding " << num_outstanding_packets << "\n";
+    << " NumPacketOutstanding " << num_outstanding_packets
+    << " NumUnfinishedFlows " << num_unfinished_flows
+    << " StartedFlows " << started_flows << "\n";
 
   if (!finished_simulation) {
     add_to_event_queue(new LoggingEvent(current_time + 0.01));

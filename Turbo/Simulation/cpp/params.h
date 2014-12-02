@@ -17,6 +17,7 @@ struct DCExpParams {
   double bandwidth;
 
   int num_flows_to_run;
+  double end_time;
   std::string cdf_or_flow_trace;
   int cut_through;
   int mean_flow_size;
@@ -30,6 +31,8 @@ struct DCExpParams {
 /* General main function */
 #define DC_EXP_WITH_TRACE 1
 #define DC_EXP_WITHOUT_TRACE 2
+
+#define DC_EXP_CONTINUOUS_FLOWMODEL 5
 
 #define SINGLE_LINK_EXP_IONSTYLE 10
 #define SINGLE_LINK_EXP_SYLVIASTYLE 11

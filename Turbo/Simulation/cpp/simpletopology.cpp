@@ -94,12 +94,12 @@ NToOneTopology::NToOneTopology(uint32_t num_senders, double bandwidth) {
   this->num_senders = num_senders;
   // Create Hosts
   for (uint32_t i = 0; i < num_senders; i++) {
-    senders.push_back(new Host(i, bandwidth, DROPTAIL_QUEUE));
+    senders.push_back(new Host(i, bandwidth, params.queue_type));
   }
-  receiver = new Host(num_senders, bandwidth, DROPTAIL_QUEUE);
+  receiver = new Host(num_senders, bandwidth, params.queue_type);
 
   // Create switch
-  sw = new CoreSwitch(0, num_senders + 1, bandwidth, DROPTAIL_QUEUE);
+  sw = new CoreSwitch(0, num_senders + 1, bandwidth, params.queue_type);
 
   //Connect host queues
   for (uint32_t i = 0; i < num_senders; i++) {
@@ -114,6 +114,8 @@ NToOneTopology::NToOneTopology(uint32_t num_senders, double bandwidth) {
     q->set_src_dst(sw, senders[i]);
   }
   sw->queues[num_senders]->set_src_dst(sw, receiver);
+  sw->queues[num_senders]->interested = true;
+
 }
 
 Queue * NToOneTopology::get_next_hop(Packet *p, Queue *q) {

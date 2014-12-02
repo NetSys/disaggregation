@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 class Packet;
+class Ack;
 class Probe;
 class RetxTimeoutEvent;
 class FlowProcessingEvent;
@@ -21,8 +22,8 @@ public:
   virtual void start_flow();
   virtual void send_pending_data();
   virtual Packet *send(uint32_t seq);
-  virtual void send_ack(uint32_t seq, uint32_t sack_bytes);
-  virtual void receive_ack(uint32_t ack);
+  virtual void send_ack(uint32_t seq, std::vector<uint32_t> sack_list);
+  virtual void receive_ack(uint32_t ack, std::vector<uint32_t> sack_list);
   virtual void receive(Packet *p);
 
   // Only sets the timeout if needed; i.e., flow hasn't finished
@@ -67,13 +68,18 @@ public:
 
 class PFabricFlow : public Flow {
 public:
-  PFabricFlow(uint32_t id, double start_time, uint32_t size,
-    Host *s, Host *d);
+  PFabricFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d);
   uint32_t ssthresh;
   uint32_t count_ack_additive_increase;
   virtual void increase_cwnd();
   virtual void handle_timeout();
 };
 
+class PFabricFlowNoSlowStart : public  PFabricFlow {
+public:
+  PFabricFlowNoSlowStart(uint32_t id, double start_time, uint32_t size, Host *s, Host *d);
+  virtual void increase_cwnd();
+  virtual void handle_timeout();
+};
 
 #endif

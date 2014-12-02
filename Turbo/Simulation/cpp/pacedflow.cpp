@@ -47,7 +47,8 @@ void PacedFlow::send_pending_data() {
 }
 
 
-void PacedFlow::receive_ack(uint32_t ack) {
+void PacedFlow::receive_ack(uint32_t ack, std::vector<uint32_t> sack_list) {
+  this->scoreboard_sack_bytes = sack_list.size() * mss;
   // On timeouts; next_seq_no is updated to the last_unacked_seq;
   // In such cases, the ack can be greater than next_seq_no; update it
   if (next_seq_no < ack) {

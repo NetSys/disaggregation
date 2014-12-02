@@ -6,6 +6,7 @@
 #include "pacedflow.h"
 #include "turboflow.h"
 #include "turboqueue.h"
+#include "turboflow_perpkt.h"
 
 /* Queue types */
 #define DROPTAIL_QUEUE 1
@@ -17,11 +18,18 @@
 #define NORMAL_FLOW 1
 #define PFABRIC_FLOW 2
 #define FULLBLAST_PACED_FLOW 3
-#define PACED_FLOW 7
-#define JITTERED_PACED_FLOW 8
 #define TURBO_FLOW 4
 #define TURBO_FLOW_STOP_ON_TIMEOUT 5
-#define TURBO_FLOW_PER_PKT_TIMEOUT 6
+#define TURBO_FLOW_PERPACKET_TIMEOUT 6
+#define TURBO_FLOW_PERPACKET_TIMEOUT_WITHPROBING 7
+#define TURBO_FLOW_PERPACKET_TIMEOUT_WITHRAREPROBING 8
+#define TURBO_FLOW_LONGFLOWS_LOW 9
+
+#define PFABRIC_FLOW_NO_SLOWSTART 15
+
+#define PACED_FLOW 20
+#define JITTERED_PACED_FLOW 21
+
 
 class Factory {
 public:

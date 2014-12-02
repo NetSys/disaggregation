@@ -6,3 +6,4 @@ Dataset/
 *.lo
 *.la
 *.Po
+.DS_Store

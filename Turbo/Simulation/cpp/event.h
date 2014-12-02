@@ -10,6 +10,7 @@
 #define EVENT_H
 
 #include <iostream>
+#include <math.h>
 #include "node.h"
 #include "queue.h"
 #include "flow.h"
@@ -59,7 +60,13 @@ public:
 
 struct EventComparator
 {
-    bool operator() (Event *a, Event *b) { return a->time > b->time; }
+    bool operator() (Event *a, Event *b) {
+      if (fabs(a->time - b->time) < 1e-12) {
+        return a->type > b->type;
+      } else {
+        return a->time > b->time;
+      }
+    }
 };
 
 
@@ -142,6 +149,15 @@ public:
   ExponentialRandomVariable *nv_intarr;
 };
 
+class FlowCreationForInitializationEventWithTimeLimit : public FlowCreationForInitializationEvent {
+public:
+  double time_limit;
+  FlowCreationForInitializationEventWithTimeLimit(
+    double time_limit, double time, Host *src, Host *dst,
+    EmpiricalRandomVariable *nv_bytes, ExponentialRandomVariable *nv_intarr
+  );
+  void process_event();
+};
 
 class LoggingEvent : public Event {
 public:

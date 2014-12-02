@@ -173,7 +173,7 @@ void read_flows_to_schedule(std::string filename, double host_delay,
                             double low_bw, bool cut_through) {
   std::ifstream input(filename);
   std::string a;
-  for (uint32_t i = 0; i < 11; i++) {
+  for (uint32_t i = 0; i < 10; i++) {
     std::getline(input, a);
     //std::cout << a;
     if (a.find("Running") != std::string::npos) {
@@ -181,7 +181,7 @@ void read_flows_to_schedule(std::string filename, double host_delay,
       sscanf(a.c_str(), "%*s %d %*s", &num_flows);
     }
   }
-  //std::cout << "NUMBER OF FLOWS: " << num_flows << "\n";
+  std::cout << "NUMBER OF FLOWS: " << num_flows << "\n";
 
   flows = new IdealFlow*[num_flows];
   for (uint32_t i = 0; i < num_flows; i++) {

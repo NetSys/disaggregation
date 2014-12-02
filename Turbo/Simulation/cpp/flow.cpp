@@ -11,6 +11,7 @@ extern int get_event_queue_size();
 extern DCExpParams params;
 extern uint32_t num_outstanding_packets;
 extern uint32_t max_outstanding_packets;
+extern uint32_t duplicated_packets_received;
 
 Flow::Flow(uint32_t id, double start_time, uint32_t size,
     Host *s, Host *d) {
@@ -89,13 +90,15 @@ Packet *Flow::send(uint32_t seq)
 
 
 
-void Flow::send_ack(uint32_t seq, uint32_t sack_bytes) {
-  Packet *p = new Ack(this, seq, sack_bytes,hdr_size, dst, src); //Acks are dst->src
+void Flow::send_ack(uint32_t seq, std::vector<uint32_t> sack_list) {
+  Packet *p = new Ack(this, seq, sack_list, hdr_size, dst, src); //Acks are dst->src
   add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue));
 }
 
 
-void Flow::receive_ack(uint32_t ack) {
+void Flow::receive_ack(uint32_t ack, std::vector<uint32_t> sack_list) {
+  this->scoreboard_sack_bytes = sack_list.size() * mss;
+
   // On timeouts; next_seq_no is updated to the last_unacked_seq;
   // In such cases, the ack can be greater than next_seq_no; update it
   if (next_seq_no < ack) {
@@ -143,8 +146,8 @@ void Flow::receive(Packet *p) {
   }
 
   if (p->type == ACK_PACKET) {
-    receive_ack(p->seq_no);
-    this->scoreboard_sack_bytes = ((Ack *) p)->sack_bytes;
+    Ack *a = (Ack *) p;
+    receive_ack(a->seq_no, a->sack_list);
     delete p;
     return;
   }
@@ -155,6 +158,8 @@ void Flow::receive(Packet *p) {
     //std::cout << get_current_time() << " Setting " << p->seq_no << std::endl;
     num_outstanding_packets -= ((p->size - hdr_size) / (mss));
     received_bytes += (p->size - hdr_size);
+  } else {
+    duplicated_packets_received += 1;
   }
   if (p->seq_no > max_seq_no_recv) {
     max_seq_no_recv = p->seq_no;
@@ -162,14 +167,14 @@ void Flow::receive(Packet *p) {
   // Determing which ack to send
   uint32_t s = recv_till;
   bool in_sequence = true;
-  uint32_t sack_bytes = 0;
+  std::vector<uint32_t> sack_list;
   while (s <= max_seq_no_recv) {
     if (received.count(s) > 0) {
       //printf("s %d: count:%d\n", s, received.count(s));
       if (in_sequence) {
         recv_till += mss;
       } else {
-        sack_bytes += mss;
+        sack_list.push_back(s);
       }
     } else {
       in_sequence = false;
@@ -178,7 +183,7 @@ void Flow::receive(Packet *p) {
   }
   delete p;
   //std::cout << get_current_time() << " Sending ack " << recv_till << std::endl;
-  send_ack(recv_till, sack_bytes); // Cumulative Ack
+  send_ack(recv_till, sack_list); // Cumulative Ack
 }
 
 
@@ -225,13 +230,12 @@ void Flow::increase_cwnd() {
 
 /* Implementation for pFabric Flow */
 
-PFabricFlow::PFabricFlow(uint32_t id, double start_time, uint32_t size,
-  Host *s, Host *d) : Flow(id, start_time, size, s, d) {
+PFabricFlow::PFabricFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d)
+ : Flow(id, start_time, size, s, d) {
   //Congestion window parameters
   this->ssthresh = 100000;
   this->count_ack_additive_increase = 0;
 }
-
 
 void PFabricFlow::increase_cwnd() {
   if (cwnd_mss < ssthresh) { // slow start
@@ -254,4 +258,26 @@ void PFabricFlow::handle_timeout() {
     ssthresh = 2;
   }
   Flow::handle_timeout();
+}
+
+PFabricFlowNoSlowStart::PFabricFlowNoSlowStart(uint32_t id, double start_time, uint32_t size, Host *s, Host *d)
+  : PFabricFlow(id, start_time, size, s, d) {
+}
+
+void PFabricFlowNoSlowStart::increase_cwnd() {
+  //don't do slow start, but do additive increase
+  if (++count_ack_additive_increase >= cwnd_mss) {
+    count_ack_additive_increase = 0;
+    cwnd_mss += 1;
+  }
+  if (cwnd_mss > max_cwnd) {
+    cwnd_mss = max_cwnd;
+  }
+}
+
+void PFabricFlowNoSlowStart::handle_timeout() {
+  // do the same thing as Flow::handle_timeout but don't set cwnd = 1
+  next_seq_no = last_unacked_seq;
+  send_pending_data(); //TODO Send again
+  set_timeout(get_current_time() + retx_timeout);  // TODO
 }

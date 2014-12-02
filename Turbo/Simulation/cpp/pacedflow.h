@@ -19,7 +19,7 @@ public:
   PacedFlow(uint32_t id, double start_time, uint32_t size,
     Host *s, Host *d, double rate);
   virtual void send_pending_data();
-  virtual void receive_ack(uint32_t ack);
+  virtual void receive_ack(uint32_t ack, std::vector<uint32_t> sack_list);
   virtual void handle_timeout();
 
   double rate; // as a fraction of NIC queue capacity

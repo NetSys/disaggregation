@@ -29,11 +29,13 @@ public:
 
 class Ack : public Packet {
 public:
-	Ack(Flow *flow, uint32_t seq_no_acked, uint32_t sack_bytes,
+	Ack(Flow *flow, uint32_t seq_no_acked, std::vector<uint32_t> sack_list,
     uint32_t size,
 		Host* src, Host *dst);
   uint32_t sack_bytes;
+	std::vector<uint32_t> sack_list;
 };
+
 
 class Probe : public Packet {
 public:
