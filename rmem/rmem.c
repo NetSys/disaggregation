@@ -53,27 +53,37 @@ static struct rmem_device {
 	struct gendisk *gd;
 } device;
 
+typedef struct 
+{
+	long timestamp; 
+	int page;
+	int length;
+} access_record;
+
+
 bool inject_latency = false;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
-
+ 
 /* bandwidth in bps: default 10 Gbps */
 u64 bandwidth_bps = 10000000000ULL;
 
 /* read/write statistics in bytes */
 atomic64_t counter_read;
 atomic64_t counter_write;
+u64 line_count = 0; 
 
 spinlock_t rx_lock;
 spinlock_t tx_lock;
+spinlock_t log_lock;
 
 #define LOG_BATCH_SIZE	1048576
-long request_log[LOG_BATCH_SIZE];
+access_record request_log[LOG_BATCH_SIZE];
 int log_head = 0;
 int log_tail = 0;
 u64 overflow = 0;
-
+u64 version = 5;
 
 
 /*
@@ -87,7 +97,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 	int npage;
 	u64 begin = 0ULL;
 	struct timeval tms;
-	long timestamp;
+	access_record record;
 
 	if (sector % SECTORS_PER_PAGE != 0 || nsect % SECTORS_PER_PAGE != 0) {
 		pr_err("incorrect align: %lu %lu %d\n", sector, nsect, write);
@@ -103,7 +113,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 	}
 
 	do_gettimeofday(&tms);
-	timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
+	record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 
 	if(inject_latency)
 		begin = sched_clock();
@@ -141,16 +151,21 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
-		timestamp = timestamp * -1;
+		record.timestamp = record.timestamp * -1;
 
 		spin_unlock(&rx_lock);
 	}
-
-	request_log[log_head] = timestamp;
+	
+	record.page = page;
+	record.length = npage;
+	
+	spin_lock(&log_lock);
+	request_log[log_head] = record;
+	line_count += record.length;
 	log_head = (log_head + 1)%LOG_BATCH_SIZE;
 	if(log_head == log_tail)
 		overflow = 1;
-		
+	spin_unlock(&log_lock);	
 }
 
 static void rmem_request(struct request_queue *q) 
@@ -158,7 +173,7 @@ static void rmem_request(struct request_queue *q)
 	struct request *req;
 	u64 begin = 0ULL;
 
-	if(inject_latency){
+	if(inject_latency){ 
 		begin = sched_clock();
 		while ((sched_clock() - begin) < latency_ns) {
 			/* wait for RTT latency */
@@ -245,6 +260,20 @@ static ctl_table rmem_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
 	},
+	{
+		.procname	= "line_count",
+		.data		= &line_count,
+		.maxlen		= sizeof(line_count),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "version",
+		.data		= &version,
+		.maxlen		= sizeof(version),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
 	{ }
 };
 
@@ -271,12 +300,16 @@ static struct proc_dir_entry* log_file;
 
 static int log_show(struct seq_file *m, void *v)
 {
-    while(log_tail != log_head){
-        seq_printf(m, "%ld\n", request_log[log_tail]);
+	int i;
+	spin_lock(&log_lock);
+    for(i = 0; i < 10 && log_tail != log_head; i++){
+        seq_printf(m, "%d %ld %d %d %lu\n", log_tail, request_log[log_tail].timestamp, 
+        		request_log[log_tail].page, request_log[log_tail].length, PAGE_SIZE); 
         log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
     }
+	spin_unlock(&log_lock);
     return 0;
-}
+} 
 
 static int log_open(struct inode *inode, struct file *file)
 {
@@ -294,8 +327,11 @@ static const struct file_operations log_fops = {
 static int __init rmem_init(void) {
 	int i;
 
+	pr_info("PAGE_SIZE: %lu", PAGE_SIZE);
+	
 	spin_lock_init(&rx_lock);
 	spin_lock_init(&tx_lock);
+	spin_lock_init(&log_lock);
 
 	log_file = proc_create("rmem_log", 0, NULL, &log_fops);
 
