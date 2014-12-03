@@ -19,7 +19,7 @@ echo 0 > /proc/sys/fs/rmem/line_count
 num=2
 count=0
 cd /root/hadoop-2.5.1
-./wordcount.sh > /dev/null 2>&1 &
+./wordcount.sh $1 > /dev/null 2>&1 &
 cd /root/disaggregation/rmem
 sleep 30
 while [ $count -le 10 ]

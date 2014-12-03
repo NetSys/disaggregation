@@ -1,30 +1,155 @@
 Tue Dec 2 02:02:44 PST 2014 1500686 version: 5 overflow: 0 readbytes:0 writebytes:0 linecount:0
 Tue Dec 2 02:03:35 PST 2014 1762830 version: 5 overflow: 0 readbytes:0 writebytes:0 linecount:0
 =============
-Tue Dec 2 02:13:06 PST 2014 1500686 version: 5 overflow: 0 readbytes:10903552 writebytes:39489536 linecount:12303
-Tue Dec 2 02:20:35 PST 2014 1500686 version: 5 overflow: 0 readbytes:3047424 writebytes:7909376 linecount:2675
-Tue Dec 2 02:28:13 PST 2014 1500686 version: 5 overflow: 0 readbytes:2097152 writebytes:21180416 linecount:5683
-Tue Dec 2 02:36:03 PST 2014 1762830 version: 5 overflow: 0 readbytes:164884480 writebytes:133066752 linecount:72742
-Tue Dec 2 02:43:58 PST 2014 1762830 version: 5 overflow: 0 readbytes:1978368 writebytes:7438336 linecount:2299
-Tue Dec 2 02:49:23 PST 2014 1762830 version: 5 overflow: 0 readbytes:32768 writebytes:4431872 linecount:1090
-Tue Dec 2 02:57:01 PST 2014 2024974 version: 5 overflow: 0 readbytes:1347584 writebytes:31920128 linecount:8122
-Tue Dec 2 03:04:38 PST 2014 2024974 version: 5 overflow: 0 readbytes:421888 writebytes:21692416 linecount:5399
-Tue Dec 2 03:12:24 PST 2014 2024974 version: 5 overflow: 0 readbytes:1363968 writebytes:27566080 linecount:7063
-Tue Dec 2 03:20:12 PST 2014 2287118 version: 5 overflow: 0 readbytes:3891200 writebytes:36450304 linecount:9849
-Tue Dec 2 03:27:59 PST 2014 2287118 version: 5 overflow: 0 readbytes:9138176 writebytes:29454336 linecount:9422
-Tue Dec 2 03:35:49 PST 2014 2287118 version: 5 overflow: 0 readbytes:43188224 writebytes:78905344 linecount:29808
-Tue Dec 2 03:44:28 PST 2014 2549262 version: 5 overflow: 0 readbytes:532787200 writebytes:640983040 linecount:286565
-Tue Dec 2 03:52:35 PST 2014 2549262 version: 5 overflow: 0 readbytes:198803456 writebytes:239759360 linecount:107071
-Tue Dec 2 04:00:33 PST 2014 2549262 version: 5 overflow: 0 readbytes:132530176 writebytes:215900160 linecount:85066
-Tue Dec 2 04:08:49 PST 2014 2614798 version: 5 overflow: 0 readbytes:156999680 writebytes:238104576 linecount:96461
-Tue Dec 2 04:17:19 PST 2014 2614798 version: 5 overflow: 0 readbytes:257400832 writebytes:300056576 linecount:136098
-Tue Dec 2 04:25:48 PST 2014 2614798 version: 5 overflow: 0 readbytes:204759040 writebytes:305266688 linecount:124518
-Tue Dec 2 04:34:57 PST 2014 2680334 version: 5 overflow: 0 readbytes:1392369664 writebytes:1837768704 linecount:788608
-Tue Dec 2 04:43:52 PST 2014 2680334 version: 5 overflow: 0 readbytes:145141760 writebytes:233979904 linecount:92559
-Tue Dec 2 04:52:59 PST 2014 2680334 version: 5 overflow: 0 readbytes:326365184 writebytes:565841920 linecount:217824
-Tue Dec 2 05:11:45 PST 2014 2745870 version: 5 overflow: 1 readbytes:22696763392 writebytes:20014931968 linecount:10427660
-Tue Dec 2 05:30:10 PST 2014 2745870 version: 5 overflow: 1 readbytes:24549765120 writebytes:20676988928 linecount:11041688
-Tue Dec 2 05:48:13 PST 2014 2745870 version: 5 overflow: 1 readbytes:26211917824 writebytes:21044551680 linecount:11537224
-Tue Dec 2 06:20:23 PST 2014 2811406 version: 5 overflow: 1 readbytes:181977972736 writebytes:97588150272 linecount:68253448
-Tue Dec 2 07:33:59 PST 2014 2811406 version: 5 overflow: 1 readbytes:190797258752 writebytes:101845880832 linecount:71446079
-Tue Dec 2 08:21:48 PST 2014 2811406 version: 5 overflow: 1 readbytes:198296322048 writebytes:114751582208 linecount:76427719
+Tue Dec 2 02:13:06 PST 2014 1500686 version: 5 overflow: 0 readbytes: 10903552 writebytes: 39489536 linecount: 12303
+Tue Dec 2 02:20:35 PST 2014 1500686 version: 5 overflow: 0 readbytes: 3047424 writebytes: 7909376 linecount: 2675
+Tue Dec 2 02:28:13 PST 2014 1500686 version: 5 overflow: 0 readbytes: 2097152 writebytes: 21180416 linecount: 5683
+Tue Dec 2 02:36:03 PST 2014 1762830 version: 5 overflow: 0 readbytes: 164884480 writebytes: 133066752 linecount: 72742
+Tue Dec 2 02:43:58 PST 2014 1762830 version: 5 overflow: 0 readbytes: 1978368 writebytes: 7438336 linecount: 2299
+Tue Dec 2 02:49:23 PST 2014 1762830 version: 5 overflow: 0 readbytes: 32768 writebytes: 4431872 linecount: 1090
+Tue Dec 2 02:57:01 PST 2014 2024974 version: 5 overflow: 0 readbytes: 1347584 writebytes: 31920128 linecount: 8122
+Tue Dec 2 03:04:38 PST 2014 2024974 version: 5 overflow: 0 readbytes: 421888 writebytes: 21692416 linecount: 5399
+Tue Dec 2 03:12:24 PST 2014 2024974 version: 5 overflow: 0 readbytes: 1363968 writebytes: 27566080 linecount: 7063
+Tue Dec 2 03:20:12 PST 2014 2287118 version: 5 overflow: 0 readbytes: 3891200 writebytes: 36450304 linecount: 9849
+Tue Dec 2 03:27:59 PST 2014 2287118 version: 5 overflow: 0 readbytes: 9138176 writebytes: 29454336 linecount: 9422
+Tue Dec 2 03:35:49 PST 2014 2287118 version: 5 overflow: 0 readbytes: 43188224 writebytes: 78905344 linecount: 29808
+Tue Dec 2 03:44:28 PST 2014 2549262 version: 5 overflow: 0 readbytes: 532787200 writebytes: 640983040 linecount: 286565
+Tue Dec 2 03:52:35 PST 2014 2549262 version: 5 overflow: 0 readbytes: 198803456 writebytes: 239759360 linecount: 107071
+Tue Dec 2 04:00:33 PST 2014 2549262 version: 5 overflow: 0 readbytes: 132530176 writebytes: 215900160 linecount: 85066
+Tue Dec 2 04:08:49 PST 2014 2614798 version: 5 overflow: 0 readbytes: 156999680 writebytes: 238104576 linecount: 96461
+Tue Dec 2 04:17:19 PST 2014 2614798 version: 5 overflow: 0 readbytes: 257400832 writebytes: 300056576 linecount: 136098
+Tue Dec 2 04:25:48 PST 2014 2614798 version: 5 overflow: 0 readbytes: 204759040 writebytes: 305266688 linecount: 124518
+Tue Dec 2 04:34:57 PST 2014 2680334 version: 5 overflow: 0 readbytes: 1392369664 writebytes: 1837768704 linecount: 788608
+Tue Dec 2 04:43:52 PST 2014 2680334 version: 5 overflow: 0 readbytes: 145141760 writebytes: 233979904 linecount: 92559
+Tue Dec 2 04:52:59 PST 2014 2680334 version: 5 overflow: 0 readbytes: 326365184 writebytes: 565841920 linecount: 217824
+Tue Dec 2 05:11:45 PST 2014 2745870 version: 5 overflow: 1 readbytes: 22696763392 writebytes: 20014931968 linecount: 10427660
+Tue Dec 2 05:30:10 PST 2014 2745870 version: 5 overflow: 1 readbytes: 24549765120 writebytes: 20676988928 linecount: 11041688
+Tue Dec 2 05:48:13 PST 2014 2745870 version: 5 overflow: 1 readbytes: 26211917824 writebytes: 21044551680 linecount: 11537224
+Tue Dec 2 06:20:23 PST 2014 2811406 version: 5 overflow: 1 readbytes: 181977972736 writebytes: 97588150272 linecount: 68253448
+Tue Dec 2 07:33:59 PST 2014 2811406 version: 5 overflow: 1 readbytes: 190797258752 writebytes: 101845880832 linecount: 71446079
+Tue Dec 2 08:21:48 PST 2014 2811406 version: 5 overflow: 1 readbytes: 198296322048 writebytes: 114751582208 linecount: 76427719
+=============
+Tue Dec 2 13:32:14 PST 2014 2549262 10 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:33:06 PST 2014 2549262 10 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:33:58 PST 2014 2549262 10 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:34:50 PST 2014 2549262 40 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:35:42 PST 2014 2549262 40 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:36:33 PST 2014 2549262 40 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:37:25 PST 2014 2549262 100 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:38:17 PST 2014 2549262 100 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:39:08 PST 2014 2549262 100 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:40:20 PST 2014 2549262 400 version: 5 overflow: 0 readbytes: 3858432 writebytes: 27123712 linecount: 7564
+Tue Dec 2 13:41:33 PST 2014 2549262 400 version: 5 overflow: 0 readbytes: 19111936 writebytes: 17973248 linecount: 9054
+Tue Dec 2 13:42:45 PST 2014 2549262 400 version: 5 overflow: 0 readbytes: 4050944 writebytes: 17448960 linecount: 5249
+Tue Dec 2 13:44:44 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 18526208 writebytes: 54452224 linecount: 17817
+Tue Dec 2 13:46:44 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 8564736 writebytes: 147025920 linecount: 37986
+Tue Dec 2 13:48:45 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 20299776 writebytes: 154439680 linecount: 42661
+Tue Dec 2 13:56:17 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 352911360 writebytes: 391278592 linecount: 181687
+Tue Dec 2 14:03:54 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 64774144 writebytes: 145661952 linecount: 51376
+Tue Dec 2 14:11:28 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 182910976 writebytes: 243834880 linecount: 104186
+=============
+Tue Dec 2 15:30:27 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 4521984 writebytes: 35487744 linecount: 9768
+Tue Dec 2 15:31:50 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 4698112 writebytes: 37658624 linecount: 10341
+Tue Dec 2 15:33:13 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 31899648 writebytes: 106455040 linecount: 33778
+Tue Dec 2 15:35:10 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 17559552 writebytes: 72781824 linecount: 22056
+Tue Dec 2 15:37:09 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 15101952 writebytes: 70377472 linecount: 20869
+Tue Dec 2 15:39:06 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 14159872 writebytes: 65978368 linecount: 19565
+Tue Dec 2 15:41:47 PST 2014 2549262 1536 version: 5 overflow: 0 readbytes: 55263232 writebytes: 125689856 linecount: 44178
+Tue Dec 2 15:44:39 PST 2014 2549262 1536 version: 5 overflow: 0 readbytes: 61239296 writebytes: 116961280 linecount: 43506
+Tue Dec 2 15:47:27 PST 2014 2549262 1536 version: 5 overflow: 0 readbytes: 50769920 writebytes: 198717440 linecount: 60910
+Tue Dec 2 15:51:17 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 187183104 writebytes: 287010816 linecount: 115770
+Tue Dec 2 15:55:17 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 141639680 writebytes: 262717440 linecount: 98720
+Tue Dec 2 15:59:14 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 337940480 writebytes: 440483840 linecount: 190045
+Tue Dec 2 16:04:21 PST 2014 2549262 2560 version: 5 overflow: 0 readbytes: 200306688 writebytes: 311173120 linecount: 124873
+Tue Dec 2 16:09:38 PST 2014 2549262 2560 version: 5 overflow: 0 readbytes: 399667200 writebytes: 659902464 linecount: 258684
+Tue Dec 2 16:14:56 PST 2014 2549262 2560 version: 5 overflow: 0 readbytes: 215363584 writebytes: 401711104 linecount: 150653
+Tue Dec 2 16:20:57 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 592502784 writebytes: 744456192 linecount: 326406
+Tue Dec 2 16:27:00 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 344797184 writebytes: 541401088 linecount: 216357
+Tue Dec 2 16:33:32 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 880615424 writebytes: 1419612160 linecount: 561579
+Tue Dec 2 16:41:33 PST 2014 2549262 3584 version: 5 overflow: 0 readbytes: 793907200 writebytes: 1113911296 linecount: 465776
+Tue Dec 2 16:49:45 PST 2014 2549262 3584 version: 5 overflow: 0 readbytes: 1037697024 writebytes: 1300213760 linecount: 570779
+Tue Dec 2 16:58:04 PST 2014 2549262 3584 version: 5 overflow: 0 readbytes: 851742720 writebytes: 1192394752 linecount: 499057
+Tue Dec 2 17:08:21 PST 2014 2549262 4096 version: 5 overflow: 1 readbytes: 3019722752 writebytes: 3206651904 linecount: 1520111
+Tue Dec 2 17:21:22 PST 2014 2549262 4096 version: 5 overflow: 1 readbytes: 2927878144 writebytes: 3245494272 linecount: 1507171
+Tue Dec 2 17:35:41 PST 2014 2549262 4096 version: 5 overflow: 1 readbytes: 5608210432 writebytes: 5601169408 linecount: 2736665
+=============
+Tue Dec 2 18:39:17 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 18:45:48 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 18:52:16 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 18:58:48 PST 2014 1762830 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:05:20 PST 2014 1762830 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:11:57 PST 2014 1762830 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:18:26 PST 2014 2024974 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:25:01 PST 2014 2024974 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:31:36 PST 2014 2024974 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:38:13 PST 2014 2287118 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:44:49 PST 2014 2287118 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:51:20 PST 2014 2287118 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 20:00:41 PST 2014 2549262 2048 version: 5 overflow: 1 readbytes: 26070646784 writebytes: 20762877952 linecount: 11433966
+Tue Dec 2 20:10:04 PST 2014 2549262 2048 version: 5 overflow: 1 readbytes: 33398566912 writebytes: 23466225664 linecount: 13883006
+Tue Dec 2 20:19:20 PST 2014 2549262 2048 version: 5 overflow: 1 readbytes: 32331239424 writebytes: 25063305216 linecount: 14012340
+Tue Dec 2 20:35:21 PST 2014 2614798 2048 version: 5 overflow: 1 readbytes: 232201072640 writebytes: 109240139776 linecount: 83359671
+Tue Dec 2 20:53:25 PST 2014 2614798 2048 version: 5 overflow: 1 readbytes: 209242562560 writebytes: 108856037376 linecount: 77660791
+Tue Dec 2 21:12:37 PST 2014 2614798 2048 version: 5 overflow: 1 readbytes: 228643323904 writebytes: 112552071168 linecount: 83299657
+=============
+Tue Dec 2 22:13:22 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 22:19:55 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+=============
+Wed Dec 3 01:04:09 PST 2014 1500686 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:16:33 PST 2014 1500686 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:29:00 PST 2014 1500686 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:41:36 PST 2014 1762830 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:54:03 PST 2014 1762830 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:06:25 PST 2014 1762830 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:18:48 PST 2014 2024974 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:31:14 PST 2014 2024974 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:43:46 PST 2014 2024974 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:56:08 PST 2014 2287118 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 03:08:29 PST 2014 2287118 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 03:20:58 PST 2014 2287118 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 03:33:30 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 1744896 linecount: 426
+Wed Dec 3 03:45:56 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 647168 linecount: 158
+Wed Dec 3 03:58:19 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 04:10:53 PST 2014 2614798 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 2015232 linecount: 492
+Wed Dec 3 04:23:13 PST 2014 2614798 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 1290240 linecount: 315
+Wed Dec 3 04:35:39 PST 2014 2614798 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 1970176 linecount: 481
+Wed Dec 3 04:47:57 PST 2014 2680334 4096 version: 5 overflow: 0 readbytes: 1703936 writebytes: 21921792 linecount: 5768
+Wed Dec 3 05:00:32 PST 2014 2680334 4096 version: 5 overflow: 0 readbytes: 25317376 writebytes: 222605312 linecount: 60528
+Wed Dec 3 05:13:10 PST 2014 2680334 4096 version: 5 overflow: 0 readbytes: 11984896 writebytes: 208957440 linecount: 53941
+Wed Dec 3 05:27:46 PST 2014 2745870 4096 version: 5 overflow: 1 readbytes: 12734726144 writebytes: 12967657472 linecount: 6274996
+Wed Dec 3 05:42:39 PST 2014 2745870 4096 version: 5 overflow: 1 readbytes: 13618053120 writebytes: 13038649344 linecount: 6507984
+Wed Dec 3 05:57:31 PST 2014 2745870 4096 version: 5 overflow: 1 readbytes: 19862507520 writebytes: 19416760320 linecount: 9589665
+Wed Dec 3 06:19:41 PST 2014 2811406 4096 version: 5 overflow: 1 readbytes: 194782961664 writebytes: 134381699072 linecount: 80362466
+Wed Dec 3 07:04:37 PST 2014 2811406 4096 version: 5 overflow: 1 readbytes: 191153852416 writebytes: 119403634688 linecount: 75819699
+Wed Dec 3 07:27:06 PST 2014 2811406 4096 version: 5 overflow: 1 readbytes: 178645864448 writebytes: 121969598464 linecount: 73392447
+=============
+Wed Dec 3 07:27:59 PST 2014 2549262 64 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:28:50 PST 2014 2549262 64 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:29:42 PST 2014 2549262 64 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:30:39 PST 2014 2549262 128 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:31:43 PST 2014 2549262 128 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:32:38 PST 2014 2549262 128 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:34:00 PST 2014 2549262 256 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:35:20 PST 2014 2549262 256 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:36:40 PST 2014 2549262 256 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:38:48 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:40:57 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 28672 writebytes: 45056 linecount: 18
+Wed Dec 3 07:43:09 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 110592 writebytes: 118784 linecount: 56
+Wed Dec 3 07:46:48 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 13049856 writebytes: 13238272 linecount: 6418
+Wed Dec 3 07:50:26 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 10395648 writebytes: 26546176 linecount: 9019
+Wed Dec 3 07:54:00 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 7745536 writebytes: 7548928 linecount: 3734
+Wed Dec 3 08:00:38 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 29102080 writebytes: 34254848 linecount: 15468
+Wed Dec 3 08:07:16 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 4792320 writebytes: 12709888 linecount: 4273
+Wed Dec 3 08:13:49 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 12357632 writebytes: 33017856 linecount: 11078
+Wed Dec 3 08:23:19 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 8241152 writebytes: 25288704 linecount: 8186
+Wed Dec 3 08:32:57 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 189001728 writebytes: 250458112 linecount: 107290
+Wed Dec 3 08:42:29 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 107794432 writebytes: 116850688 linecount: 54845
+Wed Dec 3 08:54:53 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 108281856 writebytes: 208932864 linecount: 77445
+Wed Dec 3 09:07:23 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 4427776 writebytes: 164474880 linecount: 41236
+Wed Dec 3 09:19:54 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 15511552 writebytes: 27459584 linecount: 10491
+Wed Dec 3 09:35:28 PST 2014 2549262 5120 version: 5 overflow: 0 readbytes: 27938816 writebytes: 86233088 linecount: 27874
+Wed Dec 3 09:50:40 PST 2014 2549262 5120 version: 5 overflow: 0 readbytes: 17485824 writebytes: 95739904 linecount: 27643
+Wed Dec 3 10:05:52 PST 2014 2549262 5120 version: 5 overflow: 0 readbytes: 90619904 writebytes: 324698112 linecount: 101396
+Wed Dec 3 10:24:30 PST 2014 2549262 6144 version: 5 overflow: 0 readbytes: 101105664 writebytes: 332296192 linecount: 105811
+Wed Dec 3 10:43:23 PST 2014 2549262 6144 version: 5 overflow: 0 readbytes: 38338560 writebytes: 280641536 linecount: 77876
+Wed Dec 3 11:02:14 PST 2014 2549262 6144 version: 5 overflow: 0 readbytes: 22781952 writebytes: 218468352 linecount: 58899
