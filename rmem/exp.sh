@@ -14,8 +14,8 @@ do
       ./exit_rmem.sh
       ./exit_rmem.sh
       ./init_rmem.sh $remote_mem
-      result=$(./get_bytes.sh $size)
-      output="$(date) $remote_mem $size $result"
+      result=$(./wordcount.sh $size 2>&1 | python hadoop_state.py)
+      output="$(date +%y%m%d%H%M%S) $remote_mem $size $result"
       echo $output
       echo $output >> exp_log.txt
     done
