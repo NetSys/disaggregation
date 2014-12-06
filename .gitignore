@@ -4,3 +4,4 @@
 *.o
 *.ko
 pcm/
+rmem/.hadoop_info/
