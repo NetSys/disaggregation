@@ -1,0 +1,389 @@
+Tue Dec 2 02:02:44 PST 2014 1500686 version: 5 overflow: 0 readbytes:0 writebytes:0 linecount:0
+Tue Dec 2 02:03:35 PST 2014 1762830 version: 5 overflow: 0 readbytes:0 writebytes:0 linecount:0
+=============
+Tue Dec 2 02:13:06 PST 2014 1500686 version: 5 overflow: 0 readbytes: 10903552 writebytes: 39489536 linecount: 12303
+Tue Dec 2 02:20:35 PST 2014 1500686 version: 5 overflow: 0 readbytes: 3047424 writebytes: 7909376 linecount: 2675
+Tue Dec 2 02:28:13 PST 2014 1500686 version: 5 overflow: 0 readbytes: 2097152 writebytes: 21180416 linecount: 5683
+Tue Dec 2 02:36:03 PST 2014 1762830 version: 5 overflow: 0 readbytes: 164884480 writebytes: 133066752 linecount: 72742
+Tue Dec 2 02:43:58 PST 2014 1762830 version: 5 overflow: 0 readbytes: 1978368 writebytes: 7438336 linecount: 2299
+Tue Dec 2 02:49:23 PST 2014 1762830 version: 5 overflow: 0 readbytes: 32768 writebytes: 4431872 linecount: 1090
+Tue Dec 2 02:57:01 PST 2014 2024974 version: 5 overflow: 0 readbytes: 1347584 writebytes: 31920128 linecount: 8122
+Tue Dec 2 03:04:38 PST 2014 2024974 version: 5 overflow: 0 readbytes: 421888 writebytes: 21692416 linecount: 5399
+Tue Dec 2 03:12:24 PST 2014 2024974 version: 5 overflow: 0 readbytes: 1363968 writebytes: 27566080 linecount: 7063
+Tue Dec 2 03:20:12 PST 2014 2287118 version: 5 overflow: 0 readbytes: 3891200 writebytes: 36450304 linecount: 9849
+Tue Dec 2 03:27:59 PST 2014 2287118 version: 5 overflow: 0 readbytes: 9138176 writebytes: 29454336 linecount: 9422
+Tue Dec 2 03:35:49 PST 2014 2287118 version: 5 overflow: 0 readbytes: 43188224 writebytes: 78905344 linecount: 29808
+Tue Dec 2 03:44:28 PST 2014 2549262 version: 5 overflow: 0 readbytes: 532787200 writebytes: 640983040 linecount: 286565
+Tue Dec 2 03:52:35 PST 2014 2549262 version: 5 overflow: 0 readbytes: 198803456 writebytes: 239759360 linecount: 107071
+Tue Dec 2 04:00:33 PST 2014 2549262 version: 5 overflow: 0 readbytes: 132530176 writebytes: 215900160 linecount: 85066
+Tue Dec 2 04:08:49 PST 2014 2614798 version: 5 overflow: 0 readbytes: 156999680 writebytes: 238104576 linecount: 96461
+Tue Dec 2 04:17:19 PST 2014 2614798 version: 5 overflow: 0 readbytes: 257400832 writebytes: 300056576 linecount: 136098
+Tue Dec 2 04:25:48 PST 2014 2614798 version: 5 overflow: 0 readbytes: 204759040 writebytes: 305266688 linecount: 124518
+Tue Dec 2 04:34:57 PST 2014 2680334 version: 5 overflow: 0 readbytes: 1392369664 writebytes: 1837768704 linecount: 788608
+Tue Dec 2 04:43:52 PST 2014 2680334 version: 5 overflow: 0 readbytes: 145141760 writebytes: 233979904 linecount: 92559
+Tue Dec 2 04:52:59 PST 2014 2680334 version: 5 overflow: 0 readbytes: 326365184 writebytes: 565841920 linecount: 217824
+Tue Dec 2 05:11:45 PST 2014 2745870 version: 5 overflow: 1 readbytes: 22696763392 writebytes: 20014931968 linecount: 10427660
+Tue Dec 2 05:30:10 PST 2014 2745870 version: 5 overflow: 1 readbytes: 24549765120 writebytes: 20676988928 linecount: 11041688
+Tue Dec 2 05:48:13 PST 2014 2745870 version: 5 overflow: 1 readbytes: 26211917824 writebytes: 21044551680 linecount: 11537224
+Tue Dec 2 06:20:23 PST 2014 2811406 version: 5 overflow: 1 readbytes: 181977972736 writebytes: 97588150272 linecount: 68253448
+Tue Dec 2 07:33:59 PST 2014 2811406 version: 5 overflow: 1 readbytes: 190797258752 writebytes: 101845880832 linecount: 71446079
+Tue Dec 2 08:21:48 PST 2014 2811406 version: 5 overflow: 1 readbytes: 198296322048 writebytes: 114751582208 linecount: 76427719
+=============
+Tue Dec 2 13:32:14 PST 2014 2549262 10 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:33:06 PST 2014 2549262 10 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:33:58 PST 2014 2549262 10 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:34:50 PST 2014 2549262 40 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:35:42 PST 2014 2549262 40 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:36:33 PST 2014 2549262 40 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:37:25 PST 2014 2549262 100 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:38:17 PST 2014 2549262 100 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:39:08 PST 2014 2549262 100 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 13:40:20 PST 2014 2549262 400 version: 5 overflow: 0 readbytes: 3858432 writebytes: 27123712 linecount: 7564
+Tue Dec 2 13:41:33 PST 2014 2549262 400 version: 5 overflow: 0 readbytes: 19111936 writebytes: 17973248 linecount: 9054
+Tue Dec 2 13:42:45 PST 2014 2549262 400 version: 5 overflow: 0 readbytes: 4050944 writebytes: 17448960 linecount: 5249
+Tue Dec 2 13:44:44 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 18526208 writebytes: 54452224 linecount: 17817
+Tue Dec 2 13:46:44 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 8564736 writebytes: 147025920 linecount: 37986
+Tue Dec 2 13:48:45 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 20299776 writebytes: 154439680 linecount: 42661
+Tue Dec 2 13:56:17 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 352911360 writebytes: 391278592 linecount: 181687
+Tue Dec 2 14:03:54 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 64774144 writebytes: 145661952 linecount: 51376
+Tue Dec 2 14:11:28 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 182910976 writebytes: 243834880 linecount: 104186
+=============
+Tue Dec 2 15:30:27 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 4521984 writebytes: 35487744 linecount: 9768
+Tue Dec 2 15:31:50 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 4698112 writebytes: 37658624 linecount: 10341
+Tue Dec 2 15:33:13 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 31899648 writebytes: 106455040 linecount: 33778
+Tue Dec 2 15:35:10 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 17559552 writebytes: 72781824 linecount: 22056
+Tue Dec 2 15:37:09 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 15101952 writebytes: 70377472 linecount: 20869
+Tue Dec 2 15:39:06 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 14159872 writebytes: 65978368 linecount: 19565
+Tue Dec 2 15:41:47 PST 2014 2549262 1536 version: 5 overflow: 0 readbytes: 55263232 writebytes: 125689856 linecount: 44178
+Tue Dec 2 15:44:39 PST 2014 2549262 1536 version: 5 overflow: 0 readbytes: 61239296 writebytes: 116961280 linecount: 43506
+Tue Dec 2 15:47:27 PST 2014 2549262 1536 version: 5 overflow: 0 readbytes: 50769920 writebytes: 198717440 linecount: 60910
+Tue Dec 2 15:51:17 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 187183104 writebytes: 287010816 linecount: 115770
+Tue Dec 2 15:55:17 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 141639680 writebytes: 262717440 linecount: 98720
+Tue Dec 2 15:59:14 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 337940480 writebytes: 440483840 linecount: 190045
+Tue Dec 2 16:04:21 PST 2014 2549262 2560 version: 5 overflow: 0 readbytes: 200306688 writebytes: 311173120 linecount: 124873
+Tue Dec 2 16:09:38 PST 2014 2549262 2560 version: 5 overflow: 0 readbytes: 399667200 writebytes: 659902464 linecount: 258684
+Tue Dec 2 16:14:56 PST 2014 2549262 2560 version: 5 overflow: 0 readbytes: 215363584 writebytes: 401711104 linecount: 150653
+Tue Dec 2 16:20:57 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 592502784 writebytes: 744456192 linecount: 326406
+Tue Dec 2 16:27:00 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 344797184 writebytes: 541401088 linecount: 216357
+Tue Dec 2 16:33:32 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 880615424 writebytes: 1419612160 linecount: 561579
+Tue Dec 2 16:41:33 PST 2014 2549262 3584 version: 5 overflow: 0 readbytes: 793907200 writebytes: 1113911296 linecount: 465776
+Tue Dec 2 16:49:45 PST 2014 2549262 3584 version: 5 overflow: 0 readbytes: 1037697024 writebytes: 1300213760 linecount: 570779
+Tue Dec 2 16:58:04 PST 2014 2549262 3584 version: 5 overflow: 0 readbytes: 851742720 writebytes: 1192394752 linecount: 499057
+Tue Dec 2 17:08:21 PST 2014 2549262 4096 version: 5 overflow: 1 readbytes: 3019722752 writebytes: 3206651904 linecount: 1520111
+Tue Dec 2 17:21:22 PST 2014 2549262 4096 version: 5 overflow: 1 readbytes: 2927878144 writebytes: 3245494272 linecount: 1507171
+Tue Dec 2 17:35:41 PST 2014 2549262 4096 version: 5 overflow: 1 readbytes: 5608210432 writebytes: 5601169408 linecount: 2736665
+=============
+Tue Dec 2 18:39:17 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 18:45:48 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 18:52:16 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 18:58:48 PST 2014 1762830 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:05:20 PST 2014 1762830 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:11:57 PST 2014 1762830 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:18:26 PST 2014 2024974 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:25:01 PST 2014 2024974 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:31:36 PST 2014 2024974 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:38:13 PST 2014 2287118 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:44:49 PST 2014 2287118 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 19:51:20 PST 2014 2287118 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 20:00:41 PST 2014 2549262 2048 version: 5 overflow: 1 readbytes: 26070646784 writebytes: 20762877952 linecount: 11433966
+Tue Dec 2 20:10:04 PST 2014 2549262 2048 version: 5 overflow: 1 readbytes: 33398566912 writebytes: 23466225664 linecount: 13883006
+Tue Dec 2 20:19:20 PST 2014 2549262 2048 version: 5 overflow: 1 readbytes: 32331239424 writebytes: 25063305216 linecount: 14012340
+Tue Dec 2 20:35:21 PST 2014 2614798 2048 version: 5 overflow: 1 readbytes: 232201072640 writebytes: 109240139776 linecount: 83359671
+Tue Dec 2 20:53:25 PST 2014 2614798 2048 version: 5 overflow: 1 readbytes: 209242562560 writebytes: 108856037376 linecount: 77660791
+Tue Dec 2 21:12:37 PST 2014 2614798 2048 version: 5 overflow: 1 readbytes: 228643323904 writebytes: 112552071168 linecount: 83299657
+=============
+Tue Dec 2 22:13:22 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Tue Dec 2 22:19:55 PST 2014 1500686 2048 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+=============
+Wed Dec 3 01:04:09 PST 2014 1500686 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:16:33 PST 2014 1500686 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:29:00 PST 2014 1500686 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:41:36 PST 2014 1762830 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 01:54:03 PST 2014 1762830 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:06:25 PST 2014 1762830 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:18:48 PST 2014 2024974 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:31:14 PST 2014 2024974 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:43:46 PST 2014 2024974 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 02:56:08 PST 2014 2287118 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 03:08:29 PST 2014 2287118 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 03:20:58 PST 2014 2287118 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 03:33:30 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 1744896 linecount: 426
+Wed Dec 3 03:45:56 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 647168 linecount: 158
+Wed Dec 3 03:58:19 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 04:10:53 PST 2014 2614798 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 2015232 linecount: 492
+Wed Dec 3 04:23:13 PST 2014 2614798 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 1290240 linecount: 315
+Wed Dec 3 04:35:39 PST 2014 2614798 4096 version: 5 overflow: 0 readbytes: 0 writebytes: 1970176 linecount: 481
+Wed Dec 3 04:47:57 PST 2014 2680334 4096 version: 5 overflow: 0 readbytes: 1703936 writebytes: 21921792 linecount: 5768
+Wed Dec 3 05:00:32 PST 2014 2680334 4096 version: 5 overflow: 0 readbytes: 25317376 writebytes: 222605312 linecount: 60528
+Wed Dec 3 05:13:10 PST 2014 2680334 4096 version: 5 overflow: 0 readbytes: 11984896 writebytes: 208957440 linecount: 53941
+Wed Dec 3 05:27:46 PST 2014 2745870 4096 version: 5 overflow: 1 readbytes: 12734726144 writebytes: 12967657472 linecount: 6274996
+Wed Dec 3 05:42:39 PST 2014 2745870 4096 version: 5 overflow: 1 readbytes: 13618053120 writebytes: 13038649344 linecount: 6507984
+Wed Dec 3 05:57:31 PST 2014 2745870 4096 version: 5 overflow: 1 readbytes: 19862507520 writebytes: 19416760320 linecount: 9589665
+Wed Dec 3 06:19:41 PST 2014 2811406 4096 version: 5 overflow: 1 readbytes: 194782961664 writebytes: 134381699072 linecount: 80362466
+Wed Dec 3 07:04:37 PST 2014 2811406 4096 version: 5 overflow: 1 readbytes: 191153852416 writebytes: 119403634688 linecount: 75819699
+Wed Dec 3 07:27:06 PST 2014 2811406 4096 version: 5 overflow: 1 readbytes: 178645864448 writebytes: 121969598464 linecount: 73392447
+=============
+Wed Dec 3 07:27:59 PST 2014 2549262 64 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:28:50 PST 2014 2549262 64 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:29:42 PST 2014 2549262 64 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:30:39 PST 2014 2549262 128 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:31:43 PST 2014 2549262 128 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:32:38 PST 2014 2549262 128 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:34:00 PST 2014 2549262 256 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:35:20 PST 2014 2549262 256 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:36:40 PST 2014 2549262 256 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:38:48 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 0 writebytes: 0 linecount: 0
+Wed Dec 3 07:40:57 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 28672 writebytes: 45056 linecount: 18
+Wed Dec 3 07:43:09 PST 2014 2549262 512 version: 5 overflow: 0 readbytes: 110592 writebytes: 118784 linecount: 56
+Wed Dec 3 07:46:48 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 13049856 writebytes: 13238272 linecount: 6418
+Wed Dec 3 07:50:26 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 10395648 writebytes: 26546176 linecount: 9019
+Wed Dec 3 07:54:00 PST 2014 2549262 1024 version: 5 overflow: 0 readbytes: 7745536 writebytes: 7548928 linecount: 3734
+Wed Dec 3 08:00:38 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 29102080 writebytes: 34254848 linecount: 15468
+Wed Dec 3 08:07:16 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 4792320 writebytes: 12709888 linecount: 4273
+Wed Dec 3 08:13:49 PST 2014 2549262 2048 version: 5 overflow: 0 readbytes: 12357632 writebytes: 33017856 linecount: 11078
+Wed Dec 3 08:23:19 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 8241152 writebytes: 25288704 linecount: 8186
+Wed Dec 3 08:32:57 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 189001728 writebytes: 250458112 linecount: 107290
+Wed Dec 3 08:42:29 PST 2014 2549262 3072 version: 5 overflow: 0 readbytes: 107794432 writebytes: 116850688 linecount: 54845
+Wed Dec 3 08:54:53 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 108281856 writebytes: 208932864 linecount: 77445
+Wed Dec 3 09:07:23 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 4427776 writebytes: 164474880 linecount: 41236
+Wed Dec 3 09:19:54 PST 2014 2549262 4096 version: 5 overflow: 0 readbytes: 15511552 writebytes: 27459584 linecount: 10491
+Wed Dec 3 09:35:28 PST 2014 2549262 5120 version: 5 overflow: 0 readbytes: 27938816 writebytes: 86233088 linecount: 27874
+Wed Dec 3 09:50:40 PST 2014 2549262 5120 version: 5 overflow: 0 readbytes: 17485824 writebytes: 95739904 linecount: 27643
+Wed Dec 3 10:05:52 PST 2014 2549262 5120 version: 5 overflow: 0 readbytes: 90619904 writebytes: 324698112 linecount: 101396
+Wed Dec 3 10:24:30 PST 2014 2549262 6144 version: 5 overflow: 0 readbytes: 101105664 writebytes: 332296192 linecount: 105811
+Wed Dec 3 10:43:23 PST 2014 2549262 6144 version: 5 overflow: 0 readbytes: 38338560 writebytes: 280641536 linecount: 77876
+Wed Dec 3 11:02:14 PST 2014 2549262 6144 version: 5 overflow: 0 readbytes: 22781952 writebytes: 218468352 linecount: 58899
+=============
+141204193443 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204193340 mapend: 141204193437 end 141204193443
+141204193551 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204193450 mapend: 141204193545 end 141204193551
+141204193659 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204193557 mapend: 141204193652 end 141204193659
+=============
+141204195317 1500686 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204194104 mapend: 141204195258 end 141204195317
+141204200540 1500686 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204195325 mapend: 141204200521 end 141204200540
+141204201756 1500686 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204200547 mapend: 141204201736 end 141204201756
+141204203008 1762830 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204201803 mapend: 141204202949 end 141204203008
+141204204222 1762830 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204203015 mapend: 141204204203 end 141204204222
+141204205422 1762830 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204204229 mapend: 141204205404 end 141204205422
+141204210634 2024974 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204205430 mapend: 141204210616 end 141204210634
+141204211845 2024974 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204210642 mapend: 141204211826 end 141204211845
+141204213058 2024974 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204211852 mapend: 141204213039 end 141204213058
+141204214304 2287118 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204213107 mapend: 141204214246 end 141204214304
+141204215532 2287118 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204214312 mapend: 141204215512 end 141204215532
+141204220745 2287118 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141204215540 mapend: 141204220726 end 141204220745
+141204222007 2549262 4096 ver: 5 of: 0 mapr: 0 mapw: 126976 redr: 380928 redw: 1515520 linecount: 494 start 141204220753 mapend: 141204221945 end 141204222006
+141204223227 2549262 4096 ver: 5 of: 0 mapr: 0 mapw: 16384 redr: 446464 redw: 1081344 linecount: 377 start 141204222014 mapend: 141204223205 end 141204223227
+141204224451 2549262 4096 ver: 5 of: 0 mapr: 81920 mapw: 847872 redr: 540672 redw: 1331200 linecount: 684 start 141204223234 mapend: 141204224429 end 141204224451
+141204225713 2614798 4096 ver: 5 of: 0 mapr: 13242368 mapw: 24100864 redr: 15753216 redw: 162263040 linecount: 52578 start 141204224459 mapend: 141204225650 end 141204225713
+=============
+141205005602 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205005534 mapend: 141205005555 end 141205005602
+141205005634 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205005609 mapend: 141205005628 end 141205005634
+141205005707 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205005641 mapend: 141205005700 end 141205005707
+141205005750 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205005714 mapend: 141205005744 end 141205005750
+141205005834 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205005756 mapend: 141205005828 end 141205005834
+141205005919 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205005841 mapend: 141205005912 end 141205005919
+141205010027 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205005925 mapend: 141205010020 end 141205010027
+141205010136 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205010034 mapend: 141205010129 end 141205010136
+141205010243 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205010142 mapend: 141205010236 end 141205010243
+141205010439 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205010250 mapend: 141205010431 end 141205010439
+141205010635 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205010445 mapend: 141205010627 end 141205010635
+141205010831 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205010643 mapend: 141205010823 end 141205010831
+141205011154 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205010838 mapend: 141205011144 end 141205011154
+141205011517 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 118784 redr: 0 redw: 0 linecount: 29 start 141205011202 mapend: 141205011506 end 141205011517
+141205011845 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 655360 linecount: 160 start 141205011525 mapend: 141205011834 end 141205011845
+141205012506 2549262 2048 ver: 5 of: 0 mapr: 0 mapw: 4616192 redr: 0 redw: 2310144 linecount: 1691 start 141205011853 mapend: 141205012452 end 141205012506
+141205013134 2549262 2048 ver: 5 of: 0 mapr: 22929408 mapw: 37601280 redr: 6631424 redw: 14999552 linecount: 20059 start 141205012514 mapend: 141205013120 end 141205013134
+141205013758 2549262 2048 ver: 5 of: 0 mapr: 688128 mapw: 4222976 redr: 2043904 redw: 5263360 linecount: 2983 start 141205013142 mapend: 141205013745 end 141205013758
+141205014726 2549262 3072 ver: 5 of: 0 mapr: 16289792 mapw: 24113152 redr: 3559424 redw: 3555328 linecount: 11601 start 141205013806 mapend: 141205014709 end 141205014726
+141205015655 2549262 3072 ver: 5 of: 0 mapr: 10932224 mapw: 16764928 redr: 561152 redw: 77824 linecount: 6918 start 141205014735 mapend: 141205015638 end 141205015655
+141205020620 2549262 3072 ver: 5 of: 0 mapr: 3072000 mapw: 6344704 redr: 4284416 redw: 8159232 linecount: 5337 start 141205015704 mapend: 141205020603 end 141205020620
+141205021837 2549262 4096 ver: 5 of: 0 mapr: 14422016 mapw: 11378688 redr: 475136 redw: 2207744 linecount: 6954 start 141205020629 mapend: 141205021816 end 141205021837
+141205023007 2549262 4096 ver: 5 of: 0 mapr: 44158976 mapw: 51380224 redr: 8019968 redw: 10080256 linecount: 27744 start 141205021844 mapend: 141205022946 end 141205023007
+141205024149 2549262 4096 ver: 5 of: 0 mapr: 962560 mapw: 3170304 redr: 581632 redw: 5259264 linecount: 2435 start 141205023015 mapend: 141205024127 end 141205024148
+141205025719 2549262 5120 ver: 5 of: 0 mapr: 46149632 mapw: 68083712 redr: 1380352 redw: 5070848 linecount: 29464 start 141205024157 mapend: 141205025654 end 141205025719
+141205031232 2549262 5120 ver: 5 of: 0 mapr: 22327296 mapw: 39927808 redr: 1875968 redw: 303104 linecount: 15731 start 141205025727 mapend: 141205031207 end 141205031232
+141205032800 2549262 5120 ver: 5 of: 0 mapr: 11141120 mapw: 19222528 redr: 7757824 redw: 14520320 linecount: 12852 start 141205031240 mapend: 141205032735 end 141205032800
+141205034634 2549262 6144 ver: 5 of: 0 mapr: 13668352 mapw: 19427328 redr: 5373952 redw: 42500096 linecount: 19768 start 141205032808 mapend: 141205034607 end 141205034634
+141205040502 2549262 6144 ver: 5 of: 0 mapr: 13692928 mapw: 20992000 redr: 11739136 redw: 15822848 linecount: 15197 start 141205034642 mapend: 141205040433 end 141205040502
+141205042339 2549262 6144 ver: 5 of: 0 mapr: 13410304 mapw: 28237824 redr: 1380352 redw: 2281472 linecount: 11062 start 141205040510 mapend: 141205042310 end 141205042339
+=============
+141205043551 1500686 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205042346 mapend: 141205043532 end 141205043551
+141205044805 1500686 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205043559 mapend: 141205044746 end 141205044805
+141205050016 1500686 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205044811 mapend: 141205045958 end 141205050016
+141205051230 1762830 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205050024 mapend: 141205051210 end 141205051230
+141205052439 1762830 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205051237 mapend: 141205052420 end 141205052439
+141205053711 1762830 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205052447 mapend: 141205053652 end 141205053710
+141205054918 2024974 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205053717 mapend: 141205054859 end 141205054918
+141205060126 2024974 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205054927 mapend: 141205060107 end 141205060126
+141205061340 2024974 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205060133 mapend: 141205061321 end 141205061340
+141205062552 2287118 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205061349 mapend: 141205062533 end 141205062552
+141205063811 2287118 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205062558 mapend: 141205063751 end 141205063811
+141205065028 2287118 4096 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 linecount: 0 start 141205063819 mapend: 141205065009 end 141205065028
+141205070254 2549262 4096 ver: 5 of: 0 mapr: 65536 mapw: 1552384 redr: 978944 redw: 7438336 linecount: 2450 start 141205065033 mapend: 141205070233 end 141205070254
+141205071510 2549262 4096 ver: 5 of: 0 mapr: 0 mapw: 1650688 redr: 1757184 redw: 8413184 linecount: 2886 start 141205070302 mapend: 141205071448 end 141205071510
+141205072729 2549262 4096 ver: 5 of: 0 mapr: 32768 mapw: 352256 redr: 1650688 redw: 9232384 linecount: 2751 start 141205071518 mapend: 141205072708 end 141205072729
+141205073957 2614798 4096 ver: 5 of: 0 mapr: 10813440 mapw: 23519232 redr: 2875392 redw: 20709376 linecount: 14140 start 141205072737 mapend: 141205073933 end 141205073956
+141205075224 2614798 4096 ver: 5 of: 0 mapr: 2756608 mapw: 8232960 redr: 15769600 redw: 234147840 linecount: 63698 start 141205074005 mapend: 141205075201 end 141205075224
+141205080454 2614798 4096 ver: 5 of: 0 mapr: 561152 mapw: 1867776 redr: 13291520 redw: 212623360 linecount: 55748 start 141205075232 mapend: 141205080430 end 141205080454
+141205081928 2680334 4096 ver: 5 of: 1 mapr: 18617741312 mapw: 16309194752 redr: 242888704 redw: 240984064 linecount: 8645217 start 141205080502 mapend: 141205081856 end 141205081928
+141205083408 2680334 4096 ver: 5 of: 1 mapr: 20322619392 mapw: 16555560960 redr: 592666624 redw: 474214400 linecount: 9263931 start 141205081937 mapend: 141205083336 end 141205083408
+141205084902 2680334 4096 ver: 5 of: 1 mapr: 36782350336 mapw: 33741975552 redr: 695963648 redw: 550199296 linecount: 17522092 start 141205083416 mapend: 141205084831 end 141205084902
+141205091143 2745870 4096 ver: 5 of: 1 mapr: 342300540928 mapw: 149747654656 redr: 1607102464 redw: 951128064 linecount: 120753522 start 141205084911 mapend: 141205091106 end 141205091143
+141205093256 2745870 4096 ver: 5 of: 1 mapr: 271987580928 mapw: 164288368640 redr: 1449418752 redw: 805355520 linecount: 107063165 start 141205091152 mapend: 141205093218 end 141205093255
+141205095359 2745870 4096 ver: 5 of: 1 mapr: 284194480128 mapw: 167145537536 redr: 3317260288 redw: 1721020416 linecount: 111420483 start 141205093304 mapend: 141205095321 end 141205095358
+=============
+141205141135 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141110 mapend: 141205141130 end 141205141135
+141205141209 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141141 mapend: 141205141203 end 141205141209
+141205141241 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141216 mapend: 141205141235 end 141205141241
+141205141314 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141249 mapend: 141205141309 end 141205141314
+141205141346 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141320 mapend: 141205141340 end 141205141346
+141205141420 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141354 mapend: 141205141414 end 141205141420
+141205141453 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141426 mapend: 141205141447 end 141205141453
+141205141529 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141501 mapend: 141205141522 end 141205141529
+141205141602 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141534 mapend: 141205141556 end 141205141602
+141205141636 2549262 64 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 3050947 linecount: 0 start 141205141609 mapend: 141205141630 end 141205141636
+141205141719 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205141642 mapend: 141205141713 end 141205141719
+141205141803 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205141726 mapend: 141205141757 end 141205141803
+141205141848 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205141809 mapend: 141205141841 end 141205141848
+141205141933 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205141855 mapend: 141205141926 end 141205141933
+141205142016 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205141938 mapend: 141205142009 end 141205142016
+141205142100 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205142023 mapend: 141205142054 end 141205142100
+141205142144 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205142106 mapend: 141205142138 end 141205142143
+141205142228 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205142151 mapend: 141205142222 end 141205142228
+141205142312 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205142234 mapend: 141205142306 end 141205142312
+141205142356 2549262 128 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 8712987 linecount: 0 start 141205142319 mapend: 141205142350 end 141205142356
+141205142504 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205142402 mapend: 141205142458 end 141205142504
+141205142614 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205142512 mapend: 141205142607 end 141205142614
+141205142723 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205142621 mapend: 141205142717 end 141205142723
+141205142834 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205142731 mapend: 141205142827 end 141205142833
+141205142943 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205142841 mapend: 141205142936 end 141205142943
+141205143052 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205142951 mapend: 141205143046 end 141205143052
+141205143201 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205143058 mapend: 141205143153 end 141205143201
+141205143311 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205143208 mapend: 141205143303 end 141205143311
+141205143419 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205143318 mapend: 141205143413 end 141205143419
+141205143528 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 14124249 linecount: 0 start 141205143426 mapend: 141205143521 end 141205143528
+141205143727 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205143535 mapend: 141205143718 end 141205143727
+141205143925 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205143734 mapend: 141205143917 end 141205143925
+141205144123 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205143933 mapend: 141205144114 end 141205144123
+141205144319 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205144131 mapend: 141205144310 end 141205144319
+141205144517 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205144326 mapend: 141205144508 end 141205144517
+141205144717 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205144525 mapend: 141205144708 end 141205144716
+141205144914 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205144724 mapend: 141205144905 end 141205144914
+141205145112 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205144921 mapend: 141205145103 end 141205145112
+141205145312 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205145120 mapend: 141205145304 end 141205145312
+141205145508 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141205145319 mapend: 141205145500 end 141205145508
+141205145833 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 55179053 linecount: 0 start 141205145516 mapend: 141205145823 end 141205145833
+141205150159 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 122880 red_input 55179053 linecount: 30 start 141205145841 mapend: 141205150149 end 141205150159
+141205150524 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 16384 red_input 55179053 linecount: 4 start 141205150207 mapend: 141205150513 end 141205150524
+141205150852 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 106496 redr: 0 redw: 1019904 red_input 55179053 linecount: 275 start 141205150531 mapend: 141205150841 end 141205150852
+141205151220 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 393216 redr: 0 redw: 0 red_input 55179053 linecount: 96 start 141205150900 mapend: 141205151210 end 141205151220
+141205151546 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 618496 red_input 55179053 linecount: 151 start 141205151228 mapend: 141205151535 end 141205151546
+141205151916 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 655360 redr: 32768 redw: 61440 red_input 55179053 linecount: 183 start 141205151554 mapend: 141205151904 end 141205151915
+141205152241 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 12099584 redr: 491520 redw: 0 red_input 55179053 linecount: 3074 start 141205151924 mapend: 141205152230 end 141205152241
+141205152610 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 438272 redr: 344064 redw: 6156288 red_input 55179053 linecount: 1694 start 141205152249 mapend: 141205152559 end 141205152610
+141205152938 2549262 1024 ver: 5 of: 0 mapr: 20066304 mapw: 38223872 redr: 18939904 redw: 31997952 red_input 55179053 linecount: 26667 start 141205152618 mapend: 141205152927 end 141205152938
+141205153607 2549262 2048 ver: 5 of: 0 mapr: 52293632 mapw: 70000640 redr: 2990080 redw: 15138816 red_input 93933920 linecount: 34283 start 141205152946 mapend: 141205153553 end 141205153607
+141205154238 2549262 2048 ver: 5 of: 0 mapr: 48971776 mapw: 91602944 redr: 5279744 redw: 10674176 red_input 93933920 linecount: 38215 start 141205153615 mapend: 141205154224 end 141205154238
+141205154905 2549262 2048 ver: 5 of: 0 mapr: 1339392 mapw: 2637824 redr: 4681728 redw: 146644992 red_input 93933920 linecount: 37916 start 141205154246 mapend: 141205154850 end 141205154905
+141205155526 2549262 2048 ver: 5 of: 0 mapr: 37593088 mapw: 64196608 redr: 1003520 redw: 12935168 red_input 93933920 linecount: 28254 start 141205154913 mapend: 141205155512 end 141205155526
+141205160154 2549262 2048 ver: 5 of: 0 mapr: 271781888 mapw: 179175424 redr: 5672960 redw: 25911296 red_input 93933920 linecount: 117808 start 141205155534 mapend: 141205160139 end 141205160154
+141205160824 2549262 2048 ver: 5 of: 0 mapr: 6299648 mapw: 7454720 redr: 2945024 redw: 8925184 red_input 93933920 linecount: 6256 start 141205160202 mapend: 141205160808 end 141205160823
+141205161449 2549262 2048 ver: 5 of: 0 mapr: 15245312 mapw: 31924224 redr: 7991296 redw: 13381632 red_input 93933920 linecount: 16734 start 141205160832 mapend: 141205161433 end 141205161449
+141205162115 2549262 2048 ver: 5 of: 0 mapr: 33701888 mapw: 64266240 redr: 2838528 redw: 16424960 red_input 93933920 linecount: 28621 start 141205161457 mapend: 141205162100 end 141205162115
+141205162744 2549262 2048 ver: 5 of: 0 mapr: 5701632 mapw: 6754304 redr: 3641344 redw: 127008768 red_input 93933920 linecount: 34938 start 141205162123 mapend: 141205162728 end 141205162743
+141205163411 2549262 2048 ver: 5 of: 0 mapr: 22044672 mapw: 26918912 redr: 2584576 redw: 40656896 red_input 93933920 linecount: 22511 start 141205162751 mapend: 141205163354 end 141205163410
+141205164343 2549262 3072 ver: 5 of: 0 mapr: 211927040 mapw: 267186176 redr: 25874432 redw: 160899072 red_input 132359197 linecount: 162570 start 141205163418 mapend: 141205164323 end 141205164343
+141205165309 2549262 3072 ver: 5 of: 0 mapr: 91807744 mapw: 331112448 redr: 23810048 redw: 177905664 red_input 132359197 linecount: 152499 start 141205164351 mapend: 141205165246 end 141205165309
+141205170238 2549262 3072 ver: 5 of: 0 mapr: 150941696 mapw: 233172992 redr: 33886208 redw: 261533696 red_input 132359197 linecount: 165902 start 141205165317 mapend: 141205170216 end 141205170238
+141205171220 2549262 3072 ver: 5 of: 0 mapr: 631410688 mapw: 1071112192 redr: 19173376 redw: 59297792 red_input 132359197 linecount: 434813 start 141205170246 mapend: 141205171158 end 141205171220
+141205172206 2549262 3072 ver: 5 of: 0 mapr: 201990144 mapw: 413720576 redr: 16478208 redw: 126873600 red_input 132359197 linecount: 185318 start 141205171228 mapend: 141205172144 end 141205172206
+141205173148 2549262 3072 ver: 5 of: 0 mapr: 138993664 mapw: 190210048 redr: 73641984 redw: 222765056 red_input 132359197 linecount: 152737 start 141205172214 mapend: 141205173127 end 141205173148
+141205174139 2549262 3072 ver: 5 of: 0 mapr: 472227840 mapw: 858173440 redr: 60837888 redw: 330653696 red_input 132359197 linecount: 420384 start 141205173157 mapend: 141205174115 end 141205174139
+141205175154 2549262 3072 ver: 5 of: 0 mapr: 1414012928 mapw: 2061443072 redr: 80031744 redw: 162676736 red_input 132359197 linecount: 907755 start 141205174147 mapend: 141205175130 end 141205175154
+141205180200 2549262 3072 ver: 5 of: 1 mapr: 3178770432 mapw: 3767930880 redr: 144687104 redw: 172572672 red_input 132359197 linecount: 1773428 start 141205175203 mapend: 141205180136 end 141205180159
+141205181245 2549262 3072 ver: 5 of: 1 mapr: 14729101312 mapw: 8299814912 redr: 64659456 redw: 121212928 red_input 132359197 linecount: 5667673 start 141205180208 mapend: 141205181219 end 141205181245
+141205182702 2549262 4096 ver: 5 of: 1 mapr: 18737917952 mapw: 10274476032 redr: 406777856 redw: 293244928 red_input 160329967 linecount: 7254008 start 141205181253 mapend: 141205182629 end 141205182702
+141205184214 2549262 4096 ver: 5 of: 1 mapr: 14455484416 mapw: 10956591104 redr: 343048192 redw: 244539392 red_input 160329967 linecount: 6347574 start 141205182711 mapend: 141205184135 end 141205184213
+141205185615 2549262 4096 ver: 5 of: 1 mapr: 16882012160 mapw: 16625635328 redr: 514605056 redw: 432623616 red_input 160329967 linecount: 8411835 start 141205184222 mapend: 141205185543 end 141205185615
+141205191120 2549262 4096 ver: 5 of: 1 mapr: 20021075968 mapw: 16703324160 redr: 622596096 redw: 323989504 red_input 160329967 linecount: 9197018 start 141205185623 mapend: 141205191041 end 141205191120
+141205192612 2549262 4096 ver: 5 of: 1 mapr: 28294287360 mapw: 26685485056 redr: 56487936 redw: 87678976 red_input 160329967 linecount: 13457993 start 141205191128 mapend: 141205192544 end 141205192612
+141205194056 2549262 4096 ver: 5 of: 1 mapr: 29220155392 mapw: 24381763584 redr: 694964224 redw: 483418112 red_input 160329967 linecount: 13374097 start 141205192621 mapend: 141205194016 end 141205194056
+141205195541 2549262 4096 ver: 5 of: 1 mapr: 33298034688 mapw: 30920794112 redr: 502554624 redw: 462319616 red_input 160329967 linecount: 15913990 start 141205194104 mapend: 141205195510 end 141205195541
+141205201054 2549262 4096 ver: 5 of: 1 mapr: 40927920128 mapw: 26674360320 redr: 807084032 redw: 625950720 red_input 160329967 linecount: 16854325 start 141205195550 mapend: 141205201016 end 141205201053
+141205202629 2549262 4096 ver: 5 of: 1 mapr: 54218285056 mapw: 27260973056 redr: 144678912 redw: 140894208 red_input 160329967 linecount: 19962117 start 141205201102 mapend: 141205202556 end 141205202629
+141205204213 2549262 4096 ver: 5 of: 1 mapr: 38979502080 mapw: 29162082304 redr: 909946880 redw: 659103744 red_input 160329967 linecount: 17019198 start 141205202638 mapend: 141205204143 end 141205204213
+141205210101 2549262 5120 ver: 5 of: 1 mapr: 55341244416 mapw: 46940966912 redr: 756662272 redw: 583958528 red_input 207328124 linecount: 25298543 start 141205204222 mapend: 141205210023 end 141205210101
+141205212017 2549262 5120 ver: 5 of: 1 mapr: 57815703552 mapw: 48984137728 redr: 811220992 redw: 631205888 red_input 207328124 linecount: 26426335 start 141205210109 mapend: 141205211941 end 141205212017
+141205213921 2549262 5120 ver: 5 of: 1 mapr: 70563106816 mapw: 48897257472 redr: 1376628736 redw: 707297280 red_input 207328124 linecount: 29673899 start 141205212026 mapend: 141205213836 end 141205213920
+141205215825 2549262 5120 ver: 5 of: 1 mapr: 66031140864 mapw: 53263974400 redr: 573444096 redw: 469016576 red_input 207328124 linecount: 29379291 start 141205213929 mapend: 141205215742 end 141205215825
+141205221739 2549262 5120 ver: 5 of: 1 mapr: 74619179008 mapw: 59456028672 redr: 866947072 redw: 638234624 red_input 207328124 linecount: 33100681 start 141205215834 mapend: 141205221700 end 141205221739
+141205223658 2549262 5120 ver: 5 of: 1 mapr: 71024918528 mapw: 55711735808 redr: 1418899456 redw: 925491200 red_input 207328124 linecount: 31513927 start 141205221747 mapend: 141205223619 end 141205223658
+141205225616 2549262 5120 ver: 5 of: 1 mapr: 78467170304 mapw: 62567075840 redr: 832118784 redw: 598192128 red_input 207328124 linecount: 34781386 start 141205223707 mapend: 141205225537 end 141205225616
+141205231755 2549262 5120 ver: 5 of: 1 mapr: 93274726400 mapw: 55354707968 redr: 792469504 redw: 463257600 red_input 207328124 linecount: 36593057 start 141205225624 mapend: 141205231711 end 141205231755
+141205233829 2549262 5120 ver: 5 of: 1 mapr: 94708023296 mapw: 71238774784 redr: 1097555968 redw: 798785536 red_input 207328124 linecount: 40977329 start 141205231804 mapend: 141205233741 end 141205233829
+141205235919 2549262 5120 ver: 5 of: 1 mapr: 95534759936 mapw: 72352509952 redr: 1046335488 redw: 726900736 red_input 207328124 linecount: 41421022 start 141205233838 mapend: 141205235836 end 141205235919
+141206002749 2549262 6144 ver: 5 of: 1 mapr: 160196395008 mapw: 99023253504 redr: 2201202688 redw: 1023983616 red_input 245704471 linecount: 64073446 start 141205235928 mapend: 141206002652 end 141206002748
+141206005343 2549262 6144 ver: 5 of: 1 mapr: 156564893696 mapw: 114712203264 redr: 1797189632 redw: 971333632 red_input 245704471 linecount: 66905669 start 141206002757 mapend: 141206005247 end 141206005343
+141206012024 2549262 6144 ver: 5 of: 1 mapr: 186992783360 mapw: 134356914176 redr: 1702596608 redw: 839593984 red_input 245704471 linecount: 79075168 start 141206005352 mapend: 141206011939 end 141206012024
+141206014752 2549262 6144 ver: 5 of: 1 mapr: 210686124032 mapw: 142598877184 redr: 2230554624 redw: 1039515648 red_input 245704471 linecount: 87049578 start 141206012033 mapend: 141206014657 end 141206014752
+141206021452 2549262 6144 ver: 5 of: 1 mapr: 206378635264 mapw: 149937414144 redr: 2208124928 redw: 1146470400 red_input 245704471 linecount: 87810216 start 141206014801 mapend: 141206021356 end 141206021452
+141206024310 2549262 6144 ver: 5 of: 1 mapr: 253241925632 mapw: 180472655872 redr: 2326986752 redw: 1109987328 red_input 245704471 linecount: 106726454 start 141206021500 mapend: 141206024214 end 141206024310
+141206031736 2549262 6144 ver: 5 of: 1 mapr: 353012645888 mapw: 203441635328 redr: 2363535360 redw: 1155850240 red_input 245704471 linecount: 136712321 start 141206024319 mapend: 141206031637 end 141206031736
+141206035150 2549262 6144 ver: 5 of: 1 mapr: 378303967232 mapw: 210888425472 redr: 3303661568 redw: 1297600512 red_input 245704471 linecount: 144969154 start 141206031744 mapend: 141206035056 end 141206035150
+141206042431 2549262 6144 ver: 5 of: 1 mapr: 422166904832 mapw: 273224552448 redr: 2881392640 redw: 1339531264 red_input 245704471 linecount: 170803804 start 141206035159 mapend: 141206042328 end 141206042431
+141206045803 2549262 6144 ver: 5 of: 1 mapr: 439982710784 mapw: 278533877760 redr: 3148673024 redw: 1477885952 red_input 245704471 linecount: 176548620 start 141206042439 mapend: 141206045700 end 141206045803
+141206053719 2549262 7168 ver: 5 of: 1 mapr: 529316892672 mapw: 330569129984 redr: 5520236544 redw: 3669434368 red_input 285897838 linecount: 212176683 start 141206045812 mapend: 141206053546 end 141206053719
+141206061849 2549262 7168 ver: 5 of: 1 mapr: 572756365312 mapw: 314252009472 redr: 4818542592 redw: 2290335744 red_input 285897838 linecount: 218290345 start 141206053727 mapend: 141206061732 end 141206061849
+141206072846 2549262 7168 ver: 5 of: 1 mapr: 965917622272 mapw: 329271980032 redr: 10318479360 redw: 2683813888 red_input 285897838 linecount: 319382788 start 141206061858 mapend: 141206072624 end 141206072845
+141206083517 2549262 7168 ver: 5 of: 1 mapr: 640476041216 mapw: 328989130752 redr: 7680864256 redw: 3766677504 red_input 285897838 linecount: 239480643 start 141206072900 mapend: 141206083135 end 141206083517
+141206093350 2549262 7168 ver: 5 of: 1 mapr: 687692726272 mapw: 355347881984 redr: 6197415936 redw: 3880898560 red_input 285897838 linecount: 257109113 start 141206083533 mapend: 141206093151 end 141206093350
+141206102301 2549262 7168 ver: 5 of: 1 mapr: 705423605760 mapw: 364227825664 redr: 8264384512 redw: 4400279552 red_input 285897838 linecount: 264237328 start 141206093358 mapend: 141206102106 end 141206102301
+141206111032 2549262 7168 ver: 5 of: 1 mapr: 684787294208 mapw: 364476215296 redr: 6970298368 redw: 4214874112 red_input 285897838 linecount: 258898604 start 141206102310 mapend: 141206110842 end 141206111032
+141206120216 2549262 7168 ver: 5 of: 1 mapr: 951607873536 mapw: 379040681984 redr: 6944165888 redw: 4167835648 red_input 285897838 linecount: 327578261 start 141206111042 mapend: 141206120044 end 141206120216
+141206130503 2549262 7168 ver: 5 of: 1 mapr: 1324956856320 mapw: 392011644928 redr: 8012656640 redw: 3674390528 red_input 285897838 linecount: 422035047 start 141206120225 mapend: 141206130354 end 141206130503
+141206142443 2549262 7168 ver: 5 of: 1 mapr: 1700780875776 mapw: 388252762112 redr: 6799179776 redw: 4133076992 red_input 285897838 linecount: 512686986 start 141206130514 mapend: 141206142300 end 141206142443
+=============
+141205153556 2549262 20480
+=============
+=============
+141205164228 2549262 20480 ver: 5 of: 0 mapr: 27123712 mapw: 58847232 redr: 13058048 redw: 25042944 red_input 735118720 linecount: 30291 start 141205154122 mapend: 141205164115 end 141205164228
+141205174400 2549262 20480 ver: 5 of: 0 mapr: 1425408 mapw: 3522560 redr: 1470464 redw: 11145216 red_input 735118720 linecount: 4288 start 141205164234 mapend: 141205174247 end 141205174400
+141205184447 2549262 20480 ver: 5 of: 0 mapr: 20885504 mapw: 54689792 redr: 47251456 redw: 90001408 red_input 735118720 linecount: 51960 start 141205174405 mapend: 141205184334 end 141205184447
+141205201432 2549262 30720 ver: 5 of: 0 mapr: 58155008 mapw: 91955200 redr: 29687808 redw: 33595392 red_input 1063249832 linecount: 52098 start 141205184453 mapend: 141205201248 end 141205201431
+141205214452 2549262 30720 ver: 5 of: 0 mapr: 195985408 mapw: 227766272 redr: 54349824 redw: 70508544 red_input 1063249832 linecount: 133938 start 141205201438 mapend: 141205214308 end 141205214452
+141205231557 2549262 30720 ver: 5 of: 0 mapr: 605261824 mapw: 792256512 redr: 63049728 redw: 85348352 red_input 1063249832 linecount: 377421 start 141205214458 mapend: 141205231411 end 141205231557
+=============
+141206152112 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141206151916 mapend: 141206152103 end 141206152112
+141206152438 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 933888 redr: 0 redw: 2605056 red_input 55179053 linecount: 864 start 141206152117 mapend: 141206152428 end 141206152438
+141206153100 2549262 2048 ver: 5 of: 0 mapr: 0 mapw: 180224 redr: 0 redw: 356352 red_input 93933920 linecount: 131 start 141206152444 mapend: 141206153047 end 141206153100
+141206154030 2549262 3072 ver: 5 of: 0 mapr: 4608000 mapw: 14618624 redr: 688128 redw: 3440640 red_input 132359197 linecount: 5702 start 141206153106 mapend: 141206154012 end 141206154030
+141206155254 2549262 4096 ver: 5 of: 0 mapr: 13160448 mapw: 19234816 redr: 9203712 redw: 12460032 red_input 160329967 linecount: 13198 start 141206154037 mapend: 141206155234 end 141206155254
+141206160805 2549262 5120 ver: 5 of: 0 mapr: 150974464 mapw: 56274944 redr: 471040 redw: 479232 red_input 207328124 linecount: 50830 start 141206155300 mapend: 141206160741 end 141206160805
+141206162645 2549262 6144 ver: 5 of: 0 mapr: 23146496 mapw: 26517504 redr: 765952 redw: 7184384 red_input 245704471 linecount: 14066 start 141206160811 mapend: 141206162618 end 141206162645
+141206164826 2549262 7168 ver: 5 of: 0 mapr: 47992832 mapw: 67227648 redr: 360448 redw: 929792 red_input 285897838 linecount: 28445 start 141206162652 mapend: 141206164754 end 141206164826
+141206171312 2549262 8192 ver: 5 of: 0 mapr: 10039296 mapw: 14221312 redr: 16338944 redw: 52936704 red_input 331454333 linecount: 22836 start 141206164832 mapend: 141206171236 end 141206171312
+141206174043 2549262 9216 ver: 5 of: 0 mapr: 24678400 mapw: 41082880 redr: 7794688 redw: 24023040 red_input 357825797 linecount: 23823 start 141206171318 mapend: 141206174004 end 141206174043
+141206181106 2549262 10240 ver: 5 of: 0 mapr: 35872768 mapw: 32268288 redr: 25456640 redw: 121389056 red_input 399874656 linecount: 52487 start 141206174049 mapend: 141206181024 end 141206181106
+============
+141206150652 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141206150454 mapend: 141206150644 end 141206150652
+141206151024 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 266240 red_input 55179053 linecount: 65 start 141206150659 mapend: 141206151013 end 141206151024
+141206151658 2549262 2048 ver: 5 of: 0 mapr: 0 mapw: 348160 redr: 0 redw: 16384 red_input 93933920 linecount: 89 start 141206151032 mapend: 141206151643 end 141206151657
+141206152630 2549262 3072 ver: 5 of: 0 mapr: 0 mapw: 1142784 redr: 0 redw: 4403200 red_input 132359197 linecount: 1354 start 141206151706 mapend: 141206152613 end 141206152630
+141206153857 2549262 4096 ver: 5 of: 0 mapr: 21204992 mapw: 35540992 redr: 495616 redw: 991232 red_input 160329967 linecount: 14217 start 141206152637 mapend: 141206153836 end 141206153857
+141206155436 2549262 5120 ver: 5 of: 0 mapr: 9334784 mapw: 14110720 redr: 6230016 redw: 13365248 red_input 207328124 linecount: 10508 start 141206153906 mapend: 141206155410 end 141206155436
+141206161312 2549262 6144 ver: 5 of: 0 mapr: 11141120 mapw: 17170432 redr: 8495104 redw: 21655552 red_input 245704471 linecount: 14273 start 141206155442 mapend: 141206161244 end 141206161312
+141206163449 2549262 7168 ver: 5 of: 0 mapr: 14053376 mapw: 28110848 redr: 98304 redw: 270336 red_input 285897838 linecount: 10384 start 141206161318 mapend: 141206163417 end 141206163449
+141206165916 2549262 8192 ver: 5 of: 0 mapr: 15478784 mapw: 28704768 redr: 14221312 redw: 109113344 red_input 331454333 linecount: 40898 start 141206163457 mapend: 141206165841 end 141206165916
+141206172643 2549262 9216 ver: 5 of: 0 mapr: 18489344 mapw: 45199360 redr: 1413120 redw: 2392064 red_input 357825797 linecount: 16478 start 141206165924 mapend: 141206172604 end 141206172643
+141206175739 2549262 10240 ver: 5 of: 0 mapr: 113606656 mapw: 64065536 redr: 9670656 redw: 9469952 red_input 399874656 linecount: 48050 start 141206172652 mapend: 141206175657 end 141206175739
+=============
+141206181821 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 28073830 linecount: 0 start 141206181630 mapend: 141206181812 end 141206181821
+141206182144 2549262 1024 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 0 redw: 0 red_input 55179053 linecount: 0 start 141206181828 mapend: 141206182134 end 141206182144
+141206182805 2549262 2048 ver: 5 of: 0 mapr: 0 mapw: 2359296 redr: 163840 redw: 1503232 red_input 93933920 linecount: 983 start 141206182152 mapend: 141206182751 end 141206182805
+141206183732 2549262 3072 ver: 5 of: 0 mapr: 10801152 mapw: 17338368 redr: 1138688 redw: 1216512 red_input 132359197 linecount: 7445 start 141206182813 mapend: 141206183715 end 141206183732
+141206184954 2549262 4096 ver: 5 of: 0 mapr: 56573952 mapw: 59097088 redr: 651264 redw: 0 red_input 160329967 linecount: 28399 start 141206183740 mapend: 141206184935 end 141206184954
+141206190521 2549262 5120 ver: 5 of: 0 mapr: 78000128 mapw: 108056576 redr: 462848 redw: 233472 red_input 207328124 linecount: 45594 start 141206185003 mapend: 141206190456 end 141206190521
+141206192359 2549262 6144 ver: 5 of: 0 mapr: 20447232 mapw: 26886144 redr: 4493312 redw: 4149248 red_input 245704471 linecount: 13666 start 141206190529 mapend: 141206192330 end 141206192359
+141206194544 2549262 7168 ver: 5 of: 0 mapr: 16850944 mapw: 38748160 redr: 3596288 redw: 6975488 red_input 285897838 linecount: 16155 start 141206192406 mapend: 141206194513 end 141206194544
+141206201020 2549262 8192 ver: 5 of: 0 mapr: 380928 mapw: 2609152 redr: 3469312 redw: 52293632 red_input 331454333 linecount: 14344 start 141206194552 mapend: 141206200945 end 141206201020
+141206203812 2549262 9216 ver: 5 of: 0 mapr: 0 mapw: 241664 redr: 2981888 redw: 8781824 red_input 357825797 linecount: 2931 start 141206201028 mapend: 141206203732 end 141206203811
+141206210843 2549262 10240 ver: 5 of: 0 mapr: 10207232 mapw: 26021888 redr: 5840896 redw: 16560128 red_input 399874656 linecount: 14314 start 141206203821 mapend: 141206210800 end 141206210843

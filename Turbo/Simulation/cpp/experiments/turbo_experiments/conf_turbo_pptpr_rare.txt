@@ -1,0 +1,13 @@
+init_cwnd: 4
+max_cwnd: 7
+retx_timeout: 0.0000095
+queue_size: 6200
+propagation_delay: 0.0000002
+bandwidth: 10000000000.0
+queue_type: 3 
+flow_type: 8 
+num_flow: 10000
+flow_trace: ../CDF_aditya.txt
+cut_through: 0
+mean_flow_size: 195357.125
+
