@@ -57,6 +57,22 @@ class FlowContainer:
                "hdfs_written_remote2":9
                }
 
+def get_map_read(input_bytes):
+  r = input_bytes * 6.86273579e-03 + -2.26164292e+07
+  return max(r,0)
+
+def get_map_write(input_bytes):
+  r = input_bytes * 9.15345722e-03 + -3.21867403e+07
+  return max(r,0)
+
+def get_reduce_read(input_bytes):
+  r = input_bytes * 4.41135686e-02 + -5.74527992e+06
+  return max(r,0)
+
+def get_reduce_write(input_bytes):
+  r = input_bytes * 6.72310408e-02 + -2.30853134e+06
+  return max(r,0)
+
 def gen_flows(u, hdfs_block_size_mb = 1):
   print "gen_flows Version:", 20
 
@@ -64,11 +80,11 @@ def gen_flows(u, hdfs_block_size_mb = 1):
   mem_page_size = 4096
   percent_local_read = 0.9
 
-  map_read_ratio = (391 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
-  map_write_ratio = (430 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
+  #map_read_ratio = (391 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
+  #map_write_ratio = (430 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
 
-  reduce_read_ratio = (100 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
-  reduce_write_ratio = (110 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
+  #reduce_read_ratio = (100 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
+  #reduce_write_ratio = (110 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
 
 
   next_percent = 0.01
@@ -120,8 +136,8 @@ def gen_flows(u, hdfs_block_size_mb = 1):
 
 
       if task.map_input_bytes > 0:
-        cpu_ram_read_blocks = int(task.map_input_bytes * map_read_ratio / mem_page_size)
-        cpu_ram_write_blocks = int(task.map_input_bytes * map_write_ratio / mem_page_size)
+        cpu_ram_read_blocks = int(get_map_read(task.map_input_bytes) / mem_page_size)
+        cpu_ram_write_blocks = int( get_map_write(task.map_input_bytes) / mem_page_size)
         for i in range(0, cpu_ram_read_blocks):
           read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
                                     task.self_id + "_mem",
@@ -142,8 +158,8 @@ def gen_flows(u, hdfs_block_size_mb = 1):
 
 
       if task.reduce_shuffle_bytes > 0:
-        cpu_ram_read_blocks = int(task.reduce_shuffle_bytes * reduce_read_ratio / mem_page_size)
-        cpu_ram_write_blocks = int(task.reduce_shuffle_bytes * reduce_write_ratio / mem_page_size)
+        cpu_ram_read_blocks = int( get_reduce_read(task.reduce_shuffle_bytes) / mem_page_size)
+        cpu_ram_write_blocks = int( get_reduce_write(task.reduce_shuffle_bytes) / mem_page_size)
         for i in range(0, cpu_ram_read_blocks):
           read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
                                     task.self_id + "_mem",
@@ -271,9 +287,6 @@ def main(argv):
 
 
   gen_flows(u,  hdfs_block_size_mb = 1)
-  gen_flows(u,  hdfs_block_size_mb = 16)
-  gen_flows(u,  hdfs_block_size_mb = 64)
-  gen_flows(u,  hdfs_block_size_mb = 128)
 
 if __name__ == "__main__" :
   main(sys.argv[1:])
