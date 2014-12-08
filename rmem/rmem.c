@@ -61,7 +61,8 @@ typedef struct
 } access_record;
 
 
-bool inject_latency = false;
+u64 inject_latency = 0;
+u64 get_record = 1;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
@@ -112,8 +113,10 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		return;
 	}
 
-	do_gettimeofday(&tms);
-	record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
+        if(get_record){
+		do_gettimeofday(&tms);
+		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
+	}
 
 	if(inject_latency)
 		begin = sched_clock();
@@ -151,21 +154,24 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
-		record.timestamp = record.timestamp * -1;
+		if(get_record)
+			record.timestamp = record.timestamp * -1;
 
 		spin_unlock(&rx_lock);
 	}
 	
-	record.page = page;
-	record.length = npage;
+	if(get_record){
+		record.page = page;
+		record.length = npage;
 	
-	spin_lock(&log_lock);
-	request_log[log_head] = record;
-	line_count += record.length;
-	log_head = (log_head + 1)%LOG_BATCH_SIZE;
-	if(log_head == log_tail)
-		overflow = 1;
-	spin_unlock(&log_lock);	
+		spin_lock(&log_lock);
+		request_log[log_head] = record;
+		line_count += record.length;
+		log_head = (log_head + 1)%LOG_BATCH_SIZE;
+		if(log_head == log_tail)
+			overflow = 1;
+		spin_unlock(&log_lock);	
+	}
 }
 
 static void rmem_request(struct request_queue *q) 
@@ -264,6 +270,20 @@ static ctl_table rmem_table[] = {
 		.procname	= "line_count",
 		.data		= &line_count,
 		.maxlen		= sizeof(line_count),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "inject_latency",
+		.data		= &inject_latency,
+		.maxlen		= sizeof(inject_latency),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "get_record",
+		.data		= &get_record,
+		.maxlen		= sizeof(get_record),
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
 	},
