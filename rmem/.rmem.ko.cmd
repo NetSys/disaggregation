@@ -1,1 +1,1 @@
-cmd_/home/peter/disaggregation/rmem/rmem.ko := ld -r -m elf_x86_64 -T /usr/src/linux-headers-3.8.0-29-generic/scripts/module-common.lds --build-id  -o /home/peter/disaggregation/rmem/rmem.ko /home/peter/disaggregation/rmem/rmem.o /home/peter/disaggregation/rmem/rmem.mod.o
+cmd_/root/disaggregation/rmem/rmem.ko := ld -r -m elf_x86_64 -T /usr/src/kernels/3.14.25-23.45.amzn1.x86_64/scripts/module-common.lds --build-id  -o /root/disaggregation/rmem/rmem.ko /root/disaggregation/rmem/rmem.o /root/disaggregation/rmem/rmem.mod.o
