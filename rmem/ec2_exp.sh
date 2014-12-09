@@ -17,7 +17,7 @@ run()
   done
 
   /root/ephemeral-hdfs/bin/hadoop fs -rmr /data/wikicount
-  /root/spark/bin/spark-submit --class "WordCount" --master "spark://$master:7077" "/root/disaggregation/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar" "hdfs://$master:9000/data/f10240.txt" "hdfs://$master:9000/data/wikicount" | python spark_state.py $1 $2 $3 $4 
+  /root/spark/bin/spark-submit --class "WordCount" --master "spark://$master:7077" "/root/disaggregation/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar" "hdfs://$master:9000/data/f10240.txt" "hdfs://$master:9000/data/wikicount" 2>&1 | python spark_state.py $1 $2 $3 $4 -v 
 
 }
 
