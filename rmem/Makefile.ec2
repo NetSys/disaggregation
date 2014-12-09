@@ -1,5 +1,5 @@
 obj-m := rmem.o
-KDIR := /lib/modules/$(shell uname -r)/build
+KDIR := ./3.14.25-23.45.amzn1.x86_64
 PWD := $(shell pwd)
 
 make:
