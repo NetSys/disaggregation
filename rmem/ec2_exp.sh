@@ -16,8 +16,8 @@ run()
     ssh root@$slave "/root/disaggregation/rmem/ec2_reset.sh $1 $2 $3 $4"
   done
 
-  /root/ephemeral-hdfs/bin/hadoop fs -rmr /data/wikicount
-  /root/spark/bin/spark-submit --class "WordCount" --master "spark://$master:7077" "/root/disaggregation/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar" "hdfs://$master:9000/data/f10240.txt" "hdfs://$master:9000/data/wikicount" 2>&1 | python spark_state.py $1 $2 $3 $4 -v 
+  /root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount
+  /root/spark/bin/spark-submit --class "WordCount" --master "spark://$master:7077" "/root/disaggregation/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar" "hdfs://$master:9000/wiki" "hdfs://$master:9000/wikicount" 2>&1 | python spark_state.py $1 $2 $3 $4 -v 
 
 }
 
