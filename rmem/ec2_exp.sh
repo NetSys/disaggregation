@@ -24,7 +24,7 @@ run()
 }
 
 
-for aaa in {1..10}
+for aaa in {1..5}
 do
   run $remote_mem 0 0 0
   for latency in "${las[@]}"
