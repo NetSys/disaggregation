@@ -1,3 +1,5 @@
+cd /root/disaggregation/rmem
+
 bws=( 100000000000 40000000000 10000000000 )
 las=( 1000 10000 )
 
@@ -13,7 +15,7 @@ run()
   SLAVES=`cat /root/spark-ec2/slaves`
   for slave in $SLAVES; do
     echo "-------------reseting $slave -------------------"
-    ssh root@$slave "/root/disaggregation/rmem/ec2_reset.sh $1 $2 $3 $4"
+#    ssh root@$slave "/root/disaggregation/rmem/ec2_reset.sh $1 $2 $3 $4"
   done
 
   /root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount
@@ -22,12 +24,14 @@ run()
 }
 
 
-
-run $remote_mem 0 0 0
-for latency in "${las[@]}"
+for aaa in {1..10}
 do
-  for bw in "${bws[@]}"
+  run $remote_mem 0 0 0
+  for latency in "${las[@]}"
   do
-    run $remote_mem $bw $latency 1
+    for bw in "${bws[@]}"
+    do
+      run $remote_mem $bw $latency 1
+    done
   done
 done
