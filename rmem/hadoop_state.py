@@ -46,6 +46,9 @@ os.system("echo " + str(end_time) + " > .hadoop_info/end_time")
 
 files = os.listdir(".hadoop_info")
 results = {}
+results["map_read"] = -1
+results["map_write"] = -1
+results["map_end_time"] = 0
 for f in files:
   fh = open(".hadoop_info/" + f)
   results[f] = fh.read().strip()
