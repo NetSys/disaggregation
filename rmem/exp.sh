@@ -6,6 +6,7 @@ job="terasort"
 
 echo ============= >> exp_log.txt
 for i in {1..5}
+do
   for remote_mem in "${rmems[@]}"
   do
     for size in "${input_size[@]}"
@@ -19,4 +20,4 @@ for i in {1..5}
       echo $output >> exp_log.txt
     done
   done
-
+done

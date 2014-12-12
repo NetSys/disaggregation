@@ -463,3 +463,4 @@ Wed Dec 3 11:02:14 PST 2014 2549262 6144 version: 5 overflow: 0 readbytes: 22781
 141211170155 terasort 2549262 256 ver: 5 of: 0 mapr: 0 mapw: 0 redr: 2015232 redw: 35135488 red_input 279172864 linecount: 9070 start 141211170119 mapend: 141211170139 end 141211170155
 141211170311 terasort 2549262 512 ver: 5 of: 0 mapr: 0 mapw: 7442432 redr: 6778880 redw: 59285504 red_input 558345832 linecount: 17946 start 141211170203 mapend: 141211170237 end 141211170311
 =============
+=============
