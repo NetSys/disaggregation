@@ -1,0 +1,4 @@
+./spark-ec2 -k spark130823 -i ../../spark130823.pem -s 10 launch ddc-spark --zone us-east-1a
+
+./spark-ec2 -k spark130823 -i ../../spark130823.pem login ddc-spark
+
