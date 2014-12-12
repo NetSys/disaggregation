@@ -19,3 +19,4 @@ for i in {1..5}
       echo $output >> exp_log.txt
     done
   done
+
