@@ -1,14 +1,14 @@
 #rmems=( 1500686 1762830 2024974 2287118 2549262 2614798 2680334 2745870 2811406 )
 rmems=( 2549262 )
-input_size=( 512 1024 2048 3072 4096 5120 6144 7168 8192 9216 10240)
+input_size=( 10240 20480 30720 40960 51200 61440 71680 81920 92160)
 #input_size=( 4096 )
 
 echo ============= >> exp_log.txt
-for remote_mem in "${rmems[@]}"
+for i in {1..3}
 do
-  for size in "${input_size[@]}"
+  for remote_mem in "${rmems[@]}"
   do
-    for i in {1..1}
+    for size in "${input_size[@]}"
     do
       echo "==========================rmem: $remote_mem size: $size iter: $i ===================="
       ./exit_rmem.sh
