@@ -5,3 +5,4 @@
 *.ko
 pcm/
 rmem/.hadoop_info/
+rmem/_partition.lst
