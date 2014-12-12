@@ -5,7 +5,7 @@ input_size=( 64 128 256 512 1024 2048 3072 4096 5120 6144 7168 8192 9216 10240 )
 job="terasort"
 
 echo ============= >> exp_log.txt
-for i in {1..5}
+for i in {1..2}
 do
   for remote_mem in "${rmems[@]}"
   do
