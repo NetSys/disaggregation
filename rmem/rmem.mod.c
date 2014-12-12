@@ -45,10 +45,10 @@ __attribute__((section("__versions"))) = {
 	{ 0xaed84047, __VMLINUX_SYMBOL_STR(proc_create_data) },
 	{ 0xfa03f3e4, __VMLINUX_SYMBOL_STR(__blk_end_request_all) },
 	{ 0x27e1a049, __VMLINUX_SYMBOL_STR(printk) },
+	{ 0x4f68e5c9, __VMLINUX_SYMBOL_STR(do_gettimeofday) },
 	{ 0xcab3dd85, __VMLINUX_SYMBOL_STR(__blk_end_request_cur) },
 	{ 0x3a26ed11, __VMLINUX_SYMBOL_STR(sched_clock) },
 	{ 0x33b84f74, __VMLINUX_SYMBOL_STR(copy_page) },
-	{ 0x4f68e5c9, __VMLINUX_SYMBOL_STR(do_gettimeofday) },
 	{ 0xa8a9fcf8, __VMLINUX_SYMBOL_STR(blk_fetch_request) },
 	{ 0xda3e43d1, __VMLINUX_SYMBOL_STR(_raw_spin_unlock) },
 	{ 0xa05f372e, __VMLINUX_SYMBOL_STR(seq_printf) },
@@ -63,4 +63,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "A274366CA3DCC5BB5B16880");
+MODULE_INFO(srcversion, "FD52A8A02C7D0C2090E6F94");
