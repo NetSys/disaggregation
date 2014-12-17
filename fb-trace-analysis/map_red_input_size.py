@@ -11,7 +11,7 @@ import numpy as np
 
 
 def map_red_input_size(u):
-  print "map_red_input_size Version:", 23
+  print "map_red_input_size Version: !!!!!!Won't work in interactive mode!!!!!!!!!", 23
 
   large_reduce_count = 0
   large_reduce_with_large_map_count = 0

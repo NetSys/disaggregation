@@ -141,11 +141,12 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
     return;
   }
   std::string conf_filename(argv[2]);
+  //these are default values, will be rewritten by read_experiment_parameters()
+  params.num_hosts = 144;
+  params.num_agg_switches = 9;
+  params.num_core_switches = 4;
   read_experiment_parameters(conf_filename, exp_type);
-  params.num_hosts = 4;//144;
-  params.num_agg_switches = 4;//9;
-  params.num_core_switches = 1;//4;
-
+  std::cout << params.num_hosts << std::endl;
 
   if (params.cut_through == 1) {
     topology = new CutThroughTopology(params.num_hosts, params.num_agg_switches,
@@ -187,7 +188,11 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
     "\nQueueType " << params.queue_type <<
     "\nInit CWND " << params.initial_cwnd <<
     "\nMax CWND " << params.max_cwnd <<
-    "\nRtx Timeout " << params.retx_timeout_value << std::endl;
+    "\nRtx Timeout " << params.retx_timeout_value <<
+    "\nnum_hosts " << params.num_hosts <<
+    "\nnum_agg_switches " << params.num_agg_switches <<
+    "\nnum_core_switches " << params.num_core_switches <<
+    std::endl;
 
   run_scenario();
   // print statistics

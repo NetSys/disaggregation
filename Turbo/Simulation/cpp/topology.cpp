@@ -15,7 +15,8 @@ Topology::Topology() {}
  */
 PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
   uint32_t num_core_switches, double bandwidth,
-  uint32_t queue_type) : Topology () {
+  uint32_t queue_type) : Topology ()
+{
   uint32_t hosts_per_agg_switch = num_hosts / num_agg_switches;
   //std::cout << "\n\n" << hosts_per_agg_switch << "\n\n";
 
@@ -54,7 +55,7 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
       //std::cout << "Linking Agg " << i << " to Host" << i * 16 + j << "\n";
     }
     // Queues to Core
-    for (uint32_t j = 0; j < 4; j++) {
+    for (uint32_t j = 0; j < num_core_switches; j++) {
       Queue *q = agg_switches[i]->queues[j + 16];
       q->set_src_dst(agg_switches[i], core_switches[j]);
       //std::cout << "Linking Agg " << i << " to Core" << j << "\n";

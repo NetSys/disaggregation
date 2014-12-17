@@ -29,30 +29,38 @@ class FlowContainer:
                }
 
 
+# [ 0.01967356 -8.52998   ]
+# [  0.03868238  13.78928519]
+# [  0.05586794  14.14480377]
+# [  0.07081919  51.12987856]
 
 
 def get_map_read(input_bytes):
-  if input_bytes < 1024 * 1024 * 1024:
+  if input_bytes < 256 * 1024 * 1024:
     return 0
-  r = input_bytes * 1.83188930e-03 + 7.78490125e+06
+  #r = input_bytes * 1.83188930e-03 + 7.78490125e+06
+  r = input_bytes * 0.01967356 + -8.52998
   return max(r,0)#, 100 * 1024*1024)
 
 def get_map_write(input_bytes):
-  if input_bytes < 1024 * 1024 * 1024:
+  if input_bytes < 256 * 1024 * 1024:
     return 0
-  r = input_bytes * 2.44301455e-03 + 9.48375082e+06
+  #r = input_bytes * 2.44301455e-03 + 9.48375082e+06
+  r = input_bytes * 0.03868238+ 13.78928519
   return max(r,0)
 
 def get_reduce_read(input_bytes):
-  r = input_bytes * 2.59458115e-02 + -1.19961465e+06
+  #r = input_bytes * 2.59458115e-02 + -1.19961465e+06
+  r = input_bytes * 0.05586794 + 51.12987856
   return max(r,0)
 
 def get_reduce_write(input_bytes):
-  r = input_bytes * 8.42096985e-02 + -6.98675589e+06
+  #r = input_bytes * 8.42096985e-02 + -6.98675589e+06
+  r = input_bytes * 0.07081919 + 6.71848468e+07
   return max(r,0)
 
 def gen_flows_simple(u, d_disk, d_mem, hdfs_block_size_mb = 1):
-  print "gen_flows Version:", 23, "d_disk:", d_disk, "d_mem:", d_mem, "blk_sz:", hdfs_block_size_mb
+  print "gen_flows Version:", 26, "d_disk:", d_disk, "d_mem:", d_mem, "blk_sz:", hdfs_block_size_mb
 
   hdfs_block_size_mb_old = 128
   hdfs_block_size = int(1024*1024*hdfs_block_size_mb)
@@ -69,8 +77,8 @@ def gen_flows_simple(u, d_disk, d_mem, hdfs_block_size_mb = 1):
     #  continue
     for task in job.tasks.itervalues():
       count += 1
-      if task.map_input_bytes > 1 * 1024 * 1024 * 1024 or task.reduce_shuffle_bytes > 1 * 1024 * 1024 * 1024:
-        continue
+      #if task.map_input_bytes > 1 * 1024 * 1024 * 1024 or task.reduce_shuffle_bytes > 1 * 1024 * 1024 * 1024:
+      #  continue
       if float(count)/u.total_tasks > next_percent:
         print "Finished", next_percent, "(", count, "/", u.total_tasks, ") Flows added:", container.flow_count
         next_percent += 0.01
