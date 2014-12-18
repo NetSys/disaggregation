@@ -6,3 +6,5 @@
 pcm/
 rmem/.hadoop_info/
 rmem/_partition.lst
+Turbo/Simulation/cpp/simulator
+.idea/
