@@ -89,7 +89,7 @@ FlowFinishedEvent::FlowFinishedEvent(double time, Flow *flow) :
 FlowFinishedEvent::~FlowFinishedEvent() {
 }
 void FlowFinishedEvent::process_event() {
-	std::cout << flow->id << " " << flow->size << " " << flow->src->id << " "
+	std::cout << "FlowFinishedEvent::process_event():" << flow->id << " " << flow->size << " " << flow->src->id << " "
 			<< flow->dst->id << " " << 1000000 * flow->start_time << " "
 			<< 1000000 * flow->finish_time << " "
 			<< 1000000.0 * flow->flow_completion_time << " "
@@ -261,7 +261,7 @@ void LoggingEvent::process_event() {
 			}
 		}
 	}
-	std::cerr << current_time * 1000000.0 << " MaxPacketOutstanding "
+	std::cerr << "LoggingEvent::process_event():" << current_time * 1000000.0 << " MaxPacketOutstanding "
 			<< max_outstanding_packets << " NumPacketOutstanding "
 			<< num_outstanding_packets << " NumUnfinishedFlows "
 			<< num_unfinished_flows << " StartedFlows " << started_flows

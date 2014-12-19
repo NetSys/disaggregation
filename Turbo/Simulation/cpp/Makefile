@@ -4,8 +4,8 @@ CFLAGS=-g -O3 -Wall
 
 all: simulator
 
-simulator: main.o node.o queue.o turboqueue.o flow.o pacedflow.o turboflow.o turboflow_perpkt.o packet.o event.o topology.o simpletopology.o params.o factory.o random_variable.o singlelinkexperiment.o pfabricexperiment.o continuousModelExperiment.o 
-	$(CC) $(CFLAGS) -Wall main.o node.o queue.o turboqueue.o flow.o pacedflow.o turboflow.o turboflow_perpkt.o packet.o event.o topology.o simpletopology.o params.o factory.o random_variable.o singlelinkexperiment.o pfabricexperiment.o continuousModelExperiment.o -o simulator
+simulator: main.o node.o queue.o turboqueue.o flow.o pacedflow.o turboflow.o turboflow_perpkt.o packet.o event.o topology.o simpletopology.o params.o factory.o random_variable.o singlelinkexperiment.o pfabricexperiment.o continuousModelExperiment.o fastpq.o
+	$(CC) $(CFLAGS) -Wall main.o node.o queue.o turboqueue.o flow.o pacedflow.o turboflow.o turboflow_perpkt.o packet.o event.o topology.o simpletopology.o params.o factory.o random_variable.o singlelinkexperiment.o pfabricexperiment.o continuousModelExperiment.o fastpq.o -o simulator
 
 params.o: params.cpp
 	$(CC) $(CFLAGS) -c -Wall params.cpp
@@ -53,6 +53,9 @@ random_variable.o: random_variable.cpp
 
 factory.o: factory.cpp
 	$(CC) $(CFLAGS) -c -Wall factory.cpp
+	
+fastpq.o: fastpq.cpp
+	$(CC) $(CFLAGS) -c -Wall fastpq.cpp
 
 clean:
 	rm -rf *o simulator

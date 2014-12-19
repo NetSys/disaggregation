@@ -96,7 +96,7 @@ void run_scenario() {
       start_time = current_time;
     }
     //event_queue.pop();
-    std::cout << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
+    std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
       delete ev; //TODO: Smarter
       continue;
