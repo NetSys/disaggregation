@@ -156,7 +156,7 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
   read_experiment_parameters(conf_filename, exp_type);
   params.num_hosts = 144;
   params.num_agg_switches = 9;
-  params.num_core_switches = 4;
+  params.num_core_switches = 1;
 
 
   if (params.cut_through == 1) {

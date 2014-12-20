@@ -6,6 +6,7 @@
 #include <deque>
 #include <stdint.h>
 #include <math.h>
+#include <assert.h>
 
 #include "random_variable.h"
 
@@ -91,6 +92,7 @@ int EmpiricalRandomVariable::lookup(double u) {
 int EmpiricalRandomVariable::loadCDF(std::string filename) {
   std::string line;
   std::ifstream myfile(filename);
+  assert(myfile.good());
   numEntry_ = 0;
   while (std::getline(myfile, line))
 	{

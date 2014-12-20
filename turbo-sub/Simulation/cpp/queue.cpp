@@ -86,12 +86,12 @@ void PFabricQueue::enque(Packet *packet) {
     bytes_in_queue -= packets[worst_index]->size;
     Packet *worst_packet = packets[worst_index];
     bool isLL = false;
-    if (worst_packet->size() < 5000) { //small flow
+    if (worst_packet->size < 5000) { //small flow
       this->dropss += 1;
     }
     else {
       for (uint32_t i = 0; i < packets.size(); i++) {
-        if (packets[i]->size() > 5000) {
+        if (packets[i]->size > 5000) {
           this->dropll += 1;
           isLL = true;
           break;

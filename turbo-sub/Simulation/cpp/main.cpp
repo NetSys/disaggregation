@@ -131,4 +131,5 @@ int main (int argc, char ** argv) {
       run_nto1_experiment(argc, argv);
       break;
   }
+  cout << "Simulator ended.\n";
 }
