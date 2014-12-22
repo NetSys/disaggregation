@@ -4,6 +4,7 @@
 #include "params.h"
 #include <iostream>
 #include "assert.h"
+#include <math.h>
 
 extern double get_current_time(); // TODOm
 extern void add_to_event_queue(Event *);
@@ -281,3 +282,59 @@ void PFabricFlowNoSlowStart::handle_timeout() {
   send_pending_data(); //TODO Send again
   set_timeout(get_current_time() + retx_timeout);  // TODO
 }
+
+
+FountainFlow::FountainFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy)
+  : Flow(id, start_time, size, s, d) {
+  transmission_delay = this->src->queue->get_transmission_delay(mss + hdr_size);
+  received_count = 0;
+  min_recv = (int)ceil((size/mss) * redundancy);
+}
+
+void FountainFlow::send_pending_data() {
+  if (!this->finished) {
+    send(next_seq_no);
+    next_seq_no += mss;
+
+    add_to_event_queue(new FlowProcessingEvent(get_current_time() + transmission_delay ,this));
+  }
+}
+
+
+
+void FountainFlow::receive(Packet *p) {
+  if (!finished) {
+    if (p->type == ACK_PACKET) {
+      finished = true;
+      finish_time = get_current_time();
+      flow_completion_time = finish_time - start_time;
+      FlowFinishedEvent *ev = new FlowFinishedEvent(get_current_time(), this);
+      add_to_event_queue(ev);
+    }else{
+      received_count++;
+      num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+      if(received_count >= min_recv){
+        send_ack(0, dummySack);
+      }
+    }
+
+  }
+  delete p;
+  return;
+}
+
+
+Packet *FountainFlow::send(uint32_t seq)
+{
+  Packet *p = NULL;
+
+  //uint32_t priority = seq > size?0:size - seq;
+  uint32_t priority = 1;
+  p = new Packet(get_current_time(), this, seq, \
+                 priority, mss + hdr_size, \
+                 src, dst);
+
+  add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, src->queue));
+  return p;
+}
+

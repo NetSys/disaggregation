@@ -71,10 +71,8 @@ void generate_flows_to_schedule(std::string filename, uint32_t num_flows,
   double lambda_per_host = lambda / (topo->hosts.size() - 1);
   std::cout << "Lambda: " << lambda_per_host << std::endl;
 
-  EmpiricalRandomVariable *nv_bytes =
-    new EmpiricalRandomVariable(filename);
-  ExponentialRandomVariable *nv_intarr =
-    new ExponentialRandomVariable(1.0 / lambda_per_host);
+  EmpiricalRandomVariable *nv_bytes =  new EmpiricalRandomVariable(filename);
+  ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_host);
   //* [expr ($link_rate*$load*1000000000)/($meanFlowSize*8.0/1460*1500)]
   for (uint32_t i = 0; i < topo->hosts.size(); i++) {
     for (uint32_t j = 0; j < topo->hosts.size(); j++) {
@@ -156,7 +154,7 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
   read_experiment_parameters(conf_filename, exp_type);
   params.num_hosts = 144;
   params.num_agg_switches = 9;
-  params.num_core_switches = 1;
+  params.num_core_switches = 4;
 
 
   if (params.cut_through == 1) {
@@ -199,7 +197,9 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
     "\nQueueType " << params.queue_type <<
     "\nInit CWND " << params.initial_cwnd <<
     "\nMax CWND " << params.max_cwnd <<
-    "\nRtx Timeout " << params.retx_timeout_value << std::endl;
+    "\nRtx Timeout " << params.retx_timeout_value  <<
+    "\nload_balancing (0: pkt)" << params.load_balancing <<
+    std::endl;
 
   run_scenario();
   // print statistics

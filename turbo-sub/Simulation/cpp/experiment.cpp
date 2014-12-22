@@ -174,10 +174,10 @@ void PFabricExperiment::printQueueStatistics(PFabricTopology *topo) {
   std::cout
     << "DeadPackets "
     << 100.0 * (dead_bytes/total_bytes)
-    << " DuplicatedPackets "
+    << "% DuplicatedPackets "
     << 100.0 * duplicated_packets_received * 1460.0 / total_bytes
-    << " Utilization "
-    << utilization / 1000000000 << std::endl;
+    << "% Utilization "
+    << utilization / 1000000000 << "%\n";
 }
 
 void PFabricExperiment::run_experiment(

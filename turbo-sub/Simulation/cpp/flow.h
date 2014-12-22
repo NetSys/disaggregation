@@ -82,4 +82,18 @@ public:
   virtual void handle_timeout();
 };
 
+class FountainFlow : public  Flow {
+private:
+  double transmission_delay;
+  int received_count;
+  int min_recv;
+  std::vector<uint32_t> dummySack;
+
+public:
+	FountainFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy);
+	virtual void send_pending_data();
+  virtual void receive(Packet *);
+  virtual Packet* send(uint32_t seq);
+};
+
 #endif

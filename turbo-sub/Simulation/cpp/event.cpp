@@ -97,17 +97,18 @@ FlowFinishedEvent::FlowFinishedEvent(double time, Flow *flow)
 FlowFinishedEvent::~FlowFinishedEvent() {
 }
 void FlowFinishedEvent::process_event() {
-  std::cout
-    << flow->id << " "
-    << flow->size << " "
-    << flow->src->id << " "
-    << flow->dst->id << " "
-    << 1000000 * flow->start_time << " "
-    << 1000000 * flow->finish_time << " "
-    << 1000000.0 * flow->flow_completion_time << " "
-    << topology->get_oracle_fct(flow) << " "
-    << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow)
-    << std::endl;
+//  std::cout
+//    << "event.cpp::FlowFinishedEvent(): "
+//    << "id:" << flow->id << " "
+//    << "sz:" << flow->size << " "
+//    << "src:" << flow->src->id << " "
+//    << "dst:" << flow->dst->id << " "
+//    << "strt:" << 1000000 * flow->start_time << " "
+//    << "end:" << 1000000 * flow->finish_time << " "
+//    << "fct:" << 1000000.0 * flow->flow_completion_time << " "
+//    << "orcl:" << topology->get_oracle_fct(flow) << " "
+//    << "rate:" << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow)
+//    << std::endl;
 }
 
 
@@ -209,6 +210,7 @@ FlowCreationForInitializationEvent::FlowCreationForInitializationEvent(
   this->nv_bytes = nv_bytes;
   this->nv_intarr = nv_intarr;
 }
+
 FlowCreationForInitializationEvent::~FlowCreationForInitializationEvent() {
 }
 void FlowCreationForInitializationEvent::process_event() {
@@ -216,8 +218,8 @@ void FlowCreationForInitializationEvent::process_event() {
   uint32_t size = nv_bytes->value() * 1460;
   flows_to_schedule.push_back(Factory::get_flow(id, time, size,
                                                 src, dst, params.flow_type));
-  std::cout << 1000000.0 * time << " Generating new flow " << id << " of size "
-   << size << " between " << src->id << " " << dst->id << "\n";
+  //std::cout << "event.cpp::FlowCreation:" << 1000000.0 * time << " Generating new flow " << id << " of size "
+  // << size << " between " << src->id << " " << dst->id << "\n";
 
   double tnext = time + nv_intarr->value();
   add_to_event_queue(new FlowCreationForInitializationEvent(tnext,
@@ -280,7 +282,7 @@ void LoggingEvent::process_event() {
       }
     }
   }
-  std::cerr << current_time*1000000.0
+  std::cout << current_time*1000000.0
     << " MaxPacketOutstanding " << max_outstanding_packets
     << " NumPacketOutstanding " << num_outstanding_packets
     << " NumUnfinishedFlows " << num_unfinished_flows

@@ -19,6 +19,10 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
   uint32_t hosts_per_agg_switch = num_hosts / num_agg_switches;
   //std::cout << "\n\n" << hosts_per_agg_switch << "\n\n";
 
+  this->num_hosts = num_hosts;
+  this->num_agg_switches = num_agg_switches;
+  this->num_core_switches = num_core_switches;
+
   //Capacities
   double c1 = bandwidth;
   double c2 = hosts_per_agg_switch * bandwidth / num_core_switches;
@@ -84,8 +88,11 @@ Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
     if (p->src->id / 16 == p->dst->id / 16) {
       return ((Switch *) q->dst)->queues[p->dst->id % 16];
     } else {
-      //uint32_t hash_port = (p->src->id + p->dst->id) % 4;
-      uint32_t hash_port = rand() % 4;
+      uint32_t hash_port;
+      if(params.load_balancing == 0)
+        hash_port = rand() % 4;
+      else if(params.load_balancing == 1)
+        hash_port = (p->src->id + p->dst->id + p->flow->id) % 4;
       return ((Switch *) q->dst)->queues[16 + hash_port];
     }
   }
@@ -119,7 +126,7 @@ double PFabricTopology::get_oracle_fct(Flow *f) {
                                * 8.0 / bandwidth;
   if (num_hops == 4) {
     //1 packet and 1 ack
-    transmission_delay += 2 * (params.mss + 2*params.hdr_size) * 8.0 / (4 * bandwidth);
+    transmission_delay += 2 * (params.mss + 2*params.hdr_size) * 8.0 / (4 * bandwidth);  //TODO: 4 * bw is not right.
   }
   //std::cout << "pd: " << propagation_delay << " td: " << transmission_delay << std::endl;
   return (propagation_delay + transmission_delay); //us

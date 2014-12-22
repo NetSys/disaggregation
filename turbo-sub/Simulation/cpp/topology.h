@@ -27,6 +27,10 @@ public:
   virtual Queue *get_next_hop(Packet *p, Queue *q);
   virtual double get_oracle_fct(Flow* f);
 
+  uint32_t num_hosts;
+  uint32_t num_agg_switches;
+  uint32_t num_core_switches;
+
   std::vector<Host *> hosts;
   std::vector<AggSwitch *> agg_switches;
   std::vector<CoreSwitch *> core_switches;

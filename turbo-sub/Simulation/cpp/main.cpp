@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <deque>
 #include <stdint.h>
+#include <time.h>
 
 #include "flow.h"
 #include "turboflow.h"
@@ -34,7 +35,7 @@ uint32_t num_outstanding_packets;
 uint32_t max_outstanding_packets;
 
 extern DCExpParams params;
-extern double get_current_time(); // TODOm
+extern double get_current_time(); // TODO
 extern void add_to_event_queue(Event *);
 extern int get_event_queue_size();
 uint32_t duplicated_packets_received = 0;
@@ -65,6 +66,9 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
   input >> temp; input >> params.cdf_or_flow_trace;
   input >> temp; input >> params.cut_through;
   input >> temp; input >> params.mean_flow_size;
+  input >> temp; input >> params.load_balancing;
+
+
 
   params.hdr_size = 40;
   params.mss = 1460;
@@ -86,7 +90,8 @@ void run_scenario() {
     if (start_time < 0) {
       start_time = current_time;
     }
-    //event_queue.pop();    //std::cout << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
+    //event_queue.pop();
+    //std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
       delete ev; //TODO: Smarter
       continue;
@@ -105,6 +110,9 @@ extern void run_single_sender_receiver_exp(int argc, char ** argv);
 extern void run_nto1_experiment(int argc, char ** argv);
 
 int main (int argc, char ** argv) {
+  time_t start_time;
+  time(&start_time);
+
   //srand(time(NULL));
   srand(0);
   std::cout.precision(15);
@@ -131,5 +139,9 @@ int main (int argc, char ** argv) {
       run_nto1_experiment(argc, argv);
       break;
   }
-  cout << "Simulator ended.\n";
+
+  time_t end_time;
+  time(&end_time);
+  double duration = difftime(end_time, start_time);
+  cout << "Simulator ended. Execution time: " << duration << " seconds\n";
 }

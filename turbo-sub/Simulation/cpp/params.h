@@ -12,6 +12,7 @@ struct DCExpParams {
   int queue_size;
   int queue_type;
   int flow_type;
+  int load_balancing; //0 per pkt, 1 per flow
 
   double propagation_delay;
   double bandwidth;
