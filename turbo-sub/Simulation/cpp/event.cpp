@@ -107,7 +107,8 @@ void FlowFinishedEvent::process_event() {
 //    << "end:" << 1000000 * flow->finish_time << " "
 //    << "fct:" << 1000000.0 * flow->flow_completion_time << " "
 //    << "orcl:" << topology->get_oracle_fct(flow) << " "
-//    << "rate:" << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow)
+//    << "rate:" << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
+//    << "infl:" << flow->total_pkt_sent << "/" << (flow->size/flow->mss)
 //    << std::endl;
 }
 
@@ -289,6 +290,6 @@ void LoggingEvent::process_event() {
     << " StartedFlows " << started_flows << "\n";
 
   if (!finished_simulation) {
-    add_to_event_queue(new LoggingEvent(current_time + 0.01));
+    add_to_event_queue(new LoggingEvent(current_time + 0.1));
   }
 }

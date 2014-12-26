@@ -58,6 +58,8 @@ public:
   double retx_timeout;
   uint32_t mss;
   uint32_t hdr_size;
+  uint32_t total_pkt_sent;
+  int size_in_pkt;
 
   // Sack
   uint32_t scoreboard_sack_bytes;
@@ -87,7 +89,9 @@ private:
   double transmission_delay;
   int received_count;
   int min_recv;
+  int bytes_acked;
   std::vector<uint32_t> dummySack;
+
 
 public:
 	FountainFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy);

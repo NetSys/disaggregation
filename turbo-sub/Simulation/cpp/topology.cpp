@@ -88,7 +88,7 @@ Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
     if (p->src->id / 16 == p->dst->id / 16) {
       return ((Switch *) q->dst)->queues[p->dst->id % 16];
     } else {
-      uint32_t hash_port;
+      uint32_t hash_port = 0;
       if(params.load_balancing == 0)
         hash_port = rand() % 4;
       else if(params.load_balancing == 1)

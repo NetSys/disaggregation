@@ -41,6 +41,8 @@ Flow::Flow(uint32_t id, double start_time, uint32_t size,
   this->retx_timeout = params.retx_timeout_value;
   this->mss = params.mss;
   this->hdr_size = params.hdr_size;
+  this->total_pkt_sent = 0;
+  this->size_in_pkt = (int)ceil((double)size/mss);
 
 
 }
@@ -84,6 +86,7 @@ Packet *Flow::send(uint32_t seq)
   p = new Packet(get_current_time(), this, seq, \
                  priority, mss + hdr_size, \
                  src, dst);
+  this->total_pkt_sent++;
 
   add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, src->queue));
   return p;
@@ -288,13 +291,22 @@ FountainFlow::FountainFlow(uint32_t id, double start_time, uint32_t size, Host *
   : Flow(id, start_time, size, s, d) {
   transmission_delay = this->src->queue->get_transmission_delay(mss + hdr_size);
   received_count = 0;
-  min_recv = (int)ceil((size/mss) * redundancy);
+  min_recv = (int)ceil(size_in_pkt * redundancy);
+  bytes_acked = 0;
 }
+
 
 void FountainFlow::send_pending_data() {
   if (!this->finished) {
     send(next_seq_no);
     next_seq_no += mss;
+    total_pkt_sent++;
+
+//    //add a round trip time before sending parity
+//    if (total_pkt_sent == min_recv){
+//      add_to_event_queue(new FlowProcessingEvent(get_current_time() + 0.0000112 ,this));
+//      return;
+//    }
 
     add_to_event_queue(new FlowProcessingEvent(get_current_time() + transmission_delay ,this));
   }
@@ -305,17 +317,25 @@ void FountainFlow::send_pending_data() {
 void FountainFlow::receive(Packet *p) {
   if (!finished) {
     if (p->type == ACK_PACKET) {
-      finished = true;
-      finish_time = get_current_time();
-      flow_completion_time = finish_time - start_time;
-      FlowFinishedEvent *ev = new FlowFinishedEvent(get_current_time(), this);
-      add_to_event_queue(ev);
+//      Ack *a = (Ack *) p;
+//      if(a->seq_no == 0){//flow finished
+        finished = true;
+        finish_time = get_current_time();
+        flow_completion_time = finish_time - start_time;
+        FlowFinishedEvent *ev = new FlowFinishedEvent(get_current_time(), this);
+        add_to_event_queue(ev);
+//      }else{
+//        bytes_acked = a->seq_no;
+//      }
     }else{
       received_count++;
       num_outstanding_packets -= ((p->size - hdr_size) / (mss));
       if(received_count >= min_recv){
         send_ack(0, dummySack);
       }
+//      else{
+//        send_ack(received_count * mss, dummySack);
+//      }
     }
 
   }
@@ -328,8 +348,12 @@ Packet *FountainFlow::send(uint32_t seq)
 {
   Packet *p = NULL;
 
-  //uint32_t priority = seq > size?0:size - seq;
-  uint32_t priority = 1;
+  uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
+  //uint32_t priority = 2147483648 + min_recv * mss - bytes_acked ;
+  //uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
+  //uint32_t priority = 1;
+  //std::cout << "FountainFlow::send: Flow:" << this->id << " seq:" << seq << " sz:" << size << " pri:" << priority << "\n";
+  //uint32_t priority = 1;
   p = new Packet(get_current_time(), this, seq, \
                  priority, mss + hdr_size, \
                  src, dst);

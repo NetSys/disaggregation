@@ -134,9 +134,9 @@ void printQueueStatistics(PFabricTopology *topo) {
   double utilization = (totalSentFromHosts * 8.0 / 144.0) / simulation_time;
 
   std::cout << "DeadPackets " << 100.0 * (dead_bytes/total_bytes)
-    << " DuplicatedPackets "
+    << "% DuplicatedPackets "
     << 100.0 * duplicated_packets_received * 1460.0 / total_bytes
-    << " Utilization " << utilization / 1000000000 << std::endl;
+    << "% Utilization " << utilization / 10000000000 * 100 << "%\n";
   std::cout 
       << "Drops SS " << drop_ss 
       << " SL " << drop_sl 
@@ -159,10 +159,10 @@ void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type) {
 
   if (params.cut_through == 1) {
     topology = new CutThroughTopology(params.num_hosts, params.num_agg_switches,
-      params.num_core_switches, params.bandwidth, params.queue_type);
+    params.num_core_switches, params.bandwidth, params.queue_type);
   } else {
     topology = new PFabricTopology(params.num_hosts, params.num_agg_switches,
-      params.num_core_switches, params.bandwidth, params.queue_type);
+    params.num_core_switches, params.bandwidth, params.queue_type);
   }
 
 

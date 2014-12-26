@@ -124,25 +124,30 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time + 0.01));
 
   std::cout << "Running " << num_flows << " Flows\nCDF_File " <<
-  params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
-  "\nQueueSize " << params.queue_size <<
-  "\nCutThrough " << params.cut_through <<
-  "\nFlowType " << params.flow_type <<
-  "\nQueueType " << params.queue_type <<
-  "\nInit CWND " << params.initial_cwnd <<
-  "\nMax CWND " << params.max_cwnd <<
-  "\nRtx Timeout " << params.retx_timeout_value << std::endl;
+    params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
+    "\nQueueSize " << params.queue_size <<
+    "\nCutThrough " << params.cut_through <<
+    "\nFlowType " << params.flow_type <<
+    "\nQueueType " << params.queue_type <<
+    "\nInit CWND " << params.initial_cwnd <<
+    "\nMax CWND " << params.max_cwnd <<
+    "\nRtx Timeout " << params.retx_timeout_value  <<
+    "\nload_balancing (0: pkt)" << params.load_balancing <<
+    std::endl;
 
   run_scenario();
   // print statistics
-  double sum = 0, sum_norm = 0;
+  double sum = 0, sum_norm = 0, sum_inflation = 0;
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
     sum += 1000000.0 * f->flow_completion_time;
     sum_norm += 1000000.0 * f->flow_completion_time /
       topology->get_oracle_fct(f);
+    sum_inflation += (double)f->total_pkt_sent / (f->size/f->mss);
   }
   std::cout << "AverageFCT " << sum / flows_sorted.size() <<
-  " MeanSlowdown " << sum_norm / flows_sorted.size() << "\n";
+  " MeanSlowdown " << sum_norm / flows_sorted.size() <<
+  " MeanInflation " << sum_inflation / flows_sorted.size() <<
+  "\n";
   printQueueStatistics(topo);
 }
