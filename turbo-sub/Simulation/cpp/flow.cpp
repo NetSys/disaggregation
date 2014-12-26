@@ -348,9 +348,9 @@ Packet *FountainFlow::send(uint32_t seq)
 {
   Packet *p = NULL;
 
-  uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
+  //uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
   //uint32_t priority = 2147483648 + min_recv * mss - bytes_acked ;
-  //uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
+  uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
   //uint32_t priority = 1;
   //std::cout << "FountainFlow::send: Flow:" << this->id << " seq:" << seq << " sz:" << size << " pri:" << priority << "\n";
   //uint32_t priority = 1;
