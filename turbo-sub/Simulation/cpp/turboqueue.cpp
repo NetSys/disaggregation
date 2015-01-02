@@ -11,8 +11,8 @@ extern void add_to_event_queue(Event *ev);
 extern DCExpParams params;
 
 /* Turbo Queue */
-TurboQueue::TurboQueue(uint32_t id, double rate, uint32_t limit_bytes)
- : Queue(id, rate, limit_bytes) {
+TurboQueue::TurboQueue(uint32_t id, double rate, uint32_t limit_bytes, int location)
+ : Queue(id, rate, limit_bytes, location) {
    interested = false;
 }
 void TurboQueue::enque(Packet *packet) {
@@ -55,6 +55,7 @@ void TurboQueue::enque(Packet *packet) {
 
     // if (interested) std::cout << 1e6*get_current_time() << " Drop Happened " << worst_packet->flow->id << " " << worst_packet->seq_no << "\n";
 
+    pkt_drop++;
     drop(worst_packet);
 
   }

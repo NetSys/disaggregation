@@ -8,7 +8,7 @@
 
 class TurboQueue: public Queue {
 public:
-  TurboQueue(uint32_t id, double rate, uint32_t limit_bytes);
+  TurboQueue(uint32_t id, double rate, uint32_t limit_bytes, int location);
   virtual void enque(Packet *packet);
   Packet *deque();
 };

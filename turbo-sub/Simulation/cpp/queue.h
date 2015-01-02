@@ -15,7 +15,7 @@ class PacketPropagationEvent;
 
 class Queue {
 public:
-  Queue(uint32_t id, double rate, uint32_t limit_bytes);
+  Queue(uint32_t id, double rate, uint32_t limit_bytes, int location);
   void set_src_dst(Node *src, Node *dst);
   virtual void enque(Packet *packet);
   virtual Packet *deque();
@@ -42,12 +42,15 @@ public:
   bool interested;
 
   uint64_t dropss; uint64_t dropsl; uint64_t dropll;
+  uint64_t pkt_drop;
+
+  int location;
 };
 
 
 class PFabricQueue : public Queue {
 public:
-  PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes);
+  PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes, int location);
   void enque(Packet *packet);
   Packet *deque();
 };
@@ -56,7 +59,7 @@ public:
 class ProbDropQueue : public Queue {
   public:
     ProbDropQueue(uint32_t id, double rate, uint32_t limit_bytes,
-                  double drop_prob);
+                  double drop_prob, int location);
     virtual void enque(Packet *packet);
 
     double drop_prob;

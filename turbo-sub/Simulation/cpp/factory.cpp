@@ -3,17 +3,17 @@
 /* Factory method to return appropriate queue */
 Queue* Factory::get_queue(uint32_t id, double rate,
                         uint32_t queue_size, uint32_t type,
-                        double drop_prob) { // Default drop_prob is 0.0
+                        double drop_prob, int location) { // Default drop_prob is 0.0
 
   switch(type) {
     case DROPTAIL_QUEUE:
-      return new Queue(id, rate, queue_size);
+      return new Queue(id, rate, queue_size, location);
     case PFABRIC_QUEUE:
-      return new PFabricQueue(id, rate, queue_size);
+      return new PFabricQueue(id, rate, queue_size, location);
     case PROB_DROP_QUEUE:
-      return new ProbDropQueue(id, rate, queue_size, drop_prob);
+      return new ProbDropQueue(id, rate, queue_size, drop_prob, location);
     case TURBO_QUEUE:
-      return new TurboQueue(id, rate, queue_size);
+      return new TurboQueue(id, rate, queue_size, location);
   }
   assert(false);
   return NULL;

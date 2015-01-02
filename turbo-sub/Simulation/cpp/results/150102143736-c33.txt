@@ -1,7 +1,7 @@
 ======================Cmd:======================
 6 ./experiments/pfabric_experiments/conf_test.txt
 ======================Comment:======================
-redun 0.05
+100k flow, no priority
 ======================Config:======================
 init_cwnd: 4
 max_cwnd: 7
@@ -12,14 +12,14 @@ bandwidth: 10000000000.0
 queue_type: 2
 flow_type: 100
 num_flow: 100000
-flow_trace: experiments/CDF_ddc.txt
+flow_trace: experiments/CDF_test.txt
 cut_through: 0
 mean_flow_size: 195357
 load_balancing: 0
 ======================Output:======================
 Lambda: 34.8414789668494
 Running 100000 Flows
-CDF_File experiments/CDF_ddc.txt
+CDF_File experiments/CDF_test.txt
 Bandwidth 10
 QueueSize 6200
 CutThrough 0
@@ -29,5 +29,4 @@ Init CWND 4
 Max CWND 7
 Rtx Timeout 9.5e-06
 load_balancing (0: pkt)0
-1010000.18451973 MaxPacketOutstanding 950553 NumPacketOutstanding 950147 NumUnfinishedFlows 4263 StartedFlows 7140
-1110000.18451973 MaxPacketOutstanding 10579074 NumPacketOutstanding 10578882 NumUnfinishedFlows 51927 StartedFlows 78771
+1010000.18451973 MaxPacketOutstanding 574551 NumPacketOutstanding 573627 NumUnfinishedFlows 2630 StartedFlows 7140

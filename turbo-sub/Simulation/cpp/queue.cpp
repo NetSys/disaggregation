@@ -11,7 +11,7 @@ extern void add_to_event_queue(Event *ev);
 extern DCExpParams params;
 
 /* Queues */
-Queue::Queue(uint32_t id, double rate, uint32_t limit_bytes) {
+Queue::Queue(uint32_t id, double rate, uint32_t limit_bytes, int location) {
   this->id = id;
   this->rate = rate; // in bps
   this->limit_bytes = limit_bytes;
@@ -19,12 +19,14 @@ Queue::Queue(uint32_t id, double rate, uint32_t limit_bytes) {
   this->busy = false;
   this->queue_proc_event = NULL;
   //this->packet_propagation_event = NULL;
+  this->location = location;
 
   this->propagation_delay = params.propagation_delay;
   this->p_arrivals = 0; this->p_departures = 0;
   this->b_arrivals = 0; this->b_departures = 0;
 
   this->dropss = 0; this->dropsl = 0; this->dropll = 0;
+  this->pkt_drop = 0;
 }
 
 void Queue::set_src_dst(Node *src, Node *dst) {
@@ -39,6 +41,7 @@ void Queue::enque(Packet *packet) {
     packets.push_back(packet);
     bytes_in_queue += packet->size;
   } else {
+    pkt_drop++;
     drop(packet);
   }
 }
@@ -65,8 +68,8 @@ double Queue::get_transmission_delay(uint32_t size) {
 
 
 /* PFabric Queue */
-PFabricQueue::PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes)
- : Queue(id, rate, limit_bytes) {
+PFabricQueue::PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes, int location)
+ : Queue(id, rate, limit_bytes, location) {
 }
 
 void PFabricQueue::enque(Packet *packet) {
@@ -100,9 +103,11 @@ void PFabricQueue::enque(Packet *packet) {
       if (!isLL) this->dropsl += 1;
     }
     packets.erase(packets.begin() + worst_index);
+    pkt_drop++;
     drop(worst_packet);
   }
 }
+
 
 Packet * PFabricQueue::deque() {
   if (bytes_in_queue > 0) {
@@ -141,8 +146,8 @@ Packet * PFabricQueue::deque() {
 
 /* Implementation for probabilistically dropping queue */
 ProbDropQueue::ProbDropQueue(uint32_t id, double rate, uint32_t limit_bytes,
-  double drop_prob)
-  : Queue(id, rate, limit_bytes) {
+  double drop_prob, int location)
+  : Queue(id, rate, limit_bytes, location) {
   this->drop_prob = drop_prob;
 }
 

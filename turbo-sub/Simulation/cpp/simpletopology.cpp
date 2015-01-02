@@ -14,7 +14,7 @@ SingleLinkTopology::SingleLinkTopology(double bandwidth, double drop_prob) {
 
   // Modify the queue
   src->queue = Factory::get_queue(0, bandwidth, params.queue_size,
-                                  PROB_DROP_QUEUE, drop_prob);
+                                  PROB_DROP_QUEUE, drop_prob, 0);
 
   // Create the link
   src->queue->set_src_dst(src, dst);
@@ -51,7 +51,7 @@ SingleSenderReceiverTopology::SingleSenderReceiverTopology(
 
   // Modify the second queue of the switch to drop packets
   sw->queues[1] = Factory::get_queue(0, bandwidth, params.queue_size,
-                                     PROB_DROP_QUEUE, drop_prob);
+                                     PROB_DROP_QUEUE, drop_prob, 0);
 
   // Create the link
   src->queue->set_src_dst(src, sw);

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <deque>
 #include <stdint.h>
+#include <iomanip>
 
 #include "flow.h"
 #include "turboflow.h"
@@ -103,6 +104,46 @@ void printQueueStatistics(PFabricTopology *topo) {
   
   uint64_t drop_ss = 0; uint64_t drop_sl = 0; uint64_t drop_ll = 0;
   
+
+
+
+
+  uint64_t dropAt[4];
+  uint64_t total_drop = 0;
+  for(uint i = 0; i < 4; i++)
+    dropAt[i] = 0;
+
+  for(uint i = 0; i < topo->hosts.size(); i++){
+    int location = topo->hosts[i]->queue->location;
+    dropAt[location] += topo->hosts[i]->queue->pkt_drop;
+  }
+
+  for(uint i = 0; i < topo->agg_switches.size(); i++){
+    for(uint j = 0; j < topo->agg_switches[i]->queues.size(); j++){
+      int location = topo->agg_switches[i]->queues[j]->location;
+      dropAt[location] += topo->agg_switches[i]->queues[j]->pkt_drop;
+    }
+  }
+
+  for(uint i = 0; i< topo->core_switches.size(); i++){
+    for (uint j = 0; j < topo->core_switches[i]->queues.size(); j++){
+      int location = topo->core_switches[i]->queues[j]->location;
+      dropAt[location] += topo->core_switches[i]->queues[j]->pkt_drop;
+    }
+  }
+
+  for(int i = 0; i < 4; i++)
+    total_drop += dropAt[i];
+  for(int i = 0; i < 4; i++){
+    std::cout << "Loc:" << i << " Prob:" << std::setprecision(2) << (double)dropAt[i]/total_drop << " ";
+  }
+  std::cout << "\n";
+
+
+
+
+
+
   for (std::vector<Host*>::iterator h = (topo->hosts).begin(); h != (topo->hosts).end(); h++) {
     totalSentFromHosts += (*h)->queue->b_departures;
   }

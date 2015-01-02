@@ -10,4 +10,4 @@ num_flow: 100000
 flow_trace: experiments/CDF_test.txt
 cut_through: 0
 mean_flow_size: 195357
-load_balancing: 2
+load_balancing: 0

@@ -40,7 +40,7 @@ public:
                         double paced_rate = 0.0);
   static Queue *get_queue(uint32_t id, double rate,
                           uint32_t queue_size, uint32_t type,
-                          double drop_prob = 0);
+                          double drop_prob, int location);
 };
 
 #endif
