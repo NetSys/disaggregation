@@ -72,7 +72,7 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
       break;
     */
     case FOUNTAIN_FLOW:
-      return new FountainFlow(id, start_time, size, src, dst, 1.01);
+      return new FountainFlow(id, start_time, size, src, dst, 1.00);
       break;
   }
   assert(false);

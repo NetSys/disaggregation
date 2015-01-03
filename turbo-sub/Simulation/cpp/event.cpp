@@ -119,8 +119,10 @@ PacketQueuingEvent::PacketQueuingEvent(double time, Packet *packet,
   this->packet = packet;
   this->queue = queue;
 }
+
 PacketQueuingEvent::~PacketQueuingEvent() {
 }
+
 void PacketQueuingEvent::process_event() {
   if (!queue->busy) {
     queue->queue_proc_event = new QueueProcessingEvent(get_current_time(), queue);
@@ -137,8 +139,10 @@ PacketArrivalEvent::PacketArrivalEvent(double time, Packet *packet)
   : Event(PACKET_ARRIVAL, time) {
   this->packet = packet;
 }
+
 PacketArrivalEvent::~PacketArrivalEvent() {
 }
+
 void PacketArrivalEvent::process_event() {
   packet->flow->receive(packet);
 }
@@ -290,6 +294,75 @@ void LoggingEvent::process_event() {
     << " StartedFlows " << started_flows << "\n";
 
   if (!finished_simulation) {
-    add_to_event_queue(new LoggingEvent(current_time + 0.1));
+    add_to_event_queue(new LoggingEvent(current_time + 0.01));
   }
 }
+
+DDCHostPacketQueuingEvent::DDCHostPacketQueuingEvent(double time, Packet *packet, Queue *queue)
+: PacketQueuingEvent(time, packet, queue)
+{
+}
+
+void DDCHostPacketQueuingEvent::process_event() {
+  if (!queue->busy) {
+    queue->queue_proc_event = new DDCHostQueueProcessingEvent(get_current_time(), queue);
+    //std::cout << "add DDCHostQueueProcessingEvent to " << get_current_time() << "\n";
+    add_to_event_queue(queue->queue_proc_event);
+    queue->busy = true;
+  }
+  queue->enque(packet);
+}
+
+DDCHostPacketQueuingEvent::~DDCHostPacketQueuingEvent(){}
+
+DDCHostQueueProcessingEvent::DDCHostQueueProcessingEvent(double time, Queue *queue)
+:QueueProcessingEvent(time,queue)
+{
+}
+
+
+void DDCHostQueueProcessingEvent::process_event() {
+  Packet *packet = queue->deque();
+  if (packet) {
+    //std::cout << "Time:" << get_current_time() << " processing DDCHostQueueProcessingEvent\n";
+    queue->busy = true;
+    Queue *next_hop = topology->get_next_hop(packet, queue);
+    double td = queue->get_transmission_delay(packet->size);
+    double pd = queue->propagation_delay;
+    //double additional_delay = 1e-10;
+    queue->queue_proc_event = new DDCHostQueueProcessingEvent(time + td, queue);
+    add_to_event_queue(queue->queue_proc_event);
+    if (next_hop == NULL) {
+      add_to_event_queue(new PacketArrivalEvent(time + td + pd, packet));
+    } else {
+      if (params.cut_through == 1) {
+        double cut_through_delay =
+          queue->get_transmission_delay(packet->flow->hdr_size);
+        add_to_event_queue(new PacketQueuingEvent(time + cut_through_delay + pd,
+                                                  packet, next_hop));
+      } else {
+        add_to_event_queue(new PacketQueuingEvent(time + td + pd,
+                                                  packet, next_hop));
+      }
+    }
+  } else {
+    //std::cout << "Time:" << get_current_time() << " processing DDCHostQueueProcessingEvent  ===========Queue empty===========\n";
+    queue->busy = false;
+    queue->queue_proc_event = NULL;
+
+
+    while(!((Host*)(queue->src))->active_flows.empty()){
+      Flow* flow = ((Host*)(queue->src))->active_flows.top();
+      ((Host*)(queue->src))->active_flows.pop();
+      if(!flow->finished){
+        flow->send_pending_data();
+        break;
+      }
+    }
+  }
+}
+
+
+DDCHostQueueProcessingEvent::~DDCHostQueueProcessingEvent(){}
+
+

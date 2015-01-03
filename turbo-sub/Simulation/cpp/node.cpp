@@ -2,9 +2,14 @@
 #include "packet.h"
 #include "params.h"
 #include "factory.h"
+#include "flow.h"
 
 extern DCExpParams params;
 
+
+bool FlowComparator::operator() (Flow *a, Flow *b) {
+  return a->flow_priority > b->flow_priority;
+}
 
 Node::Node(uint32_t id, uint32_t type) {
   this->id = id;

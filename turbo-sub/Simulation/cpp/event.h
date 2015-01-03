@@ -166,4 +166,20 @@ public:
   void process_event();
 };
 
+
+// packet gets queued
+class DDCHostPacketQueuingEvent : public PacketQueuingEvent {
+public:
+  DDCHostPacketQueuingEvent(double time, Packet *packet, Queue *queue);
+  ~DDCHostPacketQueuingEvent();
+  void process_event();
+};
+
+class DDCHostQueueProcessingEvent : public QueueProcessingEvent {
+public:
+  DDCHostQueueProcessingEvent(double time, Queue *queue);
+  ~DDCHostQueueProcessingEvent();
+  void process_event();
+};
+
 #endif /* defined(EVENT_H) */

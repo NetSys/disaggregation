@@ -30,3 +30,11 @@ Max CWND 7
 Rtx Timeout 9.5e-06
 load_balancing (0: pkt)0
 1010000.18451973 MaxPacketOutstanding 574551 NumPacketOutstanding 573627 NumUnfinishedFlows 2630 StartedFlows 7140
+1110000.18451973 MaxPacketOutstanding 5739941 NumPacketOutstanding 5739456 NumUnfinishedFlows 25621 StartedFlows 78771
+1210000.18451973 MaxPacketOutstanding 7197950 NumPacketOutstanding 2523703 NumUnfinishedFlows 12419 StartedFlows 100000
+1310000.18451973 MaxPacketOutstanding 7197950 NumPacketOutstanding 4294655441 NumUnfinishedFlows 0 StartedFlows 100000
+AverageFCT 41031.8800220997 MeanSlowdown 3219.1084070015 MeanInflation 6146.48872763332
+Loc:0 Prob:1 Loc:1 Prob:0.00037 Loc:2 Prob:0.00052 Loc:3 Prob:0.0028 
+DeadPackets 76% DuplicatedPackets 0% Utilization 80%
+Drops SS 19995927 SL 0 LL 0
+Simulator ended. Execution time: 1.8e+03 seconds

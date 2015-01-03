@@ -44,6 +44,7 @@ Flow::Flow(uint32_t id, double start_time, uint32_t size,
   this->total_pkt_sent = 0;
   this->size_in_pkt = (int)ceil((double)size/mss);
 
+  this->flow_priority = 0;
 
 }
 
@@ -296,11 +297,19 @@ FountainFlow::FountainFlow(uint32_t id, double start_time, uint32_t size, Host *
 }
 
 
+void FountainFlow::start_flow() {
+  this->flow_priority = get_priority(next_seq_no);
+  send_pending_data();
+}
+
+
 void FountainFlow::send_pending_data() {
   if (!this->finished) {
-    send(next_seq_no);
-    next_seq_no += mss;
-    total_pkt_sent++;
+    if(!src->queue->busy){
+      send(next_seq_no);
+      next_seq_no += mss;
+      this->flow_priority = get_priority(next_seq_no);
+      total_pkt_sent++;
 
 //    //add a round trip time before sending parity
 //    if (total_pkt_sent == min_recv){
@@ -308,7 +317,10 @@ void FountainFlow::send_pending_data() {
 //      return;
 //    }
 
-    add_to_event_queue(new FlowProcessingEvent(get_current_time() + transmission_delay ,this));
+      //add_to_event_queue(new FlowProcessingEvent(get_current_time() + transmission_delay ,this));
+    }
+
+    src->active_flows.push(this);
   }
 }
 
@@ -343,22 +355,28 @@ void FountainFlow::receive(Packet *p) {
   return;
 }
 
+uint32_t FountainFlow::get_priority(uint32_t seq) {
+  //uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
+  //uint32_t priority = 2147483648 + min_recv * mss - bytes_acked ;
+  //uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
+  uint32_t priority = 1;
+  //uint32_t priority = 1;
+  return priority;
+}
 
 Packet *FountainFlow::send(uint32_t seq)
 {
   Packet *p = NULL;
 
-  //uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
-  //uint32_t priority = 2147483648 + min_recv * mss - bytes_acked ;
-  //uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
-  uint32_t priority = 1;
+  uint32_t priority = get_priority(seq);
   //std::cout << "FountainFlow::send: Flow:" << this->id << " seq:" << seq << " sz:" << size << " pri:" << priority << "\n";
-  //uint32_t priority = 1;
+
+
   p = new Packet(get_current_time(), this, seq, \
                  priority, mss + hdr_size, \
                  src, dst);
 
-  add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, src->queue));
+  add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
   return p;
 }
 

@@ -66,7 +66,14 @@ public:
   // finished variables
   bool finished;
   double flow_completion_time;
+
+  uint32_t flow_priority;
 };
+
+
+
+
+
 
 class PFabricFlow : public Flow {
 public:
@@ -95,8 +102,10 @@ private:
 
 public:
 	FountainFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy);
+	virtual void start_flow();
 	virtual void send_pending_data();
   virtual void receive(Packet *);
+  virtual uint32_t get_priority(uint32_t seq);
   virtual Packet* send(uint32_t seq);
 };
 

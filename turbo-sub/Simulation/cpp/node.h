@@ -2,7 +2,9 @@
 #define NODE_H
 
 #include <vector>
+#include <queue>
 #include "queue.h"
+
 
 #define HOST 0
 #define SWITCH 1
@@ -11,6 +13,15 @@
 #define AGG_SWITCH 11
 
 class Packet;
+class Flow;
+
+
+class FlowComparator{
+public:
+  bool operator() (Flow *a, Flow *b);
+};
+
+
 class Node {
 public:
   Node(uint32_t id, uint32_t type);
@@ -22,6 +33,7 @@ class Host : public Node {
 public:
   Host(uint32_t id, double rate, uint32_t queue_type);
   Queue *queue;
+  std::priority_queue<Flow *, std::vector<Flow *>, FlowComparator> active_flows;
 };
 
 class Switch : public Node {

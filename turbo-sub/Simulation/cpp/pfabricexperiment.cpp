@@ -135,7 +135,7 @@ void printQueueStatistics(PFabricTopology *topo) {
   for(int i = 0; i < 4; i++)
     total_drop += dropAt[i];
   for(int i = 0; i < 4; i++){
-    std::cout << "Loc:" << i << " Prob:" << std::setprecision(2) << (double)dropAt[i]/total_drop << " ";
+    std::cout << "Loc:" << i << " Freq:" << dropAt[i] << "("  << std::setprecision(2) << (double)dropAt[i]/total_drop << ") ";
   }
   std::cout << "\n";
 
