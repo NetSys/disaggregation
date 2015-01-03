@@ -5,3 +5,7 @@
 *.ko
 pcm/
 rmem/.hadoop_info/
+rmem/_partition.lst
+*/Simulation/cpp/simulator
+.idea/
+.nfs*

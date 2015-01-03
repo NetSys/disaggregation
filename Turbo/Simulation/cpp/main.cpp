@@ -64,7 +64,16 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
   }
   input >> temp; input >> params.cdf_or_flow_trace;
   input >> temp; input >> params.cut_through;
-  input >> temp; input >> params.mean_flow_size;
+  double mean_flow_size_double;
+  input >> temp; input >> mean_flow_size_double;
+  params.mean_flow_size = int(mean_flow_size_double);
+
+
+  input >> temp; input >> params.num_hosts;
+  input >> temp; input >> params.num_agg_switches;
+  input >> temp; input >> params.num_core_switches;
+
+
 
   params.hdr_size = 40;
   params.mss = 1460;
@@ -86,7 +95,8 @@ void run_scenario() {
     if (start_time < 0) {
       start_time = current_time;
     }
-    //event_queue.pop();    //std::cout << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
+    //event_queue.pop();
+    std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
       delete ev; //TODO: Smarter
       continue;

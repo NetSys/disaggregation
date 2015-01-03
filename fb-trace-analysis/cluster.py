@@ -12,11 +12,17 @@ class Cluster:
     self.servers = {}
     self.servers_list = []
     self.total_tasks = 0
+    self.total_map_tasks = 0
+    self.total_red_tasks = 0
     trace = open(file)
 
     for line in trace:
       task = Task(line)
       self.total_tasks += 1
+      if task.rec_type == "MapAttempt":
+        self.total_map_tasks += 1
+      if task.rec_type == "ReduceAttempt":
+        self.total_red_tasks += 1
 
       if not task.job_id in self.jobs:
         self.jobs[task.job_id] = Job(task.job_id)

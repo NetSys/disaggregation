@@ -24,9 +24,9 @@ while True:
     map_end_time = time.strftime("%y%m%d%H%M%S",time.localtime())
     os.system("echo " + str(map_end_time) + " > .hadoop_info/map_end_time")
     if verbose:
-      sys.stdout.write("================================================\n")
+      sys.stderr.write("================================================\n")
   if verbose:
-    sys.stdout.write("~" + line)
+    sys.stderr.write("~" + line)
 
   if is_reduce and "Reduce shuffle bytes" in line:
     shuffle_bytes = int(line.strip().replace("Reduce shuffle bytes=",""))
@@ -46,6 +46,9 @@ os.system("echo " + str(end_time) + " > .hadoop_info/end_time")
 
 files = os.listdir(".hadoop_info")
 results = {}
+results["map_read"] = -1
+results["map_write"] = -1
+results["map_end_time"] = 0
 for f in files:
   fh = open(".hadoop_info/" + f)
   results[f] = fh.read().strip()

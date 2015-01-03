@@ -66,7 +66,7 @@ def shuffle_size(u):
 def main(argv):
 
 
-  u = Cluster("../../ramdisk/1h.txt", get_server_list = False)
+  u = Cluster("../../ramdisk/24h.txt", get_server_list = False)
 
 
   shuffle_size(u)

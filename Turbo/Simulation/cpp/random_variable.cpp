@@ -91,6 +91,10 @@ int EmpiricalRandomVariable::lookup(double u) {
 int EmpiricalRandomVariable::loadCDF(std::string filename) {
   std::string line;
   std::ifstream myfile(filename);
+  if(!myfile.good()){
+	  std::cout << "bad cdf file!!\n";
+	  exit(0);
+  }
   numEntry_ = 0;
   while (std::getline(myfile, line))
 	{
