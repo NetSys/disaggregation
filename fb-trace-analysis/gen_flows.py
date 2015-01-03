@@ -53,22 +53,46 @@ class FlowContainer:
                "hdfs_read_local": 6,
                "hdfs_read_remote":7,
                "hdfs_written_local": 8,
-               "hdfs_written_remote1":9,
-               "hdfs_written_remote2":9
+               "hdfs_written_remote":9
                }
 
-def gen_flows(u, hdfs_block_size_mb = 1):
+
+
+
+def get_map_read(input_bytes):
+  if input_bytes < 1024 * 1024 * 1024:
+    return 0
+  r = input_bytes * 1.83188930e-03 + 7.78490125e+06
+  return max(r,0)
+
+def get_map_write(input_bytes):
+  if input_bytes < 1024 * 1024 * 1024:
+    return 0
+  r = input_bytes * 2.44301455e-03 + 9.48375082e+06
+  return max(r,0)
+
+def get_reduce_read(input_bytes):
+  r = input_bytes * 2.59458115e-02 + -1.19961465e+06
+  return max(r,0)
+
+def get_reduce_write(input_bytes):
+  r = input_bytes * 8.42096985e-02 + -6.98675589e+06
+  return max(r,0)
+
+def gen_flows(u, d_disk, d_mem, hdfs_block_size_mb = 1):
   print "gen_flows Version:", 20
 
+  hdfs_block_size_mb_old = 128
   hdfs_block_size = int(1024*1024*hdfs_block_size_mb)
+  hdfs_block_size_old = int(1024*1024*hdfs_block_size_mb_old)
   mem_page_size = 4096
   percent_local_read = 0.9
 
-  map_read_ratio = (391 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
-  map_write_ratio = (430 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
+  #map_read_ratio = (391 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
+  #map_write_ratio = (430 * 1024 * 1024) / (4.5 * 1024 * 1024 * 1024)
 
-  reduce_read_ratio = (100 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
-  reduce_write_ratio = (110 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
+  #reduce_read_ratio = (100 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
+  #reduce_write_ratio = (110 * 1024 * 1024) / (2.8 * 1024 * 1024 * 1024)
 
 
   next_percent = 0.01
@@ -81,87 +105,107 @@ def gen_flows(u, hdfs_block_size_mb = 1):
         print "Finished", next_percent, "(", count, "/", u.total_tasks, ") Flows added:", container.flow_count
         next_percent += 0.01
 
-      if len(job.map_tasks) == 0 or len(job.reduce_tasks) == 0:
-        if task.file_bytes_read > 0:
-          num_of_blocks = task.file_bytes_read/hdfs_block_size + 1
-          for i in range(0, num_of_blocks):
-	    if i == num_of_blocks -1:
-              read_size = task.file_bytes_read%hdfs_block_size
-            else:
-              read_size = hdfs_block_size   
-            record = Flow_record(task.start_time, task.self_id + "_disk", task.self_id + "_mem", read_size, "file_read")
-            add_flow(record, container)
+      # if len(job.map_tasks) == 0 or len(job.reduce_tasks) == 0:
+      #   if task.file_bytes_read > 0:
+      #     if d_disk:
+      #       num_of_blocks = task.file_bytes_read/hdfs_block_size + 1
+      #       for i in range(0, num_of_blocks):
+      #         if i == num_of_blocks -1:
+      #           read_size = task.file_bytes_read%hdfs_block_size
+      #         else:
+      #           read_size = hdfs_block_size
+      #         record = Flow_record(task.start_time, task.self_id + "_disk", task.self_id + "_mem", read_size, "file_read")
+      #         add_flow(record, container)
+      #     else:
+      #       pass # no network traffic is generated
+      #
+      #   if task.file_bytes_written > 0:
+      #     if d_disk:
+      #       num_of_blocks = task.file_bytes_written/hdfs_block_size + 1
+      #       for i in range(0, num_of_blocks):
+      #         if i == num_of_blocks-1:
+      #            write_size = task.file_bytes_written%hdfs_block_size
+      #         else:
+      #            write_size = hdfs_block_size
+      #         record = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", task.self_id + "_disk", write_size, "file_written")
+      #         add_flow(record, container)
+      #     else:
+      #       pass # no network traffic is generated
 
-        if task.file_bytes_written > 0:
-          num_of_blocks = task.file_bytes_written/hdfs_block_size + 1
-          for i in range(0, num_of_blocks):
-            if i == num_of_blocks-1:
-               write_size = task.file_bytes_written%hdfs_block_size
-            else:
-               write_size = hdfs_block_size    
-            record = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", task.self_id + "_disk", hdfs_block_size, "file_written")
-            add_flow(record, container)
 
-      else:
+      #shuffle traffic
+      if len(job.map_tasks) > 0 and len(job.reduce_tasks) > 0:
         if task.rec_type == "ReduceAttempt" and task.reduce_shuffle_bytes > 0:
           reduce_flow_size = task.reduce_shuffle_bytes / len(job.map_tasks)
           for mapper in job.map_tasks.itervalues():
-            num_of_blocks = int(reduce_flow_size / hdfs_block_size + 1)
-            for i in range(0, num_of_blocks):
-              if i == num_of_blocks - 1:
-                io_size = reduce_flow_size % hdfs_block_size
-              else:
-                io_size = hdfs_block_size
-              storage_node = u.get_rand_server()
-              write_record = Flow_record(mapper.start_time + mapper.cpu_ms, mapper.self_id + "_cpu", storage_node + "_mem", io_size, "Map_file_write")
-              read_record = Flow_record(task.start_time, storage_node + "_mem", task.self_id + "_cpu", io_size, "Reduce_file_read")
-              add_flow(write_record, container)
-              add_flow(read_record, container)
+            if d_disk:
+              num_of_blocks = int(reduce_flow_size / hdfs_block_size + 1)
+              for i in range(0, num_of_blocks):
+                if i == num_of_blocks - 1:
+                  io_size = reduce_flow_size % hdfs_block_size
+                else:
+                  io_size = hdfs_block_size
+                storage_node = u.get_rand_server()
+                write_record = Flow_record(mapper.start_time + mapper.cpu_ms, mapper.self_id + "_cpu", storage_node + "_mem", io_size, "Map_file_write")
+                read_record = Flow_record(task.start_time, storage_node + "_mem", task.self_id + "_cpu", io_size, "Reduce_file_read")
+                add_flow(write_record, container)
+                add_flow(read_record, container)
+            else:
+              record = Flow_record(mapper.start_time + mapper.cpu_ms, mapper.self_id + "_disk", task.self_id + "_disk", reduce_flow_size, "Map_file_write")
+              add_flow(record, container)
 
 
+
+      #Map memory access
       if task.map_input_bytes > 0:
-        cpu_ram_read_blocks = int(task.map_input_bytes * map_read_ratio / mem_page_size)
-        cpu_ram_write_blocks = int(task.map_input_bytes * map_write_ratio / mem_page_size)
-        for i in range(0, cpu_ram_read_blocks):
-          read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
-                                    task.self_id + "_mem",
-                                    u.get_rand_server() + "_cpu",
-                                    mem_page_size,
-                                    "Map_CPU_Mem_read"
-                                    )
-          add_flow(read_record, container)
-
-        for i in range(0, cpu_ram_write_blocks):
-          write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
-                                    u.get_rand_server() + "_cpu",
-                                    task.self_id + "_mem",
-                                    mem_page_size,
-                                    "Map_CPU_Mem_write"
-                                    )
-          add_flow(write_record, container)
+        if d_mem:
+          cpu_ram_read_blocks = int(get_map_read(task.map_input_bytes) / mem_page_size)
+          cpu_ram_write_blocks = int( get_map_write(task.map_input_bytes) / mem_page_size)
+          for i in range(0, cpu_ram_read_blocks):
+            read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
+                                      task.self_id + "_mem",
+                                      u.get_rand_server() + "_cpu",
+                                      mem_page_size,
+                                      "Map_CPU_Mem_read"
+                                      )
+            add_flow(read_record, container)
 
 
+          for i in range(0, cpu_ram_write_blocks):
+            write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
+                                      u.get_rand_server() + "_cpu",
+                                      task.self_id + "_mem",
+                                      mem_page_size,
+                                      "Map_CPU_Mem_write"
+                                      )
+            add_flow(write_record, container)
+        else:
+          pass #no network traffic
+
+      #reduce memory access
       if task.reduce_shuffle_bytes > 0:
-        cpu_ram_read_blocks = int(task.reduce_shuffle_bytes * reduce_read_ratio / mem_page_size)
-        cpu_ram_write_blocks = int(task.reduce_shuffle_bytes * reduce_write_ratio / mem_page_size)
-        for i in range(0, cpu_ram_read_blocks):
-          read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
-                                    task.self_id + "_mem",
-                                    u.get_rand_server() + "_cpu",
-                                    mem_page_size,
-                                    "Reduce_CPU_Mem_read"
-                                    )
-          add_flow(read_record, container)
+        if d_mem:
+          cpu_ram_read_blocks = int( get_reduce_read(task.reduce_shuffle_bytes) / mem_page_size)
+          cpu_ram_write_blocks = int( get_reduce_write(task.reduce_shuffle_bytes) / mem_page_size)
+          for i in range(0, cpu_ram_read_blocks):
+            read_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_read_blocks),
+                                      task.self_id + "_mem",
+                                      u.get_rand_server() + "_cpu",
+                                      mem_page_size,
+                                      "Reduce_CPU_Mem_read"
+                                      )
+            add_flow(read_record, container)
 
-        for i in range(0, cpu_ram_write_blocks):
-          write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
-                                    u.get_rand_server() + "_cpu",
-                                    task.self_id + "_mem",
-                                    mem_page_size,
-                                    "Reduce_CPU_Mem_write"
-                                    )
-          add_flow(write_record, container)
-
+          for i in range(0, cpu_ram_write_blocks):
+            write_record = Flow_record(int(task.start_time + (task.finish_time - task.start_time) * float(i) / cpu_ram_write_blocks),
+                                      u.get_rand_server() + "_cpu",
+                                      task.self_id + "_mem",
+                                      mem_page_size,
+                                      "Reduce_CPU_Mem_write"
+                                      )
+            add_flow(write_record, container)
+        else:
+          pass #no network traffic
 
 
 
@@ -170,46 +214,87 @@ def gen_flows(u, hdfs_block_size_mb = 1):
 
 
       if task.hdfs_bytes_read > 0:
-        num_blocks = task.hdfs_bytes_read/hdfs_block_size+1
-        for i in range(0, num_blocks):
-          if i == num_blocks - 1:
-            read_size = task.hdfs_bytes_read%hdfs_block_size
-          else:
-            read_size = hdfs_block_size
-          if random.random() < percent_local_read:
-            source = task.self_id
-            rec_type = "hdfs_read_local"
-          else:
+        if d_disk:
+          num_blocks = task.hdfs_bytes_read/hdfs_block_size+1
+          for i in range(0, num_blocks):
+            if i == num_blocks - 1:
+              read_size = task.hdfs_bytes_read%hdfs_block_size
+            else:
+              read_size = hdfs_block_size
             rec_type = "hdfs_read_remote"
-            if len(task.other_ids) > 0: 
+            if len(task.other_ids) > 0:
               source = task.other_ids[i%len(task.other_ids)]
             else:
               source = u.get_rand_server()
-          record = Flow_record(task.start_time, source + "_disk", task.self_id + "_mem", read_size, rec_type)
-          add_flow(record, container)
+            record = Flow_record(task.start_time, source + "_disk", task.self_id + "_mem", read_size, rec_type)
+            add_flow(record, container)
+        else:
+          num_blocks = task.hdfs_bytes_read/hdfs_block_size_old+1
+          for i in range(0, num_blocks):
+            if i == num_blocks - 1:
+              read_size = task.hdfs_bytes_read%hdfs_block_size_old
+            else:
+              read_size = hdfs_block_size_old
+            if random.random() < percent_local_read:
+              source = task.self_id
+              rec_type = "hdfs_read_local"
+            else:
+              rec_type = "hdfs_read_remote"
+              if len(task.other_ids) > 0:
+                source = task.other_ids[i%len(task.other_ids)]
+              else:
+                source = u.get_rand_server()
+            record = Flow_record(task.start_time, source + "_disk", task.self_id + "_mem", read_size, rec_type)
+            add_flow(record, container)
 
 
       if task.hdfs_bytes_written > 0:
-        num_blocks = task.hdfs_bytes_written/hdfs_block_size + 1
-        for i in range(0, num_blocks):
-          if i == num_blocks - 1:
-            write_size = task.hdfs_bytes_written%hdfs_block_size
-          else:
-            write_size = hdfs_block_size
-          if write_size > 0:
-            record1 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", task.self_id + "_disk", write_size, "hdfs_written_local")
-            record2 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote1")
-            record3 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote2")
-            add_flow(record1, container)
-            add_flow(record2, container)
-            add_flow(record3, container)
+        if d_disk:
+          num_blocks = task.hdfs_bytes_written/hdfs_block_size + 1
+          for i in range(0, num_blocks):
+            if i == num_blocks - 1:
+              write_size = task.hdfs_bytes_written%hdfs_block_size
+            else:
+              write_size = hdfs_block_size
+            if write_size > 0:
+              record1 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", task.self_id + "_disk", write_size, "hdfs_written_remote")
+              record2 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote")
+              record3 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote")
+              add_flow(record1, container)
+              add_flow(record2, container)
+              add_flow(record3, container)
+        else:
+          num_blocks = task.hdfs_bytes_written/hdfs_block_size_old + 1
+          for i in range(0, num_blocks):
+            if i == num_blocks - 1:
+              write_size = task.hdfs_bytes_written%hdfs_block_size_old
+            else:
+              write_size = hdfs_block_size_old
+            if write_size > 0:
+              record1 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", task.self_id + "_disk", write_size, "hdfs_written_local")
+              record2 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote")
+              record3 = Flow_record(task.start_time + task.cpu_ms, task.self_id + "_mem", u.get_rand_server() + "_disk", write_size, "hdfs_written_remote")
+              add_flow(record1, container)
+              add_flow(record2, container)
+              add_flow(record3, container)
+
 
   print "Start sorting. Total flows added:", len(container.flows)
   container.flows.sort(key=lambda r : r.time)
 
   print "Finished sorting"
 
-  flow_detail_dist_file = open("results/" + u.name + "_" + str(hdfs_block_size_mb) + "_detail_dist.txt", "w")
+  if d_disk:
+    d_label = "d"
+  else:
+    d_label = ""
+
+  if d_mem:
+    m_label = "m"
+  else:
+    m_label = ""
+
+  flow_detail_dist_file = open("results/" + u.name + "_" + str(hdfs_block_size_mb) + "_detail_dist_" + d_label + m_label + ".txt", "w")
   for fsize in sorted(container.flow_size_count):
     detail_line_to_write = str(fsize) + " " + " ".join(map(str, container.flow_size_count[fsize]))
     print detail_line_to_write
@@ -217,7 +302,7 @@ def gen_flows(u, hdfs_block_size_mb = 1):
   flow_detail_dist_file.close()
 
 
-  flow_dist_in_packet_file = open("results/" + u.name + "_" + str(hdfs_block_size_mb) + "_dist_in_packet.txt", "w")
+  flow_dist_in_packet_file = open("results/" + u.name + "_" + str(hdfs_block_size_mb) + "_dist_in_packet_" + d_label + m_label + ".txt", "w")
   for fsize in sorted(container.flow_size_in_packet_count):
     sum_line_to_write = str(fsize) + " " + str(reduce(lambda x,y: x + y, container.flow_size_in_packet_count[fsize])/float(container.flow_count))
     flow_dist_in_packet_file.write(sum_line_to_write + "\n")
@@ -261,19 +346,27 @@ def add_flow(flow, container):
 
 
 def main(argv):
-  if len(argv) > 0 and argv[0] == "-s":
+  if "-s" in argv:
     print "No trace file will be produced"
     Flow_record.write_records_to_file = False
   else:
     print "A trade file will be produced"
 
+  d_disk = False
+  if "-d" in argv:
+    print "disaggregated disk mode"
+    d_disk = True
+
+  d_mem = False
+  if "-m" in argv:
+    print "disaggregated mem mode"
+    d_mem = True
+
+
   u = Cluster("../../ramdisk/1h.txt")
 
 
-  gen_flows(u,  hdfs_block_size_mb = 1)
-  gen_flows(u,  hdfs_block_size_mb = 16)
-  gen_flows(u,  hdfs_block_size_mb = 64)
-  gen_flows(u,  hdfs_block_size_mb = 128)
+  gen_flows(u, d_disk, d_mem, hdfs_block_size_mb = 1)
 
 if __name__ == "__main__" :
   main(sys.argv[1:])
