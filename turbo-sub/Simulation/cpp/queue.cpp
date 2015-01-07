@@ -27,6 +27,7 @@ Queue::Queue(uint32_t id, double rate, uint32_t limit_bytes, int location) {
 
   this->dropss = 0; this->dropsl = 0; this->dropll = 0;
   this->pkt_drop = 0;
+  this->spary_counter=std::rand();
 }
 
 void Queue::set_src_dst(Node *src, Node *dst) {
@@ -59,6 +60,10 @@ Packet *Queue::deque() {
 }
 
 void Queue::drop(Packet *packet) {
+  packet->flow->pkt_drop++;
+  if(packet->seq_no < packet->flow->size){
+    packet->flow->data_pkt_drop++;
+  }
   delete packet;
 }
 

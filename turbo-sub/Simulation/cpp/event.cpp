@@ -11,6 +11,7 @@
 #include "topology.h"
 #include "params.h"
 #include "factory.h"
+#include <iomanip>
 
 
 extern Topology *topology;
@@ -113,9 +114,45 @@ void FlowFinishedEvent::process_event() {
 }
 
 
+
+/* Flow Finished */
+DDCTestFlowFinishedEvent::DDCTestFlowFinishedEvent(double time, Flow *flow)
+ : FlowFinishedEvent(time, flow) {
+}
+
+DDCTestFlowFinishedEvent::~DDCTestFlowFinishedEvent() {
+}
+void DDCTestFlowFinishedEvent::process_event() {
+//    std::cout
+//      << "event.cpp::FlowFinishedEvent(): "
+//      << "id:" << flow->id << " "
+//      << "sz:" << flow->size << " "
+//      << "src:" << flow->src->id << " "
+//      << "dst:" << flow->dst->id << " "
+//      << "strt:" << (int)(1000000 * flow->start_time) << " "
+//      << "end:" << (int)(1000000 * flow->finish_time) << " "
+//      << "fct:" << std::setprecision(2) << 1000000.0 * flow->flow_completion_time << " "
+//      << "orcl:" << topology->get_oracle_fct(flow) << " "
+//      << "rate:" << std::setprecision(2) << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
+//      << "infl:" << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
+//      << "drp:" << flow->data_pkt_drop << "/" << flow->pkt_drop
+//      << std::endl;
+  if(Factory::flow_counter < params.num_flows_to_run){
+    Flow* flow = Factory::get_flow(get_current_time(), this->flow->size, this->flow->src, this->flow->dst, params.flow_type);
+    flow->useDDCTestFlowFinishedEvent = true;
+    flows_to_schedule.push_back(flow);
+    Event * event = new FlowArrivalEvent(flow->start_time, flow);
+    add_to_event_queue(event);
+  }
+}
+
+
+
 /* Packet Queuing */
 PacketQueuingEvent::PacketQueuingEvent(double time, Packet *packet,
   Queue *queue) : Event(PACKET_QUEUING, time) {
+  //if(packet->flow->id == 61 || packet->flow->id == 70)
+  //  std::cout << "PacketQueuingEvent::PacketQueuingEvent() fid:" << packet->flow->id << " seq:" << packet->seq_no << " ptr:" << packet << "\n";
   this->packet = packet;
   this->queue = queue;
 }
@@ -294,7 +331,7 @@ void LoggingEvent::process_event() {
     << " StartedFlows " << started_flows << "\n";
 
   if (!finished_simulation) {
-    add_to_event_queue(new LoggingEvent(current_time + 0.01));
+    add_to_event_queue(new LoggingEvent(current_time + 0.05));
   }
 }
 

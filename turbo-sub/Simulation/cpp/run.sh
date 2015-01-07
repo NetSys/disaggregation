@@ -23,7 +23,7 @@ make clean
 cp simulator simulator$exptime
 
 trap ctrl_c SIGINT
-stdbuf -o0 ./simulator$exptime $@ | tee -a $fn
+stdbuf -o0 ./simulator$exptime $@ | python tee.py $fn
 
 ctrl_c
 

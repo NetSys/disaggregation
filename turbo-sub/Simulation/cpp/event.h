@@ -99,6 +99,17 @@ public:
   Flow *flow;
 };
 
+
+//A flow finished event
+class DDCTestFlowFinishedEvent : public FlowFinishedEvent {
+public:
+  DDCTestFlowFinishedEvent(double time, Flow *flow);
+  ~DDCTestFlowFinishedEvent();
+  void process_event();
+};
+
+
+
 // packet gets queued
 class PacketQueuingEvent : public Event {
 public:

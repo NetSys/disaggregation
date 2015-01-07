@@ -60,6 +60,8 @@ public:
   uint32_t hdr_size;
   uint32_t total_pkt_sent;
   int size_in_pkt;
+  int pkt_drop;
+  int data_pkt_drop;
 
   // Sack
   uint32_t scoreboard_sack_bytes;
@@ -68,6 +70,7 @@ public:
   double flow_completion_time;
 
   uint32_t flow_priority;
+  bool useDDCTestFlowFinishedEvent;
 };
 
 
@@ -105,7 +108,7 @@ public:
 	virtual void start_flow();
 	virtual void send_pending_data();
   virtual void receive(Packet *);
-  virtual uint32_t get_priority(uint32_t seq);
+  uint32_t ddc_get_priority();
   virtual Packet* send(uint32_t seq);
 };
 

@@ -105,6 +105,7 @@ void run_scenario() {
 extern void run_pFabric_experiment(int argc, char **argv, uint32_t exp_type);
 extern void run_continuous_experiment(int argc, char **argv);
 extern void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type);
+extern void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uint32_t exp_type);
 extern void run_single_link_experiment(int argc, char ** argv);
 extern void run_single_sender_receiver_exp(int argc, char ** argv);
 extern void run_nto1_experiment(int argc, char ** argv);
@@ -128,6 +129,9 @@ int main (int argc, char ** argv) {
       break;
     case DC_EXP_UNIFORM_FLOWS:
       run_fixedDistribution_experiment(argc, argv, exp_type);
+      break;
+    case DC_EXP_UNIFORM_FLOWS_SHUFFLE_TRAFFIC:
+      run_fixedDistribution_experiment_shuffle_traffic(argc, argv, exp_type);
       break;
     case SINGLE_LINK_EXP_IONSTYLE:
       run_single_link_experiment(argc, argv);

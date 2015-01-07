@@ -19,6 +19,14 @@ Queue* Factory::get_queue(uint32_t id, double rate,
   return NULL;
 }
 
+int Factory::flow_counter = 0;
+
+Flow* Factory::get_flow(double start_time, uint32_t size,
+                        Host *src, Host *dst, uint32_t flow_type,
+                        double rate) {
+  return Factory::get_flow(Factory::flow_counter++, start_time, size, src, dst, flow_type, rate);
+}
+
 Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
                         Host *src, Host *dst, uint32_t flow_type,
                         double rate) { // Default rate is 1.0

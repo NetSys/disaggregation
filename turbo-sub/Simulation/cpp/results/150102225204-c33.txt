@@ -1,0 +1,220 @@
+======================Cmd:======================
+6 ./experiments/pfabric_experiments/conf_test.txt
+======================Comment:======================
+fountain 1m
+======================Config:======================
+init_cwnd: 4
+max_cwnd: 7
+retx_timeout: 0.0000095
+queue_size: 6200
+propagation_delay: 0.0000002
+bandwidth: 10000000000.0
+queue_type: 2
+flow_type: 100
+num_flow: 1000000
+flow_trace: experiments/CDF_test.txt
+cut_through: 0
+mean_flow_size: 195357
+load_balancing: 0
+======================Output:======================
+Lambda: 34.8414789668494
+Running 1000000 Flows
+CDF_File experiments/CDF_test.txt
+Bandwidth 10
+QueueSize 6200
+CutThrough 0
+FlowType 100
+QueueType 2
+Init CWND 4
+Max CWND 7
+Rtx Timeout 9.5e-06
+load_balancing (0: pkt)0
+1010000.18451973 MaxPacketOutstanding 441805 NumPacketOutstanding 440617 NumUnfinishedFlows 1096 StartedFlows 7140
+1020000.18451973 MaxPacketOutstanding 738718 NumPacketOutstanding 738479 NumUnfinishedFlows 1873 StartedFlows 14188
+1030000.18451973 MaxPacketOutstanding 1069595 NumPacketOutstanding 1068227 NumUnfinishedFlows 2700 StartedFlows 21306
+1040000.18451973 MaxPacketOutstanding 1399711 NumPacketOutstanding 1399401 NumUnfinishedFlows 3544 StartedFlows 28591
+1050000.18451973 MaxPacketOutstanding 1659659 NumPacketOutstanding 1659457 NumUnfinishedFlows 4267 StartedFlows 35477
+1060000.18451973 MaxPacketOutstanding 1996025 NumPacketOutstanding 1995886 NumUnfinishedFlows 5155 StartedFlows 42782
+1070000.18451973 MaxPacketOutstanding 2273221 NumPacketOutstanding 2271664 NumUnfinishedFlows 5898 StartedFlows 50141
+1080000.18451973 MaxPacketOutstanding 2538184 NumPacketOutstanding 2537855 NumUnfinishedFlows 6573 StartedFlows 57327
+1090000.18451973 MaxPacketOutstanding 2787229 NumPacketOutstanding 2787059 NumUnfinishedFlows 7265 StartedFlows 64353
+1100000.18451973 MaxPacketOutstanding 3027546 NumPacketOutstanding 3027151 NumUnfinishedFlows 7939 StartedFlows 71547
+1110000.18451973 MaxPacketOutstanding 3291080 NumPacketOutstanding 3288795 NumUnfinishedFlows 8617 StartedFlows 78771
+1120000.18451973 MaxPacketOutstanding 3541248 NumPacketOutstanding 3540506 NumUnfinishedFlows 9351 StartedFlows 86055
+1130000.18451973 MaxPacketOutstanding 3776351 NumPacketOutstanding 3776008 NumUnfinishedFlows 9981 StartedFlows 93273
+1140000.18451973 MaxPacketOutstanding 4042605 NumPacketOutstanding 4042322 NumUnfinishedFlows 10631 StartedFlows 100436
+1150000.18451973 MaxPacketOutstanding 4297818 NumPacketOutstanding 4297660 NumUnfinishedFlows 11319 StartedFlows 107535
+1160000.18451973 MaxPacketOutstanding 4512418 NumPacketOutstanding 4510799 NumUnfinishedFlows 11939 StartedFlows 114718
+1170000.18451973 MaxPacketOutstanding 4800887 NumPacketOutstanding 4799589 NumUnfinishedFlows 12682 StartedFlows 121868
+1180000.18451973 MaxPacketOutstanding 5098130 NumPacketOutstanding 5094691 NumUnfinishedFlows 13432 StartedFlows 129143
+1190000.18451973 MaxPacketOutstanding 5331071 NumPacketOutstanding 5327308 NumUnfinishedFlows 14118 StartedFlows 136239
+1200000.18451973 MaxPacketOutstanding 5584552 NumPacketOutstanding 5583414 NumUnfinishedFlows 14765 StartedFlows 143445
+1210000.18451973 MaxPacketOutstanding 5880024 NumPacketOutstanding 5879800 NumUnfinishedFlows 15559 StartedFlows 150806
+1220000.18451973 MaxPacketOutstanding 6180141 NumPacketOutstanding 6179155 NumUnfinishedFlows 16308 StartedFlows 158092
+1230000.18451973 MaxPacketOutstanding 6445775 NumPacketOutstanding 6445105 NumUnfinishedFlows 17034 StartedFlows 165284
+1240000.18451973 MaxPacketOutstanding 6706684 NumPacketOutstanding 6705682 NumUnfinishedFlows 17716 StartedFlows 172482
+1250000.18451973 MaxPacketOutstanding 6974864 NumPacketOutstanding 6973310 NumUnfinishedFlows 18414 StartedFlows 179867
+1260000.18451973 MaxPacketOutstanding 7259844 NumPacketOutstanding 7257452 NumUnfinishedFlows 19162 StartedFlows 187142
+1270000.18451973 MaxPacketOutstanding 7530591 NumPacketOutstanding 7524780 NumUnfinishedFlows 19886 StartedFlows 194221
+1280000.18451973 MaxPacketOutstanding 7739693 NumPacketOutstanding 7739091 NumUnfinishedFlows 20428 StartedFlows 201405
+1290000.18451973 MaxPacketOutstanding 7979430 NumPacketOutstanding 7976190 NumUnfinishedFlows 21102 StartedFlows 208495
+1300000.18451973 MaxPacketOutstanding 8194243 NumPacketOutstanding 8192607 NumUnfinishedFlows 21713 StartedFlows 215633
+1310000.18451973 MaxPacketOutstanding 8427881 NumPacketOutstanding 8424380 NumUnfinishedFlows 22311 StartedFlows 222845
+1320000.18451973 MaxPacketOutstanding 8655087 NumPacketOutstanding 8652438 NumUnfinishedFlows 22924 StartedFlows 230063
+1330000.18451973 MaxPacketOutstanding 8904834 NumPacketOutstanding 8904507 NumUnfinishedFlows 23595 StartedFlows 237225
+1340000.18451973 MaxPacketOutstanding 9160137 NumPacketOutstanding 9159758 NumUnfinishedFlows 24283 StartedFlows 244404
+1350000.18451973 MaxPacketOutstanding 9384650 NumPacketOutstanding 9384571 NumUnfinishedFlows 24887 StartedFlows 251507
+1360000.18451973 MaxPacketOutstanding 9593118 NumPacketOutstanding 9592400 NumUnfinishedFlows 25490 StartedFlows 258636
+1370000.18451973 MaxPacketOutstanding 9863283 NumPacketOutstanding 9863073 NumUnfinishedFlows 26218 StartedFlows 265789
+1380000.18451973 MaxPacketOutstanding 10080373 NumPacketOutstanding 10079948 NumUnfinishedFlows 26781 StartedFlows 272916
+1390000.18451973 MaxPacketOutstanding 10264893 NumPacketOutstanding 10262935 NumUnfinishedFlows 27303 StartedFlows 279986
+1400000.18451973 MaxPacketOutstanding 10520647 NumPacketOutstanding 10520511 NumUnfinishedFlows 27920 StartedFlows 287145
+1410000.18451973 MaxPacketOutstanding 10793089 NumPacketOutstanding 10792804 NumUnfinishedFlows 28650 StartedFlows 294322
+1420000.18451973 MaxPacketOutstanding 11050363 NumPacketOutstanding 11049611 NumUnfinishedFlows 29353 StartedFlows 301617
+1430000.18451973 MaxPacketOutstanding 11287593 NumPacketOutstanding 11285900 NumUnfinishedFlows 29957 StartedFlows 308714
+1440000.18451973 MaxPacketOutstanding 11469147 NumPacketOutstanding 11468971 NumUnfinishedFlows 30512 StartedFlows 315848
+1450000.18451973 MaxPacketOutstanding 11753179 NumPacketOutstanding 11753109 NumUnfinishedFlows 31166 StartedFlows 323184
+1460000.18451973 MaxPacketOutstanding 12034130 NumPacketOutstanding 12033780 NumUnfinishedFlows 31925 StartedFlows 330499
+1470000.18451973 MaxPacketOutstanding 12300646 NumPacketOutstanding 12299120 NumUnfinishedFlows 32626 StartedFlows 337709
+1480000.18451973 MaxPacketOutstanding 12492190 NumPacketOutstanding 12491677 NumUnfinishedFlows 33181 StartedFlows 344880
+1490000.18451973 MaxPacketOutstanding 12693748 NumPacketOutstanding 12691771 NumUnfinishedFlows 33750 StartedFlows 351886
+1500000.18451973 MaxPacketOutstanding 12962190 NumPacketOutstanding 12960280 NumUnfinishedFlows 34446 StartedFlows 359096
+1510000.18451973 MaxPacketOutstanding 13172517 NumPacketOutstanding 13172264 NumUnfinishedFlows 35066 StartedFlows 366420
+1520000.18451973 MaxPacketOutstanding 13397260 NumPacketOutstanding 13396009 NumUnfinishedFlows 35658 StartedFlows 373462
+1530000.18451973 MaxPacketOutstanding 13584466 NumPacketOutstanding 13583440 NumUnfinishedFlows 36233 StartedFlows 380521
+1540000.18451973 MaxPacketOutstanding 13854983 NumPacketOutstanding 13853861 NumUnfinishedFlows 36887 StartedFlows 387622
+1550000.18451973 MaxPacketOutstanding 14097884 NumPacketOutstanding 14095056 NumUnfinishedFlows 37583 StartedFlows 394807
+1560000.18451973 MaxPacketOutstanding 14355582 NumPacketOutstanding 14353710 NumUnfinishedFlows 38237 StartedFlows 402084
+1570000.18451973 MaxPacketOutstanding 14572913 NumPacketOutstanding 14572852 NumUnfinishedFlows 38925 StartedFlows 409177
+1580000.18451973 MaxPacketOutstanding 14760843 NumPacketOutstanding 14759908 NumUnfinishedFlows 39445 StartedFlows 416136
+1590000.18451973 MaxPacketOutstanding 14971544 NumPacketOutstanding 14969880 NumUnfinishedFlows 40024 StartedFlows 423213
+1600000.18451973 MaxPacketOutstanding 15236383 NumPacketOutstanding 15235412 NumUnfinishedFlows 40669 StartedFlows 430358
+1610000.18451973 MaxPacketOutstanding 15488134 NumPacketOutstanding 15486661 NumUnfinishedFlows 41337 StartedFlows 437599
+1620000.18451973 MaxPacketOutstanding 15722162 NumPacketOutstanding 15717759 NumUnfinishedFlows 41970 StartedFlows 444709
+1630000.18451973 MaxPacketOutstanding 15980609 NumPacketOutstanding 15980212 NumUnfinishedFlows 42665 StartedFlows 451906
+1640000.18451973 MaxPacketOutstanding 16218327 NumPacketOutstanding 16215175 NumUnfinishedFlows 43296 StartedFlows 459040
+1650000.18451973 MaxPacketOutstanding 16428306 NumPacketOutstanding 16427630 NumUnfinishedFlows 43897 StartedFlows 466097
+1660000.18451973 MaxPacketOutstanding 16707665 NumPacketOutstanding 16707050 NumUnfinishedFlows 44583 StartedFlows 473337
+1670000.18451973 MaxPacketOutstanding 16966160 NumPacketOutstanding 16965806 NumUnfinishedFlows 45228 StartedFlows 480491
+1680000.18451973 MaxPacketOutstanding 17203068 NumPacketOutstanding 17200813 NumUnfinishedFlows 45912 StartedFlows 487607
+1690000.18451973 MaxPacketOutstanding 17408209 NumPacketOutstanding 17408161 NumUnfinishedFlows 46484 StartedFlows 494772
+1700000.18451973 MaxPacketOutstanding 17676774 NumPacketOutstanding 17676639 NumUnfinishedFlows 47194 StartedFlows 501946
+1710000.18451973 MaxPacketOutstanding 17947762 NumPacketOutstanding 17947742 NumUnfinishedFlows 47889 StartedFlows 509113
+1720000.18451973 MaxPacketOutstanding 18186307 NumPacketOutstanding 18184483 NumUnfinishedFlows 48496 StartedFlows 516259
+1730000.18451973 MaxPacketOutstanding 18417265 NumPacketOutstanding 18416442 NumUnfinishedFlows 49178 StartedFlows 523502
+1740000.18451973 MaxPacketOutstanding 18644894 NumPacketOutstanding 18644538 NumUnfinishedFlows 49788 StartedFlows 530661
+1750000.18451973 MaxPacketOutstanding 18862216 NumPacketOutstanding 18862108 NumUnfinishedFlows 50362 StartedFlows 537900
+1760000.18451973 MaxPacketOutstanding 19074143 NumPacketOutstanding 19072075 NumUnfinishedFlows 50950 StartedFlows 545054
+1770000.18451973 MaxPacketOutstanding 19291525 NumPacketOutstanding 19290811 NumUnfinishedFlows 51523 StartedFlows 552254
+1780000.18451973 MaxPacketOutstanding 19555841 NumPacketOutstanding 19554661 NumUnfinishedFlows 52217 StartedFlows 559543
+1790000.18451973 MaxPacketOutstanding 19778205 NumPacketOutstanding 19778086 NumUnfinishedFlows 52823 StartedFlows 566658
+1800000.18451973 MaxPacketOutstanding 20035360 NumPacketOutstanding 20031323 NumUnfinishedFlows 53424 StartedFlows 573920
+1810000.18451973 MaxPacketOutstanding 20258836 NumPacketOutstanding 20258460 NumUnfinishedFlows 54067 StartedFlows 580947
+1820000.18451973 MaxPacketOutstanding 20505744 NumPacketOutstanding 20504822 NumUnfinishedFlows 54684 StartedFlows 588114
+1830000.18451973 MaxPacketOutstanding 20739216 NumPacketOutstanding 20738904 NumUnfinishedFlows 55323 StartedFlows 595162
+1840000.18451973 MaxPacketOutstanding 20967618 NumPacketOutstanding 20966189 NumUnfinishedFlows 55946 StartedFlows 602344
+1850000.18451973 MaxPacketOutstanding 21199474 NumPacketOutstanding 21198976 NumUnfinishedFlows 56596 StartedFlows 609581
+1860000.18451973 MaxPacketOutstanding 21405876 NumPacketOutstanding 21405159 NumUnfinishedFlows 57191 StartedFlows 616677
+1870000.18451973 MaxPacketOutstanding 21641332 NumPacketOutstanding 21640487 NumUnfinishedFlows 57797 StartedFlows 623923
+1880000.18451973 MaxPacketOutstanding 21924985 NumPacketOutstanding 21923951 NumUnfinishedFlows 58543 StartedFlows 631211
+1890000.18451973 MaxPacketOutstanding 22125137 NumPacketOutstanding 22124959 NumUnfinishedFlows 59201 StartedFlows 638309
+1900000.18451973 MaxPacketOutstanding 22365410 NumPacketOutstanding 22363354 NumUnfinishedFlows 59823 StartedFlows 645484
+1910000.18451973 MaxPacketOutstanding 22583344 NumPacketOutstanding 22583133 NumUnfinishedFlows 60444 StartedFlows 652831
+1920000.18451973 MaxPacketOutstanding 22854884 NumPacketOutstanding 22853613 NumUnfinishedFlows 61143 StartedFlows 659993
+1930000.18451973 MaxPacketOutstanding 23107185 NumPacketOutstanding 23105852 NumUnfinishedFlows 61813 StartedFlows 667055
+1940000.18451973 MaxPacketOutstanding 23347697 NumPacketOutstanding 23346043 NumUnfinishedFlows 62439 StartedFlows 674308
+1950000.18451973 MaxPacketOutstanding 23551400 NumPacketOutstanding 23551397 NumUnfinishedFlows 63027 StartedFlows 681470
+1960000.18451973 MaxPacketOutstanding 23756117 NumPacketOutstanding 23756066 NumUnfinishedFlows 63643 StartedFlows 688638
+1970000.18451973 MaxPacketOutstanding 24016535 NumPacketOutstanding 24015375 NumUnfinishedFlows 64321 StartedFlows 695867
+1980000.18451973 MaxPacketOutstanding 24286025 NumPacketOutstanding 24285554 NumUnfinishedFlows 65017 StartedFlows 703245
+1990000.18451973 MaxPacketOutstanding 24467108 NumPacketOutstanding 24466452 NumUnfinishedFlows 65601 StartedFlows 710300
+2000000.18451973 MaxPacketOutstanding 24738547 NumPacketOutstanding 24737898 NumUnfinishedFlows 66274 StartedFlows 717444
+2010000.18451973 MaxPacketOutstanding 24936765 NumPacketOutstanding 24933250 NumUnfinishedFlows 66868 StartedFlows 724535
+2020000.18451973 MaxPacketOutstanding 25180337 NumPacketOutstanding 25175614 NumUnfinishedFlows 67497 StartedFlows 731816
+2030000.18451973 MaxPacketOutstanding 25395769 NumPacketOutstanding 25395668 NumUnfinishedFlows 68184 StartedFlows 738951
+2040000.18451973 MaxPacketOutstanding 25674122 NumPacketOutstanding 25674117 NumUnfinishedFlows 68845 StartedFlows 746240
+2050000.18451973 MaxPacketOutstanding 25904158 NumPacketOutstanding 25903867 NumUnfinishedFlows 69460 StartedFlows 753525
+2060000.18451973 MaxPacketOutstanding 26109840 NumPacketOutstanding 26106927 NumUnfinishedFlows 69997 StartedFlows 760603
+2070000.18451973 MaxPacketOutstanding 26344229 NumPacketOutstanding 26343546 NumUnfinishedFlows 70592 StartedFlows 767747
+2080000.18451973 MaxPacketOutstanding 26552311 NumPacketOutstanding 26551798 NumUnfinishedFlows 71209 StartedFlows 774733
+2090000.18451973 MaxPacketOutstanding 26785363 NumPacketOutstanding 26784165 NumUnfinishedFlows 71781 StartedFlows 781893
+2100000.18451973 MaxPacketOutstanding 27041620 NumPacketOutstanding 27040845 NumUnfinishedFlows 72448 StartedFlows 789115
+2110000.18451973 MaxPacketOutstanding 27289236 NumPacketOutstanding 27288468 NumUnfinishedFlows 73100 StartedFlows 796345
+2120000.18451973 MaxPacketOutstanding 27558399 NumPacketOutstanding 27557640 NumUnfinishedFlows 73819 StartedFlows 803500
+2130000.18451973 MaxPacketOutstanding 27782747 NumPacketOutstanding 27774017 NumUnfinishedFlows 74471 StartedFlows 810751
+2140000.18451973 MaxPacketOutstanding 28019776 NumPacketOutstanding 28019250 NumUnfinishedFlows 75099 StartedFlows 817962
+2150000.18451973 MaxPacketOutstanding 28276899 NumPacketOutstanding 28276377 NumUnfinishedFlows 75782 StartedFlows 825149
+2160000.18451973 MaxPacketOutstanding 28540024 NumPacketOutstanding 28539106 NumUnfinishedFlows 76382 StartedFlows 832239
+2170000.18451973 MaxPacketOutstanding 28784723 NumPacketOutstanding 28781964 NumUnfinishedFlows 77012 StartedFlows 839477
+2180000.18451973 MaxPacketOutstanding 29031047 NumPacketOutstanding 29030606 NumUnfinishedFlows 77673 StartedFlows 846631
+2190000.18451973 MaxPacketOutstanding 29207795 NumPacketOutstanding 29207463 NumUnfinishedFlows 78225 StartedFlows 853751
+2200000.18451973 MaxPacketOutstanding 29456476 NumPacketOutstanding 29455978 NumUnfinishedFlows 78852 StartedFlows 860923
+2210000.18451973 MaxPacketOutstanding 29702181 NumPacketOutstanding 29701178 NumUnfinishedFlows 79476 StartedFlows 868159
+2220000.18451973 MaxPacketOutstanding 29954211 NumPacketOutstanding 29954097 NumUnfinishedFlows 80184 StartedFlows 875508
+2230000.18451973 MaxPacketOutstanding 30195078 NumPacketOutstanding 30194307 NumUnfinishedFlows 80849 StartedFlows 882671
+2240000.18451973 MaxPacketOutstanding 30416622 NumPacketOutstanding 30415975 NumUnfinishedFlows 81460 StartedFlows 889818
+2250000.18451973 MaxPacketOutstanding 30653295 NumPacketOutstanding 30651196 NumUnfinishedFlows 82131 StartedFlows 896863
+2260000.18451973 MaxPacketOutstanding 30928392 NumPacketOutstanding 30921286 NumUnfinishedFlows 82791 StartedFlows 904022
+2270000.18451973 MaxPacketOutstanding 31141759 NumPacketOutstanding 31138159 NumUnfinishedFlows 83400 StartedFlows 911157
+2280000.18451973 MaxPacketOutstanding 31377982 NumPacketOutstanding 31377429 NumUnfinishedFlows 84062 StartedFlows 918370
+2290000.18451973 MaxPacketOutstanding 31622010 NumPacketOutstanding 31621321 NumUnfinishedFlows 84722 StartedFlows 925484
+2300000.18451973 MaxPacketOutstanding 31849442 NumPacketOutstanding 31846575 NumUnfinishedFlows 85304 StartedFlows 932572
+2310000.18451973 MaxPacketOutstanding 32075989 NumPacketOutstanding 32071809 NumUnfinishedFlows 85932 StartedFlows 939677
+2320000.18451973 MaxPacketOutstanding 32310503 NumPacketOutstanding 32308860 NumUnfinishedFlows 86547 StartedFlows 946955
+2330000.18451973 MaxPacketOutstanding 32543792 NumPacketOutstanding 32543749 NumUnfinishedFlows 87171 StartedFlows 954069
+2340000.18451973 MaxPacketOutstanding 32820330 NumPacketOutstanding 32820161 NumUnfinishedFlows 87918 StartedFlows 961406
+2350000.18451973 MaxPacketOutstanding 33037980 NumPacketOutstanding 33037513 NumUnfinishedFlows 88483 StartedFlows 968557
+2360000.18451973 MaxPacketOutstanding 33270604 NumPacketOutstanding 33270101 NumUnfinishedFlows 89127 StartedFlows 975846
+2370000.18451973 MaxPacketOutstanding 33493083 NumPacketOutstanding 33492924 NumUnfinishedFlows 89740 StartedFlows 982881
+2380000.18451973 MaxPacketOutstanding 33733379 NumPacketOutstanding 33731515 NumUnfinishedFlows 90387 StartedFlows 989847
+2390000.18451973 MaxPacketOutstanding 33976401 NumPacketOutstanding 33974337 NumUnfinishedFlows 91043 StartedFlows 996956
+2400000.18451973 MaxPacketOutstanding 34040904 NumPacketOutstanding 33505143 NumUnfinishedFlows 90409 StartedFlows 1000000
+2410000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 32567643 NumUnfinishedFlows 87869 StartedFlows 1000000
+2420000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 31627700 NumUnfinishedFlows 85401 StartedFlows 1000000
+2430000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 30681564 NumUnfinishedFlows 82922 StartedFlows 1000000
+2440000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 29742410 NumUnfinishedFlows 80401 StartedFlows 1000000
+2450000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 28813860 NumUnfinishedFlows 77932 StartedFlows 1000000
+2460000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 27892717 NumUnfinishedFlows 75537 StartedFlows 1000000
+2470000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 26953948 NumUnfinishedFlows 73061 StartedFlows 1000000
+2480000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 26017697 NumUnfinishedFlows 70564 StartedFlows 1000000
+2490000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 25080028 NumUnfinishedFlows 68079 StartedFlows 1000000
+2500000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 24156794 NumUnfinishedFlows 65649 StartedFlows 1000000
+2510000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 23226977 NumUnfinishedFlows 63187 StartedFlows 1000000
+2520000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 22271486 NumUnfinishedFlows 60622 StartedFlows 1000000
+2530000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 21336290 NumUnfinishedFlows 58096 StartedFlows 1000000
+2540000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 20403312 NumUnfinishedFlows 55642 StartedFlows 1000000
+2550000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 19478247 NumUnfinishedFlows 53180 StartedFlows 1000000
+2560000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 18545884 NumUnfinishedFlows 50719 StartedFlows 1000000
+2570000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 17590455 NumUnfinishedFlows 48155 StartedFlows 1000000
+2580000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 16646197 NumUnfinishedFlows 45659 StartedFlows 1000000
+2590000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 15722026 NumUnfinishedFlows 43246 StartedFlows 1000000
+2600000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 14794837 NumUnfinishedFlows 40736 StartedFlows 1000000
+2610000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 13859506 NumUnfinishedFlows 38287 StartedFlows 1000000
+2620000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 12927252 NumUnfinishedFlows 35830 StartedFlows 1000000
+2630000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 11989234 NumUnfinishedFlows 33350 StartedFlows 1000000
+2640000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 11059009 NumUnfinishedFlows 30919 StartedFlows 1000000
+2650000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 10118876 NumUnfinishedFlows 28402 StartedFlows 1000000
+2660000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 9202926 NumUnfinishedFlows 25959 StartedFlows 1000000
+2670000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 8276245 NumUnfinishedFlows 23510 StartedFlows 1000000
+2680000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 7364706 NumUnfinishedFlows 21130 StartedFlows 1000000
+2690000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 6459629 NumUnfinishedFlows 18749 StartedFlows 1000000
+2700000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 5582090 NumUnfinishedFlows 16486 StartedFlows 1000000
+2710000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 4710340 NumUnfinishedFlows 14139 StartedFlows 1000000
+2720000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 3844191 NumUnfinishedFlows 11830 StartedFlows 1000000
+2730000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 3011272 NumUnfinishedFlows 9551 StartedFlows 1000000
+2740000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 2255530 NumUnfinishedFlows 7518 StartedFlows 1000000
+2750000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 1573740 NumUnfinishedFlows 5705 StartedFlows 1000000
+2760000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 976227 NumUnfinishedFlows 4102 StartedFlows 1000000
+2770000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 480638 NumUnfinishedFlows 2775 StartedFlows 1000000
+2780000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 94140 NumUnfinishedFlows 1742 StartedFlows 1000000
+2790000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 4294811038 NumUnfinishedFlows 1064 StartedFlows 1000000
+2800000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 4294637235 NumUnfinishedFlows 581 StartedFlows 1000000
+2810000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 4294543949 NumUnfinishedFlows 326 StartedFlows 1000000
+2820000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 4294480663 NumUnfinishedFlows 150 StartedFlows 1000000
+2830000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 4294437840 NumUnfinishedFlows 27 StartedFlows 1000000
+2840000.18451972 MaxPacketOutstanding 34040904 NumPacketOutstanding 4294428380 NumUnfinishedFlows 0 StartedFlows 1000000
+AverageFCT 82357.9696869526 MeanSlowdown 99.0753357799004 MeanInflation 2.97145305952406
+Loc:0 Freq:0(0) Loc:1 Freq:8851242(0.22) Loc:2 Freq:8247771(0.2) Loc:3 Freq:23610236(0.58) 
+DeadPackets 25% DuplicatedPackets 0% Utilization 95%
+Drops SS 56071714 SL 0 LL 0
+Simulator ended. Execution time: 4.1e+02 seconds

@@ -35,7 +35,11 @@
 
 class Factory {
 public:
+  static int flow_counter;
   static Flow *get_flow(uint32_t id, double start_time, uint32_t size,
+                        Host *src, Host *dst, uint32_t flow_type,
+                        double paced_rate = 0.0);
+  static Flow *get_flow(double start_time, uint32_t size,
                         Host *src, Host *dst, uint32_t flow_type,
                         double paced_rate = 0.0);
   static Queue *get_queue(uint32_t id, double rate,

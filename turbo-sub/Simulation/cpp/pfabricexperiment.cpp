@@ -135,8 +135,14 @@ void printQueueStatistics(PFabricTopology *topo) {
   for(int i = 0; i < 4; i++)
     total_drop += dropAt[i];
   for(int i = 0; i < 4; i++){
-    std::cout << "Loc:" << i << " Freq:" << dropAt[i] << "("  << std::setprecision(2) << (double)dropAt[i]/total_drop << ") ";
+    std::cout << "Hop:" << i << " Drp:" << dropAt[i] << "("  << (int)((double)dropAt[i]/total_drop * 100) << "%) ";
   }
+
+  for (std::vector<Host*>::iterator h = (topo->hosts).begin(); h != (topo->hosts).end(); h++) {
+    totalSentFromHosts += (*h)->queue->b_departures;
+  }
+
+  std::cout << " Overall:" << std::setprecision(2) <<(double)total_drop*1460/totalSentFromHosts;
   std::cout << "\n";
 
 
@@ -144,15 +150,14 @@ void printQueueStatistics(PFabricTopology *topo) {
 
 
 
-  for (std::vector<Host*>::iterator h = (topo->hosts).begin(); h != (topo->hosts).end(); h++) {
-    totalSentFromHosts += (*h)->queue->b_departures;
-  }
+
 
   double totalSentToHosts = 0;
   for (std::vector<AggSwitch*>::iterator tor = (topo->agg_switches).begin(); tor != (topo->agg_switches).end(); tor++) {
     std::vector<Queue*> host_facing_queues;
     for (std::vector<Queue*>::iterator q = ((*tor)->queues).begin(); q != ((*tor)->queues).end(); q++) {
-      if ((*q)->rate == params.bandwidth) host_facing_queues.push_back((*q));
+      if ((*q)->rate == params.bandwidth)
+        host_facing_queues.push_back((*q));
       drop_ss += (*q)->dropss;
       drop_sl += (*q)->dropsl;
       drop_ll += (*q)->dropll;

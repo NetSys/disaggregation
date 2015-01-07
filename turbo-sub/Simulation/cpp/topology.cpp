@@ -77,6 +77,9 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
 
 
 Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
+  //if(p->flow->id == 61 || p->flow->id == 70)
+  //  std::cout << "PFabricTopology::get_next_hop() fid:" << p->flow->id << " seq:" << p->seq_no << " ptr:" << p << " qloc:" << q->location << "\n";
+
   if (q->dst->type == HOST) {
     return NULL; // Packet Arrival
   }
@@ -90,7 +93,7 @@ Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
     } else {
       uint32_t hash_port = 0;
       if(params.load_balancing == 0)
-        hash_port = rand() % 4;
+        hash_port = q->spary_counter++%4;
       else if(params.load_balancing == 1)
         hash_port = (p->src->id + p->dst->id + p->flow->id) % 4;
       return ((Switch *) q->dst)->queues[16 + hash_port];

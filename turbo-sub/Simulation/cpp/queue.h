@@ -43,6 +43,7 @@ public:
 
   uint64_t dropss; uint64_t dropsl; uint64_t dropll;
   uint64_t pkt_drop;
+  uint64_t spary_counter;
 
   int location;
 };
