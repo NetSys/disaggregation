@@ -201,6 +201,8 @@ void TurboFlow::handle_timeout()
 
 void TurboFlow::reset_retx_timeout() {
   if (retx_event) {
+    if(retx_event->unique_id == 5230)
+      std::cout << "turboflow.cpp:205 canceling 5230\n";
     retx_event->cancelled = true; // Makes sure that the event is not triggered
   }
   // TODO: Be more accurate about the time
@@ -209,6 +211,8 @@ void TurboFlow::reset_retx_timeout() {
 
 void TurboFlow::cancel_flow_proc_event() {
   if (flow_proc_event) {
+    if(retx_event->unique_id == 5230)
+      std::cout << "turboflow.cpp:215 canceling 5230\n";
     flow_proc_event->cancelled = true;
   }
   flow_proc_event = NULL;

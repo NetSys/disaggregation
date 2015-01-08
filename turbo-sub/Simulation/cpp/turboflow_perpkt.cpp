@@ -84,6 +84,8 @@ void TurboFlowPerPacketTimeout::handle_timeout() {
 
 void TurboFlowPerPacketTimeout::reset_retx_timeout() {
   if (retx_event) {
+    if(retx_event->unique_id == 5230)
+      std::cout << "turboflow_perpkt.cpp:88 canceling 5230\n";
     retx_event->cancelled = true;
     retx_event = NULL;
   }

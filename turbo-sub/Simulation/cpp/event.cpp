@@ -38,12 +38,13 @@ double get_current_time() {
   return current_time; // in us
 }
 
-
+uint32_t Event::instance_count = 0;
 
 Event::Event(uint32_t type, double time) {
   this->type = type;
   this->time = time;
   this->cancelled = false;
+  this->unique_id = Event::instance_count++;
 }
 
 Event::~Event() {
@@ -161,12 +162,16 @@ PacketQueuingEvent::~PacketQueuingEvent() {
 }
 
 void PacketQueuingEvent::process_event() {
-  if (!queue->busy) {
+  if (!queue->busy || ( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) ) {
+    queue->preempt_current_transmission();
     queue->queue_proc_event = new QueueProcessingEvent(get_current_time(), queue);
     add_to_event_queue(queue->queue_proc_event);
     queue->busy = true;
+    if(queue->unique_id == 171) std::cout << "!!!!!event.cpp:169\n";
+    queue->packet_transmitting = packet;
   }
   queue->enque(packet);
+
 }
 
 
@@ -197,30 +202,43 @@ QueueProcessingEvent::~QueueProcessingEvent() {
   }
 }
 void QueueProcessingEvent::process_event() {
+
   Packet *packet = queue->deque();
   if (packet) {
     queue->busy = true;
+    if(queue->unique_id == 171) std::cout << "!!!!!event.cpp:208\n";
+    queue->packet_transmitting = packet;
     Queue *next_hop = topology->get_next_hop(packet, queue);
     double td = queue->get_transmission_delay(packet->size);
     double pd = queue->propagation_delay;
     //double additional_delay = 1e-10;
     queue->queue_proc_event = new QueueProcessingEvent(time + td, queue);
+    if(queue->unique_id == 171)
+      std::cout << get_current_time() << " event.cpp:213 this:" << this << " id:" << this->unique_id << " q:" << queue->unique_id << " qptr:" << queue <<  " add QueueProcessingEvent("<<(time + td)<<") evt ptr:" << queue->queue_proc_event << " id:" << queue->queue_proc_event->unique_id << " pkt ptr:" << packet << " transmitting:" << queue->packet_transmitting << "\n";
     add_to_event_queue(queue->queue_proc_event);
+    queue->busy_events.push_back(queue->queue_proc_event);
     if (next_hop == NULL) {
-      add_to_event_queue(new PacketArrivalEvent(time + td + pd, packet));
+      Event* arrival_evt = new PacketArrivalEvent(time + td + pd, packet);
+      add_to_event_queue(arrival_evt);
+      queue->busy_events.push_back(arrival_evt);
     } else {
+      Event* queuing_evt = NULL;
       if (params.cut_through == 1) {
         double cut_through_delay =
           queue->get_transmission_delay(packet->flow->hdr_size);
-        add_to_event_queue(new PacketQueuingEvent(time + cut_through_delay + pd,
-                                                  packet, next_hop));
+        queuing_evt = new PacketQueuingEvent(time + cut_through_delay + pd, packet, next_hop);
       } else {
-        add_to_event_queue(new PacketQueuingEvent(time + td + pd,
-                                                  packet, next_hop));
+        queuing_evt = new PacketQueuingEvent(time + td + pd, packet, next_hop);
       }
+      add_to_event_queue(queuing_evt);
+      queue->busy_events.push_back(queuing_evt);
     }
   } else {
+    if(queue->unique_id == 171)
+      std::cout << get_current_time() << " event.cpp:213 this:" << this << " q:" << queue->unique_id << " qptr:" << queue <<  "\n";
     queue->busy = false;
+    queue->busy_events.clear();
+    queue->packet_transmitting = NULL;
     queue->queue_proc_event = NULL;
   }
 }
@@ -341,11 +359,14 @@ DDCHostPacketQueuingEvent::DDCHostPacketQueuingEvent(double time, Packet *packet
 }
 
 void DDCHostPacketQueuingEvent::process_event() {
-  if (!queue->busy) {
+  if (!queue->busy || ( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) ) {
+    queue->preempt_current_transmission();
     queue->queue_proc_event = new DDCHostQueueProcessingEvent(get_current_time(), queue);
     //std::cout << "add DDCHostQueueProcessingEvent to " << get_current_time() << "\n";
     add_to_event_queue(queue->queue_proc_event);
     queue->busy = true;
+    if(queue->unique_id == 171) std::cout << "!!!!!event.cpp:365\n";
+    queue->packet_transmitting = this->packet;
   }
   queue->enque(packet);
 }
@@ -363,28 +384,35 @@ void DDCHostQueueProcessingEvent::process_event() {
   if (packet) {
     //std::cout << "Time:" << get_current_time() << " processing DDCHostQueueProcessingEvent\n";
     queue->busy = true;
+    if(queue->unique_id == 171) std::cout << "!!!!!event.cpp:384\n";
+    queue->packet_transmitting = packet;
     Queue *next_hop = topology->get_next_hop(packet, queue);
     double td = queue->get_transmission_delay(packet->size);
     double pd = queue->propagation_delay;
     //double additional_delay = 1e-10;
     queue->queue_proc_event = new DDCHostQueueProcessingEvent(time + td, queue);
     add_to_event_queue(queue->queue_proc_event);
+    queue->busy_events.push_back(queue->queue_proc_event);
     if (next_hop == NULL) {
-      add_to_event_queue(new PacketArrivalEvent(time + td + pd, packet));
+      Event* arrival_evt = new PacketArrivalEvent(time + td + pd, packet);
+      add_to_event_queue(arrival_evt);
+      queue->busy_events.push_back(arrival_evt);
     } else {
+      Event* queuing_evt = NULL;
       if (params.cut_through == 1) {
-        double cut_through_delay =
-          queue->get_transmission_delay(packet->flow->hdr_size);
-        add_to_event_queue(new PacketQueuingEvent(time + cut_through_delay + pd,
-                                                  packet, next_hop));
+        double cut_through_delay = queue->get_transmission_delay(packet->flow->hdr_size);
+        queuing_evt = new PacketQueuingEvent(time + cut_through_delay + pd, packet, next_hop);
       } else {
-        add_to_event_queue(new PacketQueuingEvent(time + td + pd,
-                                                  packet, next_hop));
+        queuing_evt = new PacketQueuingEvent(time + td + pd, packet, next_hop);
       }
+      add_to_event_queue(queuing_evt);
+      queue->busy_events.push_back(queuing_evt);
     }
   } else {
     //std::cout << "Time:" << get_current_time() << " processing DDCHostQueueProcessingEvent  ===========Queue empty===========\n";
     queue->busy = false;
+    queue->busy_events.clear();
+    queue->packet_transmitting = NULL;
     queue->queue_proc_event = NULL;
 
 

@@ -2,8 +2,10 @@
 #define PARAMS_H
 
 #include <string>
+#include <map>
 
 struct DCExpParams {
+
   int initial_cwnd;
   int max_cwnd;
   double retx_timeout_value;
@@ -27,6 +29,7 @@ struct DCExpParams {
   int num_hosts;
   int num_agg_switches;
   int num_core_switches;
+  int preemptive_queue;
 };
 
 /* General main function */

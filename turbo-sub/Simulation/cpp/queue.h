@@ -3,12 +3,14 @@
 
 #include <deque>
 #include <stdint.h>
+#include <vector>
 
 #define DROPTAIL_QUEUE 1
 #define PFABRIC_QUEUE 2
 
 class Node;
 class Packet;
+class Event;
 
 class QueueProcessingEvent;
 class PacketPropagationEvent;
@@ -21,15 +23,22 @@ public:
   virtual Packet *deque();
   virtual void drop(Packet *packet);
   double get_transmission_delay(uint32_t size);
+  void preempt_current_transmission();
 
   // Members
   uint32_t id;
+  uint32_t unique_id;
+  static uint32_t instance_count;
   double rate;
   uint32_t limit_bytes;
   std::deque<Packet *> packets;
   uint32_t bytes_in_queue;
   bool busy;
   QueueProcessingEvent *queue_proc_event;
+
+  std::vector<Event*> busy_events;
+  Packet* packet_transmitting;
+
 
 
   Node *src;

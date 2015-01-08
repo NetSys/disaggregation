@@ -10,9 +10,12 @@ extern double get_current_time(); // TODOm
 extern void add_to_event_queue(Event *ev);
 extern DCExpParams params;
 
+uint32_t Queue::instance_count = 0;
+
 /* Queues */
 Queue::Queue(uint32_t id, double rate, uint32_t limit_bytes, int location) {
   this->id = id;
+  this->unique_id = Queue::instance_count++;
   this->rate = rate; // in bps
   this->limit_bytes = limit_bytes;
   this->bytes_in_queue = 0;
@@ -28,6 +31,7 @@ Queue::Queue(uint32_t id, double rate, uint32_t limit_bytes, int location) {
   this->dropss = 0; this->dropsl = 0; this->dropll = 0;
   this->pkt_drop = 0;
   this->spary_counter=std::rand();
+  this->packet_transmitting = NULL;
 }
 
 void Queue::set_src_dst(Node *src, Node *dst) {
@@ -64,6 +68,8 @@ void Queue::drop(Packet *packet) {
   if(packet->seq_no < packet->flow->size){
     packet->flow->data_pkt_drop++;
   }
+
+  std::cout << "queue.cpp:69 delete " << packet << "\n";
   delete packet;
 }
 
@@ -71,6 +77,22 @@ double Queue::get_transmission_delay(uint32_t size) {
     return size * 8.0 / rate;
 }
 
+void Queue::preempt_current_transmission(){
+  if(params.preemptive_queue && busy){
+    for(uint i = 0; i < busy_events.size(); i++){
+      if(busy_events[i]->unique_id == 5230)
+        std::cout << "queue.cpp:84 canceling 5230\n";
+      busy_events[i]->cancelled = true;
+    }
+    busy_events.clear();
+    if(this->unique_id == 171)
+      std::cout << get_current_time() << " queue.cpp:86 q:" << this->unique_id << " qptr:" << this << " preempt " << packet_transmitting << "\n" << std::flush;
+    drop(packet_transmitting);//TODO: should be put back to queue
+    packet_transmitting = NULL;
+    queue_proc_event = NULL;
+    busy = false;
+  }
+}
 
 /* PFabric Queue */
 PFabricQueue::PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes, int location)
@@ -169,7 +191,9 @@ void ProbDropQueue::enque(Packet *packet) {
     bytes_in_queue += packet->size;
     if (!busy) {
       add_to_event_queue(new QueueProcessingEvent(get_current_time(), this));
-      busy = true;
+      this->busy = true;
+      if(this->id == 7) std::cout << "!!!!!queue.cpp:189\n";
+      this->packet_transmitting = packet;
     }
   }
 }

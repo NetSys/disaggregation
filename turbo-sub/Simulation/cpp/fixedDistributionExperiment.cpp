@@ -183,6 +183,8 @@ void run_scenario_shuffle_traffic() {
     //event_queue.pop();
     //std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
+      if(ev->unique_id == 5230)
+        std::cout << " deleting 5230!!!!!!!!!!!!!!!!!!!\n";
       delete ev; //TODO: Smarter
       continue;
     }

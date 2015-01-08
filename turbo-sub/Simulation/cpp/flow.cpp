@@ -158,6 +158,7 @@ void Flow::receive_ack(uint32_t ack, std::vector<uint32_t> sack_list) {
 
 void Flow::receive(Packet *p) {
   if (finished) {
+    std::cout << get_current_time() << " flow.cpp:162 delete " << p << "\n";
     delete p;
     return;
   }
@@ -166,6 +167,7 @@ void Flow::receive(Packet *p) {
   if (p->type == ACK_PACKET) {
     Ack *a = (Ack *) p;
     receive_ack(a->seq_no, a->sack_list);
+    std::cout << get_current_time() << " flow.cpp:170 delete " << p << "\n";
     delete p;
     return;
   }
@@ -203,6 +205,8 @@ void Flow::receive(Packet *p) {
     }
     s += mss;
   }
+
+  std::cout << get_current_time() << " flow.cpp:209 delete " << p << "\n";
   delete p;
   //std::cout << get_current_time() << " Sending ack " << recv_till << std::endl;
   send_ack(recv_till, sack_list); // Cumulative Ack
@@ -230,6 +234,8 @@ void Flow::handle_timeout() {
 
 void Flow::cancel_retx_event() {
   if (retx_event) {
+    if(retx_event->unique_id == 5230)
+      std::cout << "flow.cpp:238 canceling 5230\n";
     retx_event->cancelled = true;
   }
   retx_event = NULL;
@@ -346,8 +352,8 @@ void FountainFlow::send_pending_data() {
 void FountainFlow::receive(Packet *p) {
   if (!finished) {
     if (p->type == ACK_PACKET) {
-      Ack *a = (Ack *) p;
-      if(a->seq_no == 0){//flow finished
+//      Ack *a = (Ack *) p;
+//      if(a->seq_no == 0){//flow finished
         finished = true;
         finish_time = get_current_time();
         flow_completion_time = finish_time - start_time;
@@ -358,9 +364,9 @@ void FountainFlow::receive(Packet *p) {
           FlowFinishedEvent *ev = new FlowFinishedEvent(get_current_time(), this);
           add_to_event_queue(ev);
         }
-      }else{
-        bytes_acked = a->seq_no;
-      }
+//      }else{
+//        bytes_acked = a->seq_no;
+//      }
     }else{
       received_count++;
 //      if(this->id == 70 || this->id == 61){
@@ -371,21 +377,22 @@ void FountainFlow::receive(Packet *p) {
       if(received_count >= min_recv){
         send_ack(0, dummySack);
       }
-      else{
-        send_ack(received_count * mss, dummySack);
-      }
+//      else{
+//        send_ack(received_count * mss, dummySack);
+//      }
     }
 
   }
+  std::cout << get_current_time() << " flow.cpp:380 delete " << p << "\n";
   delete p;
   return;
 }
 
 uint32_t FountainFlow::ddc_get_priority() {
   //uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
-  uint32_t priority = min_recv * mss - bytes_acked ;
+  //uint32_t priority = min_recv * mss - bytes_acked ;
   //uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
-  //uint32_t priority = this->size;
+  uint32_t priority = this->size > next_seq_no? this->size - next_seq_no:this->size;
   //uint32_t priority = 1;
   return priority;
 }
@@ -396,19 +403,19 @@ Packet *FountainFlow::send(uint32_t seq)
 
   //uint32_t priority = this->size > seq? this->size - seq:2147483648;
 
-  //uint32_t priority = 1;
-  uint32_t priority = min_recv * mss - bytes_acked;
+  uint32_t priority = 1;
+  //uint32_t priority = min_recv * mss - bytes_acked;
 
-//  if (seq >= this->size){
-//    priority = 2;
-//  }
+  if (seq >= this->size){
+    priority = 2;
+  }
 
 //  if(this->id == 61 || this->id == 70)
 //    std::cout << "FountainFlow::send: Flow:" << this->id << "@" << (int)(get_current_time() * 1000000) << " seq:" << seq << " sz:" << size << " pri:" << priority << "\n";
 
-
+  uint32_t pkt_size = mss + hdr_size;
   p = new Packet(get_current_time(), this, seq, \
-                 priority, mss + hdr_size, \
+                 priority, pkt_size, \
                  src, dst);
 
   add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));

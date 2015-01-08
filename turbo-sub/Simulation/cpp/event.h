@@ -53,6 +53,9 @@ public:
 
   virtual void process_event() = 0;
 
+  uint32_t unique_id;
+  static uint32_t instance_count;
+
   uint32_t type;
   double time;
   bool cancelled;

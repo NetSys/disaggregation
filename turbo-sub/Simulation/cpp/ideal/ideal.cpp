@@ -214,6 +214,8 @@ void suspend(IdealFlow *f, double time) {
       f->state = SUSPENDED;
       ibusy[f->s] = -1;
       ebusy[f->d] = -1;
+      if(f->finish_event->unique_id == 5230)
+        std::cout << "ideal.cpp:218 canceling 5230\n";
       f->finish_event->cancelled = true;
       waiting_flows.push_back(f);
     }
