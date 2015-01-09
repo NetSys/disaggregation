@@ -23,6 +23,8 @@ public:
 	uint32_t size;
 	Host *src;
 	Host *dst;
+	uint32_t unique_id;
+	static uint32_t instance_count;
 
 	uint32_t type; // Normal or Ack packet
 };

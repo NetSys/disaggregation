@@ -184,11 +184,13 @@ void run_scenario_shuffle_traffic() {
     //std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
       if(ev->unique_id == 5230)
-        std::cout << " deleting 5230!!!!!!!!!!!!!!!!!!!\n";
+        std::cout << " deleting evt " << ev->unique_id << "!!!!!!!!!!!!!!!!!!!\n";
       delete ev; //TODO: Smarter
       continue;
     }
     ev->process_event();
+    if(ev->unique_id == 3883)
+      std::cout << "processed and deleting evt " << ev->unique_id << "!!!!!!!!!!!!!!!!!!!\n";
     delete ev;
   }
 }

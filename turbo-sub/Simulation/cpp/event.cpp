@@ -162,12 +162,20 @@ PacketQueuingEvent::~PacketQueuingEvent() {
 }
 
 void PacketQueuingEvent::process_event() {
+  if(this->packet->unique_id == 761){
+    std::cout << get_current_time() << " event.cpp:173 packet queuing pkt:" << packet << " pid:" << packet->unique_id << " to q:" << queue << " qid:" << queue->unique_id <<
+    "event ptr:" << this << " eid:" << this->unique_id << " q->busy:" << queue->busy;
+    if (queue->busy){
+      std::cout << " preempt?" << (this->packet->pf_priority < queue->packet_transmitting->pf_priority);
+    }
+    std::cout << "\n";
+  }
+
   if (!queue->busy || ( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) ) {
     queue->preempt_current_transmission();
     queue->queue_proc_event = new QueueProcessingEvent(get_current_time(), queue);
     add_to_event_queue(queue->queue_proc_event);
     queue->busy = true;
-    if(queue->unique_id == 171) std::cout << "!!!!!event.cpp:169\n";
     queue->packet_transmitting = packet;
   }
   queue->enque(packet);
@@ -197,7 +205,11 @@ QueueProcessingEvent::QueueProcessingEvent(double time, Queue *queue)
   this->queue = queue;
 }
 QueueProcessingEvent::~QueueProcessingEvent() {
+  if (this->unique_id == 5230)
+    std::cout << "~~~~~~~~~~~~~~~QueueProcessingEvent()\n";
   if (queue->queue_proc_event == this) {
+    if (this->unique_id == 5230)
+      std::cout << "setting NULL\n";
     queue->queue_proc_event = NULL;
   }
 }
@@ -206,15 +218,16 @@ void QueueProcessingEvent::process_event() {
   Packet *packet = queue->deque();
   if (packet) {
     queue->busy = true;
-    if(queue->unique_id == 171) std::cout << "!!!!!event.cpp:208\n";
+    queue->busy_events.clear();
     queue->packet_transmitting = packet;
     Queue *next_hop = topology->get_next_hop(packet, queue);
     double td = queue->get_transmission_delay(packet->size);
     double pd = queue->propagation_delay;
     //double additional_delay = 1e-10;
     queue->queue_proc_event = new QueueProcessingEvent(time + td, queue);
-    if(queue->unique_id == 171)
-      std::cout << get_current_time() << " event.cpp:213 this:" << this << " id:" << this->unique_id << " q:" << queue->unique_id << " qptr:" << queue <<  " add QueueProcessingEvent("<<(time + td)<<") evt ptr:" << queue->queue_proc_event << " id:" << queue->queue_proc_event->unique_id << " pkt ptr:" << packet << " transmitting:" << queue->packet_transmitting << "\n";
+    if(queue->unique_id == 329)
+      std::cout << get_current_time() << " event.cpp:222 this:" << this << " id:" << this->unique_id << " q:" << queue->unique_id << " qptr:" << queue <<  " add QueueProcessingEvent("<<(time + td)<<") evt ptr:"
+      << queue->queue_proc_event << " id:" << queue->queue_proc_event->unique_id << " pkt ptr:" << packet << " transmitting:" << queue->packet_transmitting << "\n";
     add_to_event_queue(queue->queue_proc_event);
     queue->busy_events.push_back(queue->queue_proc_event);
     if (next_hop == NULL) {
@@ -230,6 +243,10 @@ void QueueProcessingEvent::process_event() {
       } else {
         queuing_evt = new PacketQueuingEvent(time + td + pd, packet, next_hop);
       }
+      if(packet->unique_id == 761)
+        std::cout << get_current_time() << " event.cpp:238 this:" << this << " id:" << this->unique_id << " q:" << queue->unique_id << " qptr:" << queue <<  " add PacketQueuingEvent("<< queuing_evt->time
+        <<") evt ptr:" << queuing_evt << " pkt ptr:" << packet << " pid:" << packet->unique_id << " next hop:" << next_hop << " qid:" << next_hop->unique_id << "\n";
+
       add_to_event_queue(queuing_evt);
       queue->busy_events.push_back(queuing_evt);
     }
@@ -405,6 +422,10 @@ void DDCHostQueueProcessingEvent::process_event() {
       } else {
         queuing_evt = new PacketQueuingEvent(time + td + pd, packet, next_hop);
       }
+      if(packet->unique_id == 761)
+        std::cout << get_current_time() << " event.cpp:418 this:" << this << " id:" << this->unique_id << " q:" << queue->unique_id << " qptr:" << queue <<  " add PacketQueuingEvent("<< queuing_evt->time
+        <<") evt ptr:" << " pkt ptr:" << packet << " next hop:" << next_hop << " qid:" << next_hop->unique_id << "\n";
+
       add_to_event_queue(queuing_evt);
       queue->busy_events.push_back(queuing_evt);
     }
