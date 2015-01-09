@@ -401,6 +401,7 @@ void DDCHostQueueProcessingEvent::process_event() {
   if (packet) {
     //std::cout << "Time:" << get_current_time() << " processing DDCHostQueueProcessingEvent\n";
     queue->busy = true;
+    queue->busy_events.clear();
     if(queue->unique_id == 171) std::cout << "!!!!!event.cpp:384\n";
     queue->packet_transmitting = packet;
     Queue *next_hop = topology->get_next_hop(packet, queue);
