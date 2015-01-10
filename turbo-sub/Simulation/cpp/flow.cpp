@@ -158,7 +158,7 @@ void Flow::receive_ack(uint32_t ack, std::vector<uint32_t> sack_list) {
 
 void Flow::receive(Packet *p) {
   if (finished) {
-    std::cout << get_current_time() << " flow.cpp:162 delete " << p << "\n";
+    //std::cout << get_current_time() << " flow.cpp:162 delete " << p << "\n";
     delete p;
     return;
   }
@@ -167,7 +167,7 @@ void Flow::receive(Packet *p) {
   if (p->type == ACK_PACKET) {
     Ack *a = (Ack *) p;
     receive_ack(a->seq_no, a->sack_list);
-    std::cout << get_current_time() << " flow.cpp:170 delete " << p << "\n";
+    //std::cout << get_current_time() << " flow.cpp:170 delete " << p << "\n";
     delete p;
     return;
   }
@@ -206,7 +206,7 @@ void Flow::receive(Packet *p) {
     s += mss;
   }
 
-  std::cout << get_current_time() << " flow.cpp:209 delete " << p << "\n";
+  //std::cout << get_current_time() << " flow.cpp:209 delete " << p << "\n";
   delete p;
   //std::cout << get_current_time() << " Sending ack " << recv_till << std::endl;
   send_ack(recv_till, sack_list); // Cumulative Ack
@@ -383,7 +383,7 @@ void FountainFlow::receive(Packet *p) {
     }
 
   }
-  std::cout << get_current_time() << " flow.cpp:380 delete " << p << "\n";
+  //std::cout << get_current_time() << " flow.cpp:380 delete " << p << "\n";
   delete p;
   return;
 }

@@ -5,6 +5,7 @@
 #include <climits>
 #include <iostream>
 #include <stdlib.h>
+#include "assert.h"
 
 extern double get_current_time(); // TODOm
 extern void add_to_event_queue(Event *ev);
@@ -47,7 +48,7 @@ void Queue::enque(Packet *packet) {
     bytes_in_queue += packet->size;
   } else {
     pkt_drop++;
-    std::cout << "queue.cpp:50\n";
+    //std::cout << "queue.cpp:50\n";
     drop(packet);
   }
 }
@@ -70,10 +71,10 @@ void Queue::drop(Packet *packet) {
     packet->flow->data_pkt_drop++;
   }
 
-  std::cout << get_current_time() << " queue.cpp:73 delete " << packet << " id:" << packet->unique_id << " qid:" << this->unique_id << "\n";
-  if(packet->unique_id == 761){
-    std::cout << "queue.cpp:75 !!!!!!!!deleting pkt 761\n";
-  }
+//  std::cout << get_current_time() << " queue.cpp:73 delete " << packet << " id:" << packet->unique_id << " qid:" << this->unique_id << "\n";
+//  if(packet->unique_id == 761){
+//    std::cout << "queue.cpp:75 !!!!!!!!deleting pkt 761\n";
+//  }
   delete packet;
 }
 
@@ -83,13 +84,35 @@ double Queue::get_transmission_delay(uint32_t size) {
 
 void Queue::preempt_current_transmission(){
   if(params.preemptive_queue && busy){
+    this->queue_proc_event->cancelled = true;
+    assert(this->packet_transmitting);
+
+    uint delete_index;
+    bool found = false;
+    for (delete_index = 0; delete_index < packets.size(); delete_index++) {
+      if (packets[delete_index] == this->packet_transmitting) {
+        found = true;
+        //std::cout << get_current_time() << " queue.cpp:95 q:" << this->unique_id << " qptr:" << this << " deleting pkt:" << this->packet_transmitting << "\n" << std::flush;
+        break;
+      }
+    }
+    if(found){
+      //std::cout << get_current_time() << " queue.cpp:100 q:" << this->unique_id << " qptr:" << this << " pkts in q:"<< std::flush;
+      //for(uint i = 0; i < packets.size(); i++){
+      //  std::cout << packets[i] << " ";
+      //}
+      //std::cout << "\n";
+      bytes_in_queue -= packet_transmitting->size;
+      packets.erase(packets.begin() + delete_index);
+    }
+
     for(uint i = 0; i < busy_events.size(); i++){
       busy_events[i]->cancelled = true;
     }
     busy_events.clear();
-    if(this->unique_id == 329)
-      std::cout << get_current_time() << " queue.cpp:91 q:" << this->unique_id << " qptr:" << this << " preempt pkt:" << this->packet_transmitting << "\n" << std::flush;
-    std::cout << "queue.cpp:95\n";
+    //if(this->unique_id == 354)
+    //  std::cout << get_current_time() << " queue.cpp:113 q:" << this->unique_id << " qptr:" << this << " preempt pkt:" << this->packet_transmitting << "\n" << std::flush;
+    //std::cout << "queue.cpp:95\n";
     drop(packet_transmitting);//TODO: should be put back to queue
     packet_transmitting = NULL;
     queue_proc_event = NULL;
@@ -103,6 +126,8 @@ PFabricQueue::PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes, int l
 }
 
 void PFabricQueue::enque(Packet *packet) {
+  //if(this->unique_id == 354)
+  //  std::cout << get_current_time() << " queue.cpp129 q:" << this->unique_id << " qptr:" << this << " enqueue pkt:" << packet << " id:" << packet->unique_id << "\n" << std::flush;
   p_arrivals += 1;
   b_arrivals += packet->size;
   packets.push_back(packet);
@@ -134,7 +159,7 @@ void PFabricQueue::enque(Packet *packet) {
     }
     packets.erase(packets.begin() + worst_index);
     pkt_drop++;
-    std::cout << "queue.cpp:139\n";
+    //std::cout << "queue.cpp:139\n";
     drop(worst_packet);
   }
 }
@@ -149,6 +174,8 @@ Packet * PFabricQueue::deque() {
     uint32_t best_index = 0;
     for (uint32_t i = 0; i < packets.size(); i++) {
       Packet* curr_pkt = packets[i];
+      //std::cout << get_current_time() <<  " queue.cpp:167 iterate " << i << " pkt ptr:" << curr_pkt << " id:" << std::flush;
+      //std::cout << curr_pkt->unique_id << " qid:" << this->unique_id << "\n" << std::flush;
       if (curr_pkt->pf_priority <= best_priority) {
         best_priority = curr_pkt->pf_priority;
         best_packet = curr_pkt;
@@ -158,7 +185,7 @@ Packet * PFabricQueue::deque() {
 
     for (uint32_t i = 0; i < packets.size(); i++) {
       Packet* curr_pkt = packets[i];
-      std::cout << get_current_time() <<  " queue.cpp:158 iterate pkt ptr:" << curr_pkt << " id:" << curr_pkt->unique_id << "qid:" << this->unique_id << "\n" << std::flush;
+      //std::cout << get_current_time() <<  " queue.cpp:177 iterate " << i << " pkt ptr:" << curr_pkt << " id:" << curr_pkt->unique_id << " qid:" << this->unique_id << "\n" << std::flush;
       if (curr_pkt->flow->id == best_packet->flow->id) {
         best_index = i;
         break;
@@ -171,7 +198,7 @@ Packet * PFabricQueue::deque() {
     p_departures += 1;
     b_departures += p->size;
 
-    std::cout << get_current_time() <<  " queue.cpp:174 deque pkt ptr:" << p << " id:" << p->unique_id << "qid:" << this->unique_id << "\n" << std::flush;
+    //std::cout << get_current_time() <<  " queue.cpp:200 deque pkt ptr:" << p << " id:" << p->unique_id << "qid:" << this->unique_id << "\n" << std::flush;
 
     return p;
 
@@ -202,7 +229,7 @@ void ProbDropQueue::enque(Packet *packet) {
     if (!busy) {
       add_to_event_queue(new QueueProcessingEvent(get_current_time(), this));
       this->busy = true;
-      if(this->id == 7) std::cout << "!!!!!queue.cpp:189\n";
+      //if(this->id == 7) std::cout << "!!!!!queue.cpp:189\n";
       this->packet_transmitting = packet;
     }
   }

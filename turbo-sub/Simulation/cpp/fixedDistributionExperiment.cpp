@@ -183,14 +183,10 @@ void run_scenario_shuffle_traffic() {
     //event_queue.pop();
     //std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
-      if(ev->unique_id == 5230)
-        std::cout << " deleting evt " << ev->unique_id << "!!!!!!!!!!!!!!!!!!!\n";
       delete ev; //TODO: Smarter
       continue;
     }
     ev->process_event();
-    if(ev->unique_id == 3883)
-      std::cout << "processed and deleting evt " << ev->unique_id << "!!!!!!!!!!!!!!!!!!!\n";
     delete ev;
   }
 }
@@ -270,7 +266,7 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
 
 
 
-  add_to_event_queue(new LoggingEvent(1 + 0.01));
+  add_to_event_queue(new LoggingEvent(1 + 0.01, 2));
 
   std::cout << "Running " << params.num_flows_to_run << " Flows\nCDF_File " <<
     params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
@@ -298,6 +294,8 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
   double sum = 0, sum_norm = 0, sum_inflation = 0;
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
+    if(!f->finished)
+      std::cout << "unfinished flow " << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes << "\n";
     sum += 1000000.0 * f->flow_completion_time;
     sum_norm += 1000000.0 * f->flow_completion_time /
       topology->get_oracle_fct(f);

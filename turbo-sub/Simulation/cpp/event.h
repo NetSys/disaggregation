@@ -16,6 +16,7 @@
 #include "flow.h"
 #include <queue>
 #include "random_variable.h"
+
 //TODO import globals
 
 #define FLOW_ARRIVAL 0
@@ -176,8 +177,10 @@ public:
 class LoggingEvent : public Event {
 public:
   LoggingEvent(double time);
+  LoggingEvent(double time, double ttl);
   ~LoggingEvent();
   void process_event();
+  double ttl;
 };
 
 

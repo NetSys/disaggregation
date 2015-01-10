@@ -1,6 +1,6 @@
 
 CC=g++ -std=c++0x
-CFLAGS=-g -O0 -O3 -Wall
+CFLAGS=-g -O3 -Wall
 
 all: simulator
 
