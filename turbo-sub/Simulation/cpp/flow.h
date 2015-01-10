@@ -108,6 +108,7 @@ public:
 	virtual void start_flow();
 	virtual void send_pending_data();
   virtual void receive(Packet *);
+  virtual void send_ack(uint32_t, std::vector<uint32_t>);
   uint32_t ddc_get_priority();
   virtual Packet* send(uint32_t seq);
 };

@@ -84,6 +84,8 @@ double Queue::get_transmission_delay(uint32_t size) {
 
 void Queue::preempt_current_transmission(){
   if(params.preemptive_queue && busy){
+    if(this->queue_proc_event->unique_id == 7394)
+      std::cout << get_current_time() << " queue.cpp:88 preempt evt eid:" << this->queue_proc_event->unique_id << " qptr:" << this << " qid:" << this->unique_id << "\n" << std::flush;
     this->queue_proc_event->cancelled = true;
     assert(this->packet_transmitting);
 

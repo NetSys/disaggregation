@@ -37,6 +37,7 @@ extern void read_experiment_parameters(std::string conf_filename, uint32_t exp_t
 extern uint32_t duplicated_packets_received;
 
 extern double start_time;
+extern double get_current_time();
 
 extern void printQueueStatistics(PFabricTopology *topo);
 extern void run_scenario();
@@ -183,6 +184,8 @@ void run_scenario_shuffle_traffic() {
     //event_queue.pop();
     //std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " " << event_queue.size() << std::endl;
     if (ev->cancelled) {
+      if(ev->unique_id == 7394)
+        std::cout << get_current_time() << " fixed..cpp:186 "  << " cancel " << ev->unique_id  << std::endl;
       delete ev; //TODO: Smarter
       continue;
     }

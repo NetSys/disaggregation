@@ -234,8 +234,6 @@ void Flow::handle_timeout() {
 
 void Flow::cancel_retx_event() {
   if (retx_event) {
-    if(retx_event->unique_id == 5230)
-      std::cout << "flow.cpp:238 canceling 5230\n";
     retx_event->cancelled = true;
   }
   retx_event = NULL;
@@ -329,6 +327,9 @@ void FountainFlow::start_flow() {
 void FountainFlow::send_pending_data() {
   if (!this->finished) {
     if(!src->queue->busy){
+      if(this->id == 0)
+        std::cout << get_current_time() << " flow.cpp:333 flow:" << this->id << " send seq:" << next_seq_no << "\n";
+
       send(next_seq_no);
       next_seq_no += mss;
       this->flow_priority = ddc_get_priority();
@@ -397,6 +398,11 @@ uint32_t FountainFlow::ddc_get_priority() {
   return priority;
 }
 
+void FountainFlow::send_ack(uint32_t seq, std::vector<uint32_t> sack_list) {
+  Packet *p = new Ack(this, seq, sack_list, hdr_size, dst, src); //Acks are dst->src
+  add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, dst->queue));
+}
+
 Packet *FountainFlow::send(uint32_t seq)
 {
   Packet *p = NULL;
@@ -418,6 +424,8 @@ Packet *FountainFlow::send(uint32_t seq)
                  priority, pkt_size, \
                  src, dst);
 
+  if(this->id == 0)
+    std::cout << get_current_time() << " flow.cpp:425 flow:" << this->id << " add DDCHostPacketQueuingEvent(now)" << "\n";
   add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
   return p;
 }
