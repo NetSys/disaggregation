@@ -156,10 +156,6 @@ PacketQueuingEvent::PacketQueuingEvent(double time, Packet *packet,
   //  std::cout << "PacketQueuingEvent::PacketQueuingEvent() fid:" << packet->flow->id << " seq:" << packet->seq_no << " ptr:" << packet << "\n";
   this->packet = packet;
   this->queue = queue;
-  if(this->queue->unique_id == 0 && this->unique_id == 8276){
-    std::cout << get_current_time() << " event.cpp:160 pktqevt,cons @q " << queue->unique_id << " ptr:" << queue << " evt eid:" << this->unique_id << " ptr:" << this << "\n";
-    assert(false);
-  }
 }
 
 PacketQueuingEvent::~PacketQueuingEvent() {
@@ -176,8 +172,7 @@ void PacketQueuingEvent::process_event() {
 //  }
 
   if (!queue->busy || ( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) ) {
-    if(queue->busy && queue->queue_proc_event->unique_id == 7394)
-      std::cout << get_current_time() << " event.cpp:176" << " this:" << this << " eid:" << this->unique_id << " preempting evt:" << queue->queue_proc_event->unique_id << " ptr:" << queue->queue_proc_event << "\n";
+
     queue->preempt_current_transmission();
     queue->queue_proc_event = new QueueProcessingEvent(get_current_time(), queue);
     add_to_event_queue(queue->queue_proc_event);
@@ -383,24 +378,17 @@ void LoggingEvent::process_event() {
 DDCHostPacketQueuingEvent::DDCHostPacketQueuingEvent(double time, Packet *packet, Queue *queue)
 : PacketQueuingEvent(time, packet, queue)
 {
-  if(queue->unique_id == 0)
-    std::cout << get_current_time() << " event.cpp:384 ddcpktqevt,cons @q " << queue->unique_id << " ptr:" << queue << "\n";
 }
 
 void DDCHostPacketQueuingEvent::process_event() {
   if (!queue->busy || ( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) ) {
-    if(queue->busy && queue->queue_proc_event->unique_id == 7394)
-      std::cout << get_current_time() << " event.cpp:391" << " this:" << this << " eid:" << this->unique_id << " preempting evt:" << queue->queue_proc_event->unique_id << " ptr:" << queue->queue_proc_event << "\n";
+
     queue->preempt_current_transmission();
     queue->queue_proc_event = new DDCHostQueueProcessingEvent(get_current_time(), queue);
-    if(packet->flow->id == 0)
-      std::cout << get_current_time() << " evt.cpp:387 in queuing event, flow:" << packet->flow->id << " add DDCHostQueueProcessingEvent(now)" << "\n";
     add_to_event_queue(queue->queue_proc_event);
     queue->busy = true;
     queue->packet_transmitting = this->packet;
   }
-  if(packet->flow->id == 0)
-    std::cout << get_current_time() << " evt.cpp:393 in queuing event, flow:" << packet->flow->id << " enqueued pkt" << "\n";
   queue->enque(packet);
 }
 
@@ -423,9 +411,6 @@ void DDCHostQueueProcessingEvent::process_event() {
     double pd = queue->propagation_delay;
     //double additional_delay = 1e-10;
     queue->queue_proc_event = new DDCHostQueueProcessingEvent(time + td, queue);
-    if(packet->flow->id == 0)
-      std::cout << get_current_time() << " event.cpp:417 in DDCHostQueueProcessingEvent found pkt in queue add new DDCHostQueueProcessingEvent(" << (time + td)
-      << ") " << " ptr:" << queue->queue_proc_event << " eid:" << queue->queue_proc_event->unique_id << " qid:" << queue->unique_id << "\n";
     add_to_event_queue(queue->queue_proc_event);
     queue->busy_events.push_back(queue->queue_proc_event);
     if (next_hop == NULL) {
@@ -444,8 +429,6 @@ void DDCHostQueueProcessingEvent::process_event() {
       queue->busy_events.push_back(queuing_evt);
     }
   } else {
-    if(queue->unique_id == 0)
-      std::cout << get_current_time() << "event.cpp:437 in DDCHostQueueProcessingEvent no pkt in queue" << "\n";
     queue->busy = false;
     queue->busy_events.clear();
     queue->packet_transmitting = NULL;
@@ -456,8 +439,6 @@ void DDCHostQueueProcessingEvent::process_event() {
       Flow* flow = ((Host*)(queue->src))->active_flows.top();
       ((Host*)(queue->src))->active_flows.pop();
       if(!flow->finished){
-        if(flow->id == 0)
-          std::cout << get_current_time() << "event.cpp:437 in DDCHostQueueProcessingEvent flow sned data. fid:" << flow->id << "\n";
         flow->send_pending_data();
         break;
       }

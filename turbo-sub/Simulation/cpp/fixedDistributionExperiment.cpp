@@ -269,7 +269,7 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
 
 
 
-  add_to_event_queue(new LoggingEvent(1 + 0.01, 2));
+  add_to_event_queue(new LoggingEvent(1 + 0.01));
 
   std::cout << "Running " << params.num_flows_to_run << " Flows\nCDF_File " <<
     params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
