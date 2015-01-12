@@ -393,8 +393,11 @@ uint32_t FountainFlow::ddc_get_priority() {
   //uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
   //uint32_t priority = min_recv * mss - bytes_acked ;
   //uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
-  uint32_t priority = this->size > next_seq_no? this->size - next_seq_no:this->size;
+  //uint32_t priority = this->size > next_seq_no? this->size - next_seq_no:this->size;
+  //uint32_t priority = next_seq_no >= this->size?2:1;
+  //uint32_t priority = this->size > next_seq_no? this->size - next_seq_no:2147483648;
   //uint32_t priority = 1;
+  uint32_t priority = this->size;
   return priority;
 }
 
@@ -409,12 +412,10 @@ Packet *FountainFlow::send(uint32_t seq)
 
   //uint32_t priority = this->size > seq? this->size - seq:2147483648;
 
-  uint32_t priority = 1;
+  uint32_t priority = 1;//next_seq_no >= this->size?2:1;
   //uint32_t priority = min_recv * mss - bytes_acked;
 
-  if (seq >= this->size){
-    priority = 2;
-  }
+
 
 //  if(this->id == 61 || this->id == 70)
 //    std::cout << "FountainFlow::send: Flow:" << this->id << "@" << (int)(get_current_time() * 1000000) << " seq:" << seq << " sz:" << size << " pri:" << priority << "\n";

@@ -11,4 +11,4 @@ flow_trace: experiments/CDF_test.txt
 cut_through: 0
 mean_flow_size: 195357
 load_balancing: 0
-preemptive_queue: 1
+preemptive_queue: 0

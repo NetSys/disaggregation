@@ -115,7 +115,8 @@ void Queue::preempt_current_transmission(){
     //if(this->unique_id == 354)
     //  std::cout << get_current_time() << " queue.cpp:113 q:" << this->unique_id << " qptr:" << this << " preempt pkt:" << this->packet_transmitting << "\n" << std::flush;
     //std::cout << "queue.cpp:95\n";
-    drop(packet_transmitting);//TODO: should be put back to queue
+    //drop(packet_transmitting);//TODO: should be put back to queue
+    enque(packet_transmitting);
     packet_transmitting = NULL;
     queue_proc_event = NULL;
     busy = false;

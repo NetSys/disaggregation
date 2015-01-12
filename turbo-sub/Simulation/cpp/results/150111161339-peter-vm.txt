@@ -1,0 +1,38 @@
+======================Cmd:======================
+7 experiments/pfabric_experiments/conf_test.txt
+======================Comment:======================
+fountain code, no preemption, 0.76 short
+======================Config:======================
+init_cwnd: 4
+max_cwnd: 7
+retx_timeout: 0.0000095
+queue_size: 6200
+propagation_delay: 0.0000002
+bandwidth: 10000000000.0
+queue_type: 2
+flow_type: 100
+num_flow: 100000
+flow_trace: experiments/CDF_test.txt
+cut_through: 0
+mean_flow_size: 195357
+load_balancing: 0
+preemptive_queue: 0
+======================Output:======================
+run_fixedDistribution_experiment_shuffle_traffic
+Running 100000 Flows
+CDF_File experiments/CDF_test.txt
+Bandwidth 10
+QueueSize 6200
+CutThrough 0
+FlowType 100
+QueueType 2
+Init CWND 4
+Max CWND 7
+Rtx Timeout 9.5e-06
+load_balancing (0: pkt)0
+1.01 MaxPacketOutstanding 89743 NumPacketOutstanding 52349 NumUnfinishedFlows 144 StartedFlows 7084
+AverageFCT 212.770862806094 MeanSlowdown 1.39365585514276 MeanInflation 2.47095627618992
+Hop:0 Drp:0(0%) Hop:1 Drp:290115(57%) Hop:2 Drp:207397(41%) Hop:3 Drp:4690(0%)  Overall:0.028
+DeadPackets 3.1% DuplicatedPackets 0% Utilization 1e+02%
+Drops SS 299495 SL 0 LL 0
+Simulator ended. Execution time: 49 seconds

@@ -9,6 +9,12 @@ extern DCExpParams params;
 
 bool FlowComparator::operator() (Flow *a, Flow *b) {
   return a->flow_priority > b->flow_priority;
+//  if(a->flow_priority > b->flow_priority)
+//    return true;
+//  else if(a->flow_priority == b->flow_priority)
+//    return a->id > b->id;
+//  else
+//    return false;
 }
 
 Node::Node(uint32_t id, uint32_t type) {

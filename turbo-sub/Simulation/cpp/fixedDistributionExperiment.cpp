@@ -169,6 +169,18 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 /* Runs a initialized scenario */
 void run_scenario_shuffle_traffic() {
   // Flow Arrivals create new flow arrivals
@@ -195,6 +207,7 @@ void run_scenario_shuffle_traffic() {
 }
 
 
+EmpiricalRandomVariable *nv_bytes;
 
 
 
@@ -222,7 +235,7 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
   PFabricTopology *topo = (PFabricTopology *) topology;
 
 
-
+  nv_bytes = new CDFRandomVariable(params.cdf_or_flow_trace);
 
 //
 //  uint32_t num_flows = params.num_flows_to_run;
@@ -259,7 +272,7 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
     Host* src = topo->hosts[i];
     Host* dst = topo->hosts[traffic_matrix[i]];
     uint size = 3 * 1460;
-    Flow* flow = Factory::get_flow(1, size, src, dst, params.flow_type);
+    Flow* flow = Factory::get_flow(1, nv_bytes->value() * 1460, src, dst, params.flow_type);
     flow->useDDCTestFlowFinishedEvent = true;
     flows_to_schedule.push_back(flow);
     Event * event = new FlowArrivalEvent(flow->start_time, flow);
@@ -298,7 +311,7 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
     if(!f->finished)
-      std::cout << "unfinished flow " << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes << "\n";
+      std::cout << "unfinished flow " << "size:" << f->size << " id:" << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes << "\n";
     sum += 1000000.0 * f->flow_completion_time;
     sum_norm += 1000000.0 * f->flow_completion_time /
       topology->get_oracle_fct(f);

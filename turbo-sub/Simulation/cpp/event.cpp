@@ -12,6 +12,7 @@
 #include "params.h"
 #include "factory.h"
 #include <iomanip>
+#include "random_variable.h"
 
 
 extern Topology *topology;
@@ -25,6 +26,7 @@ extern std::deque<Flow *> flows_to_schedule;
 extern uint32_t num_outstanding_packets;
 extern uint32_t max_outstanding_packets;
 
+extern EmpiricalRandomVariable *nv_bytes;
 
 void add_to_event_queue(Event *ev) {
   event_queue.push(ev);
@@ -139,7 +141,7 @@ void DDCTestFlowFinishedEvent::process_event() {
 //      << "drp:" << flow->data_pkt_drop << "/" << flow->pkt_drop
 //      << std::endl;
   if(Factory::flow_counter < params.num_flows_to_run){
-    Flow* flow = Factory::get_flow(get_current_time(), this->flow->size, this->flow->src, this->flow->dst, params.flow_type);
+    Flow* flow = Factory::get_flow(get_current_time(), nv_bytes->value()*1460, this->flow->src, this->flow->dst, params.flow_type);
     flow->useDDCTestFlowFinishedEvent = true;
     flows_to_schedule.push_back(flow);
     Event * event = new FlowArrivalEvent(flow->start_time, flow);
