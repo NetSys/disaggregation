@@ -412,7 +412,7 @@ Packet *FountainFlow::send(uint32_t seq)
 
   //uint32_t priority = this->size > seq? this->size - seq:2147483648;
 
-  uint32_t priority = 1;//next_seq_no >= this->size?2:1;
+  uint32_t priority = next_seq_no >= this->size?2:1;
   //uint32_t priority = min_recv * mss - bytes_acked;
 
 

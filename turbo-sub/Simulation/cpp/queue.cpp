@@ -84,42 +84,40 @@ double Queue::get_transmission_delay(uint32_t size) {
 
 void Queue::preempt_current_transmission(){
   if(params.preemptive_queue && busy){
-    if(this->queue_proc_event->unique_id == 7394)
-      std::cout << get_current_time() << " queue.cpp:88 preempt evt eid:" << this->queue_proc_event->unique_id << " qptr:" << this << " qid:" << this->unique_id << "\n" << std::flush;
-    this->queue_proc_event->cancelled = true;
-    assert(this->packet_transmitting);
+      this->queue_proc_event->cancelled = true;
+      assert(this->packet_transmitting);
 
-    uint delete_index;
-    bool found = false;
-    for (delete_index = 0; delete_index < packets.size(); delete_index++) {
-      if (packets[delete_index] == this->packet_transmitting) {
-        found = true;
-        //std::cout << get_current_time() << " queue.cpp:95 q:" << this->unique_id << " qptr:" << this << " deleting pkt:" << this->packet_transmitting << "\n" << std::flush;
-        break;
+      uint delete_index;
+      bool found = false;
+      for (delete_index = 0; delete_index < packets.size(); delete_index++) {
+        if (packets[delete_index] == this->packet_transmitting) {
+          found = true;
+          //std::cout << get_current_time() << " queue.cpp:95 q:" << this->unique_id << " qptr:" << this << " deleting pkt:" << this->packet_transmitting << "\n" << std::flush;
+          break;
+        }
       }
-    }
-    if(found){
-      //std::cout << get_current_time() << " queue.cpp:100 q:" << this->unique_id << " qptr:" << this << " pkts in q:"<< std::flush;
-      //for(uint i = 0; i < packets.size(); i++){
-      //  std::cout << packets[i] << " ";
-      //}
-      //std::cout << "\n";
-      bytes_in_queue -= packet_transmitting->size;
-      packets.erase(packets.begin() + delete_index);
-    }
+      if(found){
+        //std::cout << get_current_time() << " queue.cpp:100 q:" << this->unique_id << " qptr:" << this << " pkts in q:"<< std::flush;
+        //for(uint i = 0; i < packets.size(); i++){
+        //  std::cout << packets[i] << " ";
+        //}
+        //std::cout << "\n";
+        bytes_in_queue -= packet_transmitting->size;
+        packets.erase(packets.begin() + delete_index);
+      }
 
-    for(uint i = 0; i < busy_events.size(); i++){
-      busy_events[i]->cancelled = true;
-    }
-    busy_events.clear();
-    //if(this->unique_id == 354)
-    //  std::cout << get_current_time() << " queue.cpp:113 q:" << this->unique_id << " qptr:" << this << " preempt pkt:" << this->packet_transmitting << "\n" << std::flush;
-    //std::cout << "queue.cpp:95\n";
-    //drop(packet_transmitting);//TODO: should be put back to queue
-    enque(packet_transmitting);
-    packet_transmitting = NULL;
-    queue_proc_event = NULL;
-    busy = false;
+      for(uint i = 0; i < busy_events.size(); i++){
+        busy_events[i]->cancelled = true;
+      }
+      busy_events.clear();
+      //if(this->unique_id == 354)
+      //  std::cout << get_current_time() << " queue.cpp:113 q:" << this->unique_id << " qptr:" << this << " preempt pkt:" << this->packet_transmitting << "\n" << std::flush;
+      //std::cout << "queue.cpp:95\n";
+      //drop(packet_transmitting);//TODO: should be put back to queue
+      enque(packet_transmitting);
+      packet_transmitting = NULL;
+      queue_proc_event = NULL;
+      busy = false;
   }
 }
 

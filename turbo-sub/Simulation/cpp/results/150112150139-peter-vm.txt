@@ -1,0 +1,38 @@
+======================Cmd:======================
+6 experiments/pfabric_experiments/conf_test.txt
+======================Comment:======================
+preempthres = 0.7
+======================Config:======================
+init_cwnd: 4
+max_cwnd: 7
+retx_timeout: 0.0000095
+queue_size: 6200
+propagation_delay: 0.0000002
+bandwidth: 10000000000.0
+queue_type: 2
+flow_type: 100
+num_flow: 100000
+flow_trace: experiments/CDF_test.txt
+cut_through: 0
+mean_flow_size: 195357
+load_balancing: 0
+preemptive_queue: 1
+======================Output:======================
+Lambda: 34.8414789668494
+Running 100000 Flows
+CDF_File experiments/CDF_test.txt
+Bandwidth 10
+QueueSize 6200
+CutThrough 0
+FlowType 100
+QueueType 2
+Init CWND 4
+Max CWND 7
+Rtx Timeout 9.5e-06
+load_balancing (0: pkt)0
+1.01000023262123 MaxPacketOutstanding 525075 NumPacketOutstanding 524024 NumUnfinishedFlows 1308 StartedFlows 7144
+AverageFCT 15262.8447762298 MeanSlowdown 26.7345863091532 MeanInflation 14.5668583714292
+Hop:0 Drp:0(0%) Hop:1 Drp:368682(5%) Hop:2 Drp:1778540(24%) Hop:3 Drp:5220470(70%)  Overall:0.29
+DeadPackets 44% DuplicatedPackets 0% Utilization 88%
+Drops SS 10809622 SL 0 LL 0
+Simulator ended. Execution time: 1.3e+02 seconds

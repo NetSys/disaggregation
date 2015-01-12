@@ -271,7 +271,6 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
   for(int i = 0; i < 144; i++){
     Host* src = topo->hosts[i];
     Host* dst = topo->hosts[traffic_matrix[i]];
-    uint size = 3 * 1460;
     Flow* flow = Factory::get_flow(1, nv_bytes->value() * 1460, src, dst, params.flow_type);
     flow->useDDCTestFlowFinishedEvent = true;
     flows_to_schedule.push_back(flow);

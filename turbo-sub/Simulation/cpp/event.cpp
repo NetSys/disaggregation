@@ -173,13 +173,26 @@ void PacketQueuingEvent::process_event() {
 //    std::cout << "\n";
 //  }
 
-  if (!queue->busy || ( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) ) {
 
-    queue->preempt_current_transmission();
+  if (!queue->busy) {
     queue->queue_proc_event = new QueueProcessingEvent(get_current_time(), queue);
     add_to_event_queue(queue->queue_proc_event);
     queue->busy = true;
     queue->packet_transmitting = packet;
+  }
+  else if( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) {
+    double remaining_percentage = (queue->queue_proc_event->time - get_current_time()) / queue->get_transmission_delay(queue->packet_transmitting->size);
+    if(remaining_percentage < -0.001 || remaining_percentage > 1.001)
+      std::cout << "sth is wrong!!!!! evt time:" << queue->queue_proc_event->time << " curr:" << get_current_time() << " tran delay:" << queue->get_transmission_delay(queue->packet_transmitting->size) << " %:" << remaining_percentage << "\n";
+
+    if(remaining_percentage > 0.9){
+      queue->preempt_current_transmission();
+
+      queue->queue_proc_event = new QueueProcessingEvent(get_current_time(), queue);
+      add_to_event_queue(queue->queue_proc_event);
+      queue->busy = true;
+      queue->packet_transmitting = packet;
+    }
   }
   queue->enque(packet);
 
