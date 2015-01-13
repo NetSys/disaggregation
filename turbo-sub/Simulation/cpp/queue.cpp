@@ -70,6 +70,8 @@ void Queue::drop(Packet *packet) {
   if(packet->seq_no < packet->flow->size){
     packet->flow->data_pkt_drop++;
   }
+  if(packet->type == ACK_PACKET)
+    packet->flow->ack_pkt_drop++;
 
 //  std::cout << get_current_time() << " queue.cpp:73 delete " << packet << " id:" << packet->unique_id << " qid:" << this->unique_id << "\n";
 //  if(packet->unique_id == 761){
@@ -144,6 +146,8 @@ void PFabricQueue::enque(Packet *packet) {
     }
     bytes_in_queue -= packets[worst_index]->size;
     Packet *worst_packet = packets[worst_index];
+
+
     bool isLL = false;
     if (worst_packet->size < 5000) { //small flow
       this->dropss += 1;
@@ -158,6 +162,7 @@ void PFabricQueue::enque(Packet *packet) {
       }
       if (!isLL) this->dropsl += 1;
     }
+
     packets.erase(packets.begin() + worst_index);
     pkt_drop++;
     //std::cout << "queue.cpp:139\n";
@@ -177,7 +182,7 @@ Packet * PFabricQueue::deque() {
       Packet* curr_pkt = packets[i];
       //std::cout << get_current_time() <<  " queue.cpp:167 iterate " << i << " pkt ptr:" << curr_pkt << " id:" << std::flush;
       //std::cout << curr_pkt->unique_id << " qid:" << this->unique_id << "\n" << std::flush;
-      if (curr_pkt->pf_priority <= best_priority) {
+      if (curr_pkt->pf_priority < best_priority) {
         best_priority = curr_pkt->pf_priority;
         best_packet = curr_pkt;
         best_index = i;

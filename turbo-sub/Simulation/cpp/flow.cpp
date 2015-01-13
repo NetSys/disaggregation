@@ -46,6 +46,7 @@ Flow::Flow(uint32_t id, double start_time, uint32_t size,
 
   this->pkt_drop = 0;
   this->data_pkt_drop = 0;
+  this->ack_pkt_drop = 0;
   this->flow_priority = 0;
   this->useDDCTestFlowFinishedEvent = false;
 }
@@ -351,6 +352,7 @@ void FountainFlow::send_pending_data() {
 
 
 void FountainFlow::receive(Packet *p) {
+
   if (!finished) {
     if (p->type == ACK_PACKET) {
 //      Ack *a = (Ack *) p;
@@ -375,7 +377,7 @@ void FountainFlow::receive(Packet *p) {
 //      }
       //TODO:fix this, this causes an underflow on NumPacketOutstanding
       num_outstanding_packets -= ((p->size - hdr_size) / (mss));
-      if(received_count >= min_recv){
+      if(received_count == min_recv){
         send_ack(0, dummySack);
       }
 //      else{
@@ -404,10 +406,12 @@ uint32_t FountainFlow::ddc_get_priority() {
 void FountainFlow::send_ack(uint32_t seq, std::vector<uint32_t> sack_list) {
   Packet *p = new Ack(this, seq, sack_list, hdr_size, dst, src); //Acks are dst->src
   add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, dst->queue));
+
 }
 
 Packet *FountainFlow::send(uint32_t seq)
 {
+
   Packet *p = NULL;
 
   //uint32_t priority = this->size > seq? this->size - seq:2147483648;
