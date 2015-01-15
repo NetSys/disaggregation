@@ -74,9 +74,9 @@ def schedule(flows, waiting_flows_id, waiting_flow_remain_size, ibusy, ebusy, ti
                             ebusy[flow['dest']] = (False, None)
                             index = bisect.bisect_left(events_time, flow['finish time'])
                             if events[index]['flow id'] != flow['id']:
-                                print >> sys.stderr, "Id doesn't match", events[index]['flow id'], events[index]['time']
+                                #print >> sys.stderr, "Id doesn't match", events[index]['flow id'], events[index]['time']
                                 index = events.index({'flow id': flow['id'], 'type': 'finish', 'time': flow['finish time']})
-                                print >> sys.stderr, "Id doesn't match", events[index]['flow id'], events[index]['time']
+                                #print >> sys.stderr, "Id doesn't match", events[index]['flow id'], events[index]['time']
                             del events[index]
                             del events_time[index]
                             index = bisect.bisect_left(waiting_flow_remain_size, flow['remaining size'])
@@ -166,7 +166,7 @@ def ideal(flows, host_delay, cut_through, pod_size=16, pod_num=9):
             flows[flow_id]['updated time'] = time
             global num_finished
             num_finished += 1
-            if num_finished % 1000 == 0:
+            if num_finished % 10000 == 0:
               print >> sys.stderr, "Finished", num_finished
 
         schedule(flows, waiting_flows_id, waiting_flow_remain_size, ibusy, ebusy, time, events, events_time, host_delay, cut_through)
@@ -234,8 +234,8 @@ Init CWND ideal
 Max CWND ideal
 Rtx Timeout ideal'''.format(len(f), bandwidth, cut_through)
     rv = get_ideal_fcts(f, host_delay, cut_through, bandwidth)
-    for v in rv:
-        print v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]
+    #for v in rv:
+    #    print v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]
     print "AverageFCT", numpy.mean([x[6] for x in rv]), "MeanSlowdown",\
       numpy.mean([x[8] for x in rv])
     print "DeadPackets 0"

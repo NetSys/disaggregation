@@ -8,6 +8,9 @@ rmem/.hadoop_info/
 rmem/_partition.lst
 */Simulation/cpp/simulator
 .idea/
+*/.idea/*
 .nfs*
-.swp
+*.swp
 *.cache/
+*.tmp
+*.out

@@ -84,6 +84,17 @@ PFabricTopology *topo) {
   current_time = 0;
 }
 
+void write_flows_to_file(std::deque<Flow *> flows, std::string file){
+  std::ofstream output(file);
+  output.precision(20);
+  for(uint i = 0; i < flows.size(); i++){
+    output << flows[i]->id << " " << flows[i]->start_time << " " << flows[i]->finish_time << " " << flows[i]->size_in_pkt << " "
+        << (flows[i]->finish_time - flows[i]->start_time) << " " << 0 << " " <<flows[i]->src->id << " " << flows[i]->dst->id << "\n";
+  }
+  output.close();
+
+}
+
 
 //same as run_pFabric_experiment except with this generate_flows.
 void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) {
@@ -142,6 +153,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     std::endl;
 
   run_scenario();
+
+  write_flows_to_file(flows_sorted, "flow.tmp");
   // print statistics
   double sum = 0, sum_norm = 0, sum_inflation = 0;
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {

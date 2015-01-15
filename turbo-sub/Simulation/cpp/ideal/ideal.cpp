@@ -172,30 +172,40 @@ uint32_t num_finished = 0;
 void read_flows_to_schedule(std::string filename, double host_delay,
                             double low_bw, bool cut_through) {
   std::ifstream input(filename);
-  std::string a;
-  for (uint32_t i = 0; i < 10; i++) {
-    std::getline(input, a);
-    //std::cout << a;
-    if (a.find("Running") != std::string::npos) {
-      //char st[20];
-      sscanf(a.c_str(), "%*s %d %*s", &num_flows);
-    }
-  }
-  std::cout << "NUMBER OF FLOWS: " << num_flows << "\n";
+//  std::string a;
+//  for (uint32_t i = 0; i < 10; i++) {
+//    std::getline(input, a);
+//    //std::cout << a;
+//    if (a.find("Running") != std::string::npos) {
+//      //char st[20];
+//      sscanf(a.c_str(), "%*s %d %*s", &num_flows);
+//    }
+//  }
+//  std::cout << "NUMBER OF FLOWS: " << num_flows << "\n";
 
+  std::vector<std::string> lines;
+  while(!input.eof()){
+    std::string line;
+    std::getline(input, line);
+    if(line.length() > 0)
+      lines.push_back(line);
+  }
+
+  num_flows = lines.size();
+  std::cout << "NUMBER OF FLOWS: " << num_flows << "\n";
   flows = new IdealFlow*[num_flows];
   for (uint32_t i = 0; i < num_flows; i++) {
-    std::getline(input, a);
-    std::stringstream ss(a);
-    uint32_t id, s, d;
-    double start_time;
+    std::stringstream ss(lines[i]);
+    uint32_t id, s, d, sth, size_in_pkt;
+    double start_time, end_time, duration;
     uint32_t size;
-    ss >> id;
-    ss >> size;
-    ss >> s ; ss >> d;
-    ss >> start_time;
-    size = size * 8; // Convert to bits
-
+//    ss >> id;
+//    ss >> size;
+//    ss >> s ; ss >> d;
+//    ss >> start_time;
+//    size = size * 8; // Convert to bits
+    ss >> id >> start_time >> end_time >> size_in_pkt >> duration >> sth >> s >> d;
+    size = size_in_pkt * 8 * 1460;
     //std::cout << id << " " << start_time << " " << size << " "
     // << s << " " << d << "\n";
     flows[id] = new IdealFlow(id, size, start_time, s, d,
@@ -214,8 +224,6 @@ void suspend(IdealFlow *f, double time) {
       f->state = SUSPENDED;
       ibusy[f->s] = -1;
       ebusy[f->d] = -1;
-      if(f->finish_event->unique_id == 5230)
-        std::cout << "ideal.cpp:218 canceling 5230\n";
       f->finish_event->cancelled = true;
       waiting_flows.push_back(f);
     }

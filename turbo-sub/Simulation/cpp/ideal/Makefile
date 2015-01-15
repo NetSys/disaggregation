@@ -2,11 +2,11 @@
 CC=g++ -std=c++0x
 CFLAGS=-g -O3 -Wall
 
-all: ideal
+all: ideal.out
 
-ideal: ideal.cpp
-	$(CC) $(CFLAGS) -Wall ideal.cpp -o ideal
+ideal.out: ideal.cpp
+	$(CC) $(CFLAGS) -Wall ideal.cpp -o ideal.out
 
 clean:
-	rm -rf *o ideal 
+	rm -rf *o ideal.out
 	make
