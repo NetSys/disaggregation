@@ -68,7 +68,7 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
   input >> temp; input >> params.mean_flow_size;
   input >> temp; input >> params.load_balancing;
   input >> temp; input >> params.preemptive_queue;
-
+  input >> temp; input >> params.rts_cts_dts;
 
 
   params.hdr_size = 40;

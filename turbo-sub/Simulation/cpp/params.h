@@ -30,6 +30,7 @@ struct DCExpParams {
   int num_agg_switches;
   int num_core_switches;
   int preemptive_queue;
+  int rts_cts_dts;
 };
 
 /* General main function */

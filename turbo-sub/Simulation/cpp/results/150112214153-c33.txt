@@ -1,0 +1,52 @@
+======================Cmd:======================
+7 experiments/pfabric_experiments/conf_test.txt
+======================Comment:======================
+data1,parity2,alllong
+======================Config:======================
+init_cwnd: 4
+max_cwnd: 7
+retx_timeout: 0.0000095
+queue_size: 6200
+propagation_delay: 0.0000002
+bandwidth: 10000000000.0
+queue_type: 2
+flow_type: 100
+num_flow: 100000
+flow_trace: experiments/CDF_alllong.txt
+cut_through: 0
+mean_flow_size: 195357
+load_balancing: 0
+preemptive_queue: 1
+======================FDist:======================
+700	1	1======================Output:======================
+run_fixedDistribution_experiment_shuffle_traffic
+Running 100000 Flows
+CDF_File experiments/CDF_alllong.txt
+Bandwidth 10
+QueueSize 6200
+CutThrough 0
+FlowType 100
+QueueType 2
+Init CWND 4
+Max CWND 7
+Rtx Timeout 9.5e-06
+load_balancing (0: pkt)0
+1.01 MaxPacketOutstanding 100800 NumPacketOutstanding 41547 NumUnfinishedFlows 144 StartedFlows 1658
+1.06 MaxPacketOutstanding 100800 NumPacketOutstanding 53944 NumUnfinishedFlows 144 StartedFlows 9809
+1.11 MaxPacketOutstanding 100800 NumPacketOutstanding 51592 NumUnfinishedFlows 144 StartedFlows 17972
+1.16 MaxPacketOutstanding 100800 NumPacketOutstanding 50610 NumUnfinishedFlows 144 StartedFlows 26135
+1.21 MaxPacketOutstanding 100800 NumPacketOutstanding 40023 NumUnfinishedFlows 144 StartedFlows 34260
+1.26 MaxPacketOutstanding 100800 NumPacketOutstanding 54702 NumUnfinishedFlows 144 StartedFlows 42438
+1.31 MaxPacketOutstanding 100800 NumPacketOutstanding 46728 NumUnfinishedFlows 144 StartedFlows 50592
+1.36 MaxPacketOutstanding 100800 NumPacketOutstanding 46280 NumUnfinishedFlows 144 StartedFlows 58731
+1.41 MaxPacketOutstanding 100800 NumPacketOutstanding 51300 NumUnfinishedFlows 144 StartedFlows 66869
+1.46 MaxPacketOutstanding 100800 NumPacketOutstanding 52799 NumUnfinishedFlows 144 StartedFlows 75018
+1.51 MaxPacketOutstanding 100800 NumPacketOutstanding 42791 NumUnfinishedFlows 144 StartedFlows 83185
+1.56 MaxPacketOutstanding 100800 NumPacketOutstanding 47786 NumUnfinishedFlows 144 StartedFlows 91367
+1.61 MaxPacketOutstanding 100800 NumPacketOutstanding 53015 NumUnfinishedFlows 144 StartedFlows 99571
+1.66 MaxPacketOutstanding 100800 NumPacketOutstanding 0 NumUnfinishedFlows 0 StartedFlows 100000
+AverageFCT 882.845995703258 MeanSlowdown 1.0468176533115 MeanInflation 1.05023655714215
+Hop:0 Drp:0(0%) Hop:1 Drp:2129542(65%) Hop:2 Drp:1021440(31%) Hop:3 Drp:84962(2%)  Overall:0.043
+DeadPackets 4.2% DuplicatedPackets 0% Utilization 93%
+Drops SS 2299466 SL 0 LL 0
+Simulator ended. Execution time: 1.6e+02 seconds

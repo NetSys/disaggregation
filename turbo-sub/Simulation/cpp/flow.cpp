@@ -316,6 +316,8 @@ FountainFlow::FountainFlow(uint32_t id, double start_time, uint32_t size, Host *
   received_count = 0;
   min_recv = (int)ceil(size_in_pkt * redundancy);
   bytes_acked = 0;
+
+  goal = (int)ceil(min_recv * 1.1);
 }
 
 
@@ -343,9 +345,17 @@ void FountainFlow::send_pending_data() {
 //    }
 
       //add_to_event_queue(new FlowProcessingEvent(get_current_time() + transmission_delay ,this));
-    }
 
-    src->active_flows.push(this);
+
+//      if(total_pkt_sent == goal){
+//        goal += (int)ceil(min_recv * 0.1);
+//        add_to_event_queue(new DDCTimeoutEvent(get_current_time() + 0.0000095, this));
+//      }else{
+        src->active_flows.push(this);
+//      }
+    }else{
+      src->active_flows.push(this);
+    }
   }
 }
 
@@ -377,7 +387,7 @@ void FountainFlow::receive(Packet *p) {
 //      }
       //TODO:fix this, this causes an underflow on NumPacketOutstanding
       num_outstanding_packets -= ((p->size - hdr_size) / (mss));
-      if(received_count == min_recv){
+      if(received_count >= min_recv && (received_count - min_recv)%7 == 0){
         send_ack(0, dummySack);
       }
 //      else{
@@ -416,13 +426,12 @@ Packet *FountainFlow::send(uint32_t seq)
 
   //uint32_t priority = this->size > seq? this->size - seq:2147483648;
 
-  uint32_t priority = next_seq_no >= this->size?2:1;
+  //uint32_t priority = next_seq_no >= this->size?2:1;
+  uint32_t priority = 1;
   //uint32_t priority = min_recv * mss - bytes_acked;
 
 
 
-//  if(this->id == 61 || this->id == 70)
-//    std::cout << "FountainFlow::send: Flow:" << this->id << "@" << (int)(get_current_time() * 1000000) << " seq:" << seq << " sz:" << size << " pri:" << priority << "\n";
 
   uint32_t pkt_size = mss + hdr_size;
   p = new Packet(get_current_time(), this, seq, \

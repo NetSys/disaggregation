@@ -112,6 +112,8 @@ public:
   virtual void send_ack(uint32_t, std::vector<uint32_t>);
   uint32_t ddc_get_priority();
   virtual Packet* send(uint32_t seq);
+
+  uint32_t goal;
 };
 
 #endif

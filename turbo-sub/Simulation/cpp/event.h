@@ -199,4 +199,12 @@ public:
   void process_event();
 };
 
+class DDCTimeoutEvent : public Event {
+public:
+  DDCTimeoutEvent(double time, FountainFlow *flow);
+  ~DDCTimeoutEvent();
+  void process_event();
+  FountainFlow *flow;
+};
+
 #endif /* defined(EVENT_H) */

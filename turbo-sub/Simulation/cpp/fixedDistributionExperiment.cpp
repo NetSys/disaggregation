@@ -45,19 +45,21 @@ extern void run_scenario();
 void generate_flows_to_schedule_fd(std::string filename, uint32_t num_flows,
 PFabricTopology *topo) {
   //double lambda = 4.0966649051007566;
+  //use an NAryRandomVariable for true uniform/bimodal/trimodal/etc
+  // EmpiricalRandomVariable *nv_bytes =
+  // new NAryRandomVariable(filename);
+  EmpiricalRandomVariable *nv_bytes = new CDFRandomVariable(filename);
+  params.mean_flow_size = nv_bytes->mean_flow_size;
+
   double lambda = params.bandwidth * 0.8 /
   (params.mean_flow_size * 8.0 / 1460 * 1500);
   double lambda_per_host = lambda / (topo->hosts.size() - 1);
   std::cout << "Lambda: " << lambda_per_host << std::endl;
 
-  //use an NAryRandomVariable for true uniform/bimodal/trimodal/etc
-  // EmpiricalRandomVariable *nv_bytes =
-  // new NAryRandomVariable(filename);
-  EmpiricalRandomVariable *nv_bytes =
-    new CDFRandomVariable(filename);
 
-  ExponentialRandomVariable *nv_intarr =
-    new ExponentialRandomVariable(1.0 / lambda_per_host);
+
+
+  ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_host);
   //* [expr ($link_rate*$load*1000000000)/($meanFlowSize*8.0/1460*1500)]
   for (uint32_t i = 0; i < topo->hosts.size(); i++) {
     for (uint32_t j = 0; j < topo->hosts.size(); j++) {

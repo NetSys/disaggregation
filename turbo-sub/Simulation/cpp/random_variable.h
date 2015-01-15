@@ -37,6 +37,8 @@ public:
   EmpiricalRandomVariable(std::string filename);
   int loadCDF(std::string filename);
 
+  double mean_flow_size;
+
 protected:
   int lookup(double u);
 

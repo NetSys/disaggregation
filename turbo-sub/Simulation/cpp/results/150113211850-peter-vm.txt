@@ -1,0 +1,38 @@
+======================Cmd:======================
+6 experiments/pfabric_experiments/conf_test.txt
+======================Comment:======================
+10% extra on timeout, normal, allshort
+======================Config:======================
+init_cwnd: 4
+max_cwnd: 7
+retx_timeout: 0.0000095
+queue_size: 6200
+propagation_delay: 0.0000002
+bandwidth: 10000000000.0
+queue_type: 2
+flow_type: 100
+num_flow: 100000
+flow_trace: experiments/CDF_alllong.txt
+cut_through: 0
+mean_flow_size: 195357
+load_balancing: 0
+preemptive_queue: 0
+======================FDist:======================
+700	1	1======================Output:======================
+Lambda: 34.8414789668494
+Running 100000 Flows
+CDF_File experiments/CDF_alllong.txt
+Bandwidth 10
+QueueSize 6200
+CutThrough 0
+FlowType 100
+QueueType 2
+Init CWND 4
+Max CWND 7
+Rtx Timeout 9.5e-06
+load_balancing (0: pkt)0
+1.01000023262123 MaxPacketOutstanding 4059263 NumPacketOutstanding 4058676 NumUnfinishedFlows 7098 StartedFlows 7144
+1.06000023262123 MaxPacketOutstanding 23999093 NumPacketOutstanding 23999050 NumUnfinishedFlows 42444 StartedFlows 42776
+1.11000023262123 MaxPacketOutstanding 44149045 NumPacketOutstanding 44148811 NumUnfinishedFlows 78152 StartedFlows 78766
+1.16000023262123 MaxPacketOutstanding 56024433 NumPacketOutstanding 53999457 NumUnfinishedFlows 96321 StartedFlows 100000
+1.21000023262123 MaxPacketOutstanding 56024433 NumPacketOutstanding 49257800 NumUnfinishedFlows 87949 StartedFlows 100000

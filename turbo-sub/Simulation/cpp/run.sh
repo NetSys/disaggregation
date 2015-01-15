@@ -5,6 +5,10 @@ ctrl_c()
   exit 0
 }
 
+trace_key="flow_trace: "
+conf_file=$(cat $2 | grep $trace_key)
+conf_file=${conf_file/flow_trace: /}
+
 
 exptime=$(date +%y%m%d%H%M%S)
 fn=results/$exptime-$(hostname).txt
@@ -17,6 +21,10 @@ echo $comment >> $fn
 echo "======================Config:======================" >> $fn
 cat $2 >> $fn
 echo "" >> $fn
+echo "======================FDist:======================" >> $fn
+cat $conf_file >> $fn
+cat $conf_file
+echo ""
 echo "======================Output:======================" >> $fn
 
 make clean

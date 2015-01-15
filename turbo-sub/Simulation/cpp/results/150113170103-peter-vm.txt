@@ -1,0 +1,45 @@
+======================Cmd:======================
+6 experiments/pfabric_experiments/conf_test.txt
+======================Comment:======================
+data1,parity2,preemption,normal,67%short
+======================Config:======================
+init_cwnd: 4
+max_cwnd: 7
+retx_timeout: 0.0000095
+queue_size: 6200
+propagation_delay: 0.0000002
+bandwidth: 10000000000.0
+queue_type: 2
+flow_type: 100
+num_flow: 100000
+flow_trace: experiments/CDF_test.txt
+cut_through: 0
+mean_flow_size: 195357
+load_balancing: 0
+preemptive_queue: 1
+======================FDist:======================
+3	1	0.765016004
+700	1	1======================Output:======================
+Lambda: 34.8414789668494
+Running 100000 Flows
+CDF_File experiments/CDF_test.txt
+Bandwidth 10
+QueueSize 6200
+CutThrough 0
+FlowType 100
+QueueType 2
+Init CWND 4
+Max CWND 7
+Rtx Timeout 9.5e-06
+load_balancing (0: pkt)0
+1.01000023262123 MaxPacketOutstanding 556503 NumPacketOutstanding 555580 NumUnfinishedFlows 1382 StartedFlows 7144
+1.06000023262123 MaxPacketOutstanding 2820278 NumPacketOutstanding 2820242 NumUnfinishedFlows 7016 StartedFlows 42776
+1.11000023262123 MaxPacketOutstanding 4800817 NumPacketOutstanding 4798703 NumUnfinishedFlows 12138 StartedFlows 78766
+1.16000023262123 MaxPacketOutstanding 5922510 NumPacketOutstanding 4257567 NumUnfinishedFlows 11257 StartedFlows 100000
+1.21000023262123 MaxPacketOutstanding 5922510 NumPacketOutstanding 670864 NumUnfinishedFlows 1829 StartedFlows 100000
+1.26000023262123 MaxPacketOutstanding 5922510 NumPacketOutstanding 0 NumUnfinishedFlows 0 StartedFlows 100000
+AverageFCT 17056.4292368536 MeanSlowdown 29.8592636553034 MeanInflation 16.0719059428579
+Hop:0 Drp:0(0%) Hop:1 Drp:1348097(15%) Hop:2 Drp:2158505(24%) Hop:3 Drp:5156039(59%)  Overall:0.33
+DeadPackets 47% DuplicatedPackets 0% Utilization 82%
+Drops SS 11660175 SL 0 LL 0
+Simulator ended. Execution time: 1.4e+02 seconds

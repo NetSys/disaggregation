@@ -94,14 +94,23 @@ int EmpiricalRandomVariable::loadCDF(std::string filename) {
   std::ifstream myfile(filename);
   assert(myfile.good());
   numEntry_ = 0;
+  double prev = 0;
+  double w_sum = 0;
   while (std::getline(myfile, line))
 	{
     std::istringstream is(line);
     is >> table_[numEntry_].val_;
     is >> table_[numEntry_].cdf_;
     is >> table_[numEntry_].cdf_;
+
+    double freq = table_[numEntry_].cdf_ - prev;
+    assert(freq >= 0);
+    w_sum += freq * table_[numEntry_].val_;
+    prev = table_[numEntry_].cdf_;
     numEntry_ ++;
 	}
+  this->mean_flow_size = w_sum * 1460.0;
+  std::cout << "Mean flow size derived from CDF file:" << this->mean_flow_size << "\n";
   //std::cout << "Number of lines in text file: " << numEntry_ << "\n";
 	myfile.close();
   return numEntry_;
