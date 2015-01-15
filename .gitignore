@@ -9,3 +9,5 @@ rmem/_partition.lst
 */Simulation/cpp/simulator
 .idea/
 .nfs*
+.swp
+*.cache/
