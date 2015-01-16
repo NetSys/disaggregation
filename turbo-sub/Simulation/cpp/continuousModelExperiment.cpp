@@ -36,7 +36,7 @@ extern uint32_t duplicated_packets_received;
 
 extern double start_time;
 
-extern void printQueueStatistics(PFabricTopology *topo);
+extern void printQueueStatistics(Topology *topo);
 
 // Runs a initialized scenario
 // Special version for continuous flow model that checks end time

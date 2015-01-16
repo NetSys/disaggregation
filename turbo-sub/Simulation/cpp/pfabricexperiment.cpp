@@ -99,7 +99,7 @@ void generate_flows_to_schedule(std::string filename, uint32_t num_flows,
 }
 
 
-void printQueueStatistics(PFabricTopology *topo) {
+void printQueueStatistics(Topology *topo) {
   double totalSentFromHosts = 0;
   
   uint64_t drop_ss = 0; uint64_t drop_sl = 0; uint64_t drop_ll = 0;
@@ -118,19 +118,13 @@ void printQueueStatistics(PFabricTopology *topo) {
     dropAt[location] += topo->hosts[i]->queue->pkt_drop;
   }
 
-  for(uint i = 0; i < topo->agg_switches.size(); i++){
-    for(uint j = 0; j < topo->agg_switches[i]->queues.size(); j++){
-      int location = topo->agg_switches[i]->queues[j]->location;
-      dropAt[location] += topo->agg_switches[i]->queues[j]->pkt_drop;
+  for(uint i = 0; i < topo->switches.size(); i++){
+    for(uint j = 0; j < topo->switches[i]->queues.size(); j++){
+      int location = topo->switches[i]->queues[j]->location;
+      dropAt[location] += topo->switches[i]->queues[j]->pkt_drop;
     }
   }
 
-  for(uint i = 0; i< topo->core_switches.size(); i++){
-    for (uint j = 0; j < topo->core_switches[i]->queues.size(); j++){
-      int location = topo->core_switches[i]->queues[j]->location;
-      dropAt[location] += topo->core_switches[i]->queues[j]->pkt_drop;
-    }
-  }
 
   for(int i = 0; i < 4; i++)
     total_drop += dropAt[i];
@@ -153,17 +147,10 @@ void printQueueStatistics(PFabricTopology *topo) {
 
 
   double totalSentToHosts = 0;
-  for (std::vector<AggSwitch*>::iterator tor = (topo->agg_switches).begin(); tor != (topo->agg_switches).end(); tor++) {
-    std::vector<Queue*> host_facing_queues;
+  for (std::vector<Switch*>::iterator tor = (topo->switches).begin(); tor != (topo->switches).end(); tor++) {
     for (std::vector<Queue*>::iterator q = ((*tor)->queues).begin(); q != ((*tor)->queues).end(); q++) {
       if ((*q)->rate == params.bandwidth)
-        host_facing_queues.push_back((*q));
-      drop_ss += (*q)->dropss;
-      drop_sl += (*q)->dropsl;
-      drop_ll += (*q)->dropll;
-    }
-    for (std::vector<Queue*>::iterator q = host_facing_queues.begin(); q!=host_facing_queues.end();q++) {
-      totalSentToHosts += (*q)->b_departures;
+        totalSentToHosts += (*q)->b_departures;
       drop_ss += (*q)->dropss;
       drop_sl += (*q)->dropsl;
       drop_ll += (*q)->dropll;
@@ -184,7 +171,7 @@ void printQueueStatistics(PFabricTopology *topo) {
     << 100.0 * duplicated_packets_received * 1460.0 / total_bytes
     << "% Utilization " << utilization / 10000000000 * 100 << "%\n";
   std::cout 
-      << "Drops SS " << drop_ss 
+      << "Drops (May not be correct) SS " << drop_ss
       << " SL " << drop_sl 
       << " LL " << drop_ll 
       << std::endl;

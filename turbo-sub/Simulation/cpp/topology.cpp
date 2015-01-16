@@ -35,13 +35,18 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
 
   // Create Switches
   for (uint32_t i = 0; i < num_agg_switches; i++) {
-    agg_switches.push_back(new AggSwitch(i, hosts_per_agg_switch, c1,
-      num_core_switches, c2, queue_type)); // TODO make generic
+    AggSwitch* sw = new AggSwitch(i, hosts_per_agg_switch, c1,
+        num_core_switches, c2, queue_type);
+    agg_switches.push_back(sw); // TODO make generic
+    switches.push_back(sw);
   }
   for (uint32_t i = 0; i < num_core_switches; i++) {
-    core_switches.push_back(new CoreSwitch(i + num_agg_switches,
-      num_agg_switches, c2, queue_type));
+    CoreSwitch* sw = new CoreSwitch(i + num_agg_switches,
+        num_agg_switches, c2, queue_type);
+    core_switches.push_back(sw);
+    switches.push_back(sw);
   }
+
 
   //Connect host queues
   for (uint32_t i = 0; i < num_hosts; i++) {
@@ -134,6 +139,79 @@ double PFabricTopology::get_oracle_fct(Flow *f) {
   //std::cout << "pd: " << propagation_delay << " td: " << transmission_delay << std::endl;
   return (propagation_delay + transmission_delay); //us
 }
+
+
+
+
+
+
+
+
+
+/*
+ *BigSwitchTopology  with 144 hosts
+ */
+BigSwitchTopology::BigSwitchTopology(uint32_t num_hosts, double bandwidth, uint32_t queue_type) : Topology () {
+
+
+  this->num_hosts = num_hosts;
+
+
+
+  double c1 = bandwidth;
+
+
+  // Create Hosts
+  for (uint32_t i = 0; i < num_hosts; i++) {
+    hosts.push_back(new Host(i, c1, queue_type));
+  }
+
+  the_switch = new CoreSwitch(0, num_hosts, c1, queue_type);
+
+
+  //Connect host queues
+  for (uint32_t i = 0; i < num_hosts; i++) {
+    hosts[i]->queue->set_src_dst(hosts[i], the_switch);
+    Queue *q = the_switch->queues[i];
+    q->set_src_dst(the_switch, hosts[i]);
+  }
+
+}
+
+
+Queue *BigSwitchTopology::get_next_hop(Packet *p, Queue *q) {
+  if (q->dst->type == HOST) {
+    assert(p->dst->id == q->dst->id);
+    return NULL; // Packet Arrival
+  }
+
+  // At host level
+  if (q->src->type == HOST) { // Same Rack or not
+    assert (p->src->id == q->src->id);
+    return the_switch->queues[p->dst->id];
+  }
+
+  assert(false);
+}
+
+
+double BigSwitchTopology::get_oracle_fct(Flow *f) {
+
+  double propagation_delay = 2 * 1000000.0 *
+    2* f->src->queue->propagation_delay; //us
+
+  uint32_t np = ceil(f->size / params.mss); // TODO: Must be a multiple of 1460
+  double bandwidth = f->src->queue->rate / 1000000.0; // For us
+  double transmission_delay =  ((np + 1) * (params.mss + params.hdr_size)
+                               + 2.0 * params.hdr_size) // ACK has to travel two hops
+                               * 8.0 / bandwidth;
+
+  return (propagation_delay + transmission_delay); //us
+}
+
+
+
+
 
 
 

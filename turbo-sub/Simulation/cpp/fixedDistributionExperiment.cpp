@@ -39,11 +39,11 @@ extern uint32_t duplicated_packets_received;
 extern double start_time;
 extern double get_current_time();
 
-extern void printQueueStatistics(PFabricTopology *topo);
+extern void printQueueStatistics(Topology *topo);
 extern void run_scenario();
 
 void generate_flows_to_schedule_fd(std::string filename, uint32_t num_flows,
-PFabricTopology *topo) {
+Topology *topo) {
   //double lambda = 4.0966649051007566;
   //use an NAryRandomVariable for true uniform/bimodal/trimodal/etc
   // EmpiricalRandomVariable *nv_bytes =
@@ -113,17 +113,20 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     topology = new CutThroughTopology(params.num_hosts, params.num_agg_switches,
     params.num_core_switches, params.bandwidth, params.queue_type);
   } else {
-    topology = new PFabricTopology(params.num_hosts, params.num_agg_switches,
-    params.num_core_switches, params.bandwidth, params.queue_type);
+    if(params.big_switch){
+      topology = new BigSwitchTopology(params.num_hosts, params.bandwidth, params.queue_type);
+    }else{
+      topology = new PFabricTopology(params.num_hosts, params.num_agg_switches,
+      params.num_core_switches, params.bandwidth, params.queue_type);
+    }
   }
 
 
-  PFabricTopology *topo = (PFabricTopology *) topology;
 
   uint32_t num_flows = params.num_flows_to_run;
 
   //no reading flows to schedule in this mode.
-  generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topo);
+  generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
 
   std::deque<Flow *> flows_sorted = flows_to_schedule;
   struct FlowComparator {
@@ -168,7 +171,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   " MeanSlowdown " << sum_norm / flows_sorted.size() <<
   " MeanInflation " << sum_inflation / flows_sorted.size() <<
   "\n";
-  printQueueStatistics(topo);
+  printQueueStatistics(topology);
 }
 
 
