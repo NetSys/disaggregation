@@ -1,4 +1,4 @@
-#reset.sh <remote_mem> <bw> <latency> <inject>
+#reset.sh <remote_mem> <bw> <latency> <inject> <get_record>
 
 if [ -n "$(cat /proc/swaps | grep /mnt/swap)" ]
 then
@@ -13,5 +13,5 @@ free > /dev/null && sync && echo 3 > /proc/sys/vm/drop_caches && free > /dev/nul
 echo $2 > /proc/sys/fs/rmem/bandwidth_bps
 echo $3 > /proc/sys/fs/rmem/latency_ns
 echo $4 > /proc/sys/fs/rmem/inject_latency
-echo 0 > /proc/sys/fs/rmem/get_record
+echo $5 > /proc/sys/fs/rmem/get_record
 

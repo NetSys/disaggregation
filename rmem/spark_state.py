@@ -21,7 +21,7 @@ duration = end_time - start_time
 
 result = "Start: " + start_time_str + " End: " + end_time_str + " Duration: " + str(duration) \
        + " Rmem: " + sys.argv[1] + " Bw: " + sys.argv[2] + " Ltcy: " + sys.argv[3] \
-       + " Inj: " + sys.argv[4]
+       + " Inj: " + sys.argv[4] + " Rcd: " + sys.argv[5]
 print result
 os.system("echo \"" + result + "\" >> ec2_exp_log.txt")
 
