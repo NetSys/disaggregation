@@ -116,4 +116,10 @@ public:
   uint32_t goal;
 };
 
+class RTSFlow : public FountainFlow {
+public:
+  virtual void start_flow();
+  virtual void receive(Packet *);
+};
+
 #endif

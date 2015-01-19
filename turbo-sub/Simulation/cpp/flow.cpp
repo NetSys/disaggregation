@@ -443,3 +443,51 @@ Packet *FountainFlow::send(uint32_t seq)
   return p;
 }
 
+void RTSFlow::start_flow() {
+    Packet *p = new RTS(this, hdr_size, src, dst);
+    add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
+}
+
+void RTSFlow::receive(Packet *p) {
+    if (p->type == NORMAL_PACKET || p->type == ACK_PACKET || p->type == PROBE_PACKET) {
+        FountainFlow::receive(p);
+    }
+    else if (p->type == RTS_PACKET) {
+        if (p->dst->receiving == NULL) {
+            p->dst->receiving = this;
+            //send a CTS
+            Packet *p = new CTS(this, hdr_size, dst, src);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
+        }
+        //if this flow is shorter, preempt.
+        else if (p->dst->receiving->size > this->size) {
+            Flow *old_f = p->dst->receiving;
+            p->dst->receiving = this;
+            //send a DTS to the old one
+            Packet *dts = new DTS(this, hdr_size, dst, old_f->src, retx_timeout);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), dts, dst->queue));
+            //send a CTS
+            Packet *p = new CTS(this, hdr_size, dst, src);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
+        }
+        else {
+            //send a DTS
+            //for now just wait a defined time
+            Flow *f = p->dst->receiving;
+            Packet *p = new DTS(this, hdr_size, dst, src, retx_timeout);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue));
+        }
+    }
+    else if (p->type == CTS_PACKET) {
+        send_pending_data();
+    }
+    else if (p->type == DTS_PACKET) {
+        //cancel sending for now
+        if (flow_proc_event != NULL) {
+            floc_proc_event->cancelled = true;
+            flow_proc_event = NULL;
+        }
+        add_to_event_queue(new FlowProcessingEvent(get_current_time() + ((DTSPacket*) p)->wait_time, this);
+    }
+}
+
