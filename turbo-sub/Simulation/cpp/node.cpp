@@ -26,6 +26,7 @@ Node::Node(uint32_t id, uint32_t type) {
 Host::Host(uint32_t id, double rate, uint32_t type) : Node(id, HOST)
 {
   queue = Factory::get_queue(id, rate, params.queue_size, type, 0, 0);
+  receiving = NULL;
 }
 
 // TODO FIX superclass constructor

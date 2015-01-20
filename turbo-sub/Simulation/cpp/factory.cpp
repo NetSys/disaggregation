@@ -32,36 +32,28 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
                         double rate) { // Default rate is 1.0
   switch (flow_type) {
     case NORMAL_FLOW:
-      return new Flow(id, start_time, size,
-        src, dst);
+      return new Flow(id, start_time, size, src, dst);
       break;
     case PFABRIC_FLOW:
-      return new PFabricFlow(id, start_time, size,
-        src, dst);
+      return new PFabricFlow(id, start_time, size, src, dst);
       break;
     case FULLBLAST_PACED_FLOW:
-      return new FullBlastPacedFlow(id, start_time, size,
-        src, dst);
+      return new FullBlastPacedFlow(id, start_time, size, src, dst);
       break;
     case PACED_FLOW:
-      return new PacedFlow(id, start_time, size,
-        src, dst, rate);
+      return new PacedFlow(id, start_time, size, src, dst, rate);
       break;
     case JITTERED_PACED_FLOW:
-      return new JitteredPacedFlow(id, start_time, size,
-        src, dst, rate);
+      return new JitteredPacedFlow(id, start_time, size, src, dst, rate);
       break;
     case TURBO_FLOW:
-      return new TurboFlow(id, start_time, size,
-        src, dst);
+      return new TurboFlow(id, start_time, size, src, dst);
       break;
     case TURBO_FLOW_STOP_ON_TIMEOUT:
-      return new TurboFlowStopOnTimeout(id, start_time, size,
-        src, dst);
+      return new TurboFlowStopOnTimeout(id, start_time, size, src, dst);
       break;
     case TURBO_FLOW_PERPACKET_TIMEOUT:
-      return new TurboFlowPerPacketTimeout(id, start_time, size,
-        src, dst);
+      return new TurboFlowPerPacketTimeout(id, start_time, size, src, dst);
       break;
     case TURBO_FLOW_LONGFLOWS_LOW:
       return new TurboFlowLongFlowsGetLowPriority(id, start_time, size, src, dst);
@@ -81,6 +73,9 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
     */
     case FOUNTAIN_FLOW:
       return new FountainFlow(id, start_time, size, src, dst, 1.00);
+      break;
+    case RTS_CTS_DTS_FLOW:
+      return new RTSFlow(id, start_time, size, src, dst, 1.00);
       break;
   }
   assert(false);
