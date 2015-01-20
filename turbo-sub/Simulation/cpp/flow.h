@@ -118,8 +118,11 @@ public:
 
 class RTSFlow : public FountainFlow {
 public:
+  double cancelled_until;
+  RTSFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy);
   virtual void start_flow();
   virtual void receive(Packet *);
+  virtual void send_pending_data();
 };
 
 #endif

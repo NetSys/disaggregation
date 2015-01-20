@@ -102,20 +102,20 @@ FlowFinishedEvent::~FlowFinishedEvent() {
 }
 void FlowFinishedEvent::process_event() {
   //if(this->flow->id == 83)
-//  std::cout
-//    << "event.cpp::FlowFinishedEvent(): "
-//    << "id:" << flow->id << " "
-//    << "sz:" << flow->size << " "
-//    << "src:" << flow->src->id << " "
-//    << "dst:" << flow->dst->id << " "
-//    << "strt:" << 1000000 * flow->start_time << " "
-//    << "end:" << 1000000 * flow->finish_time << " "
-//    << "fct:" << 1000000.0 * flow->flow_completion_time << " "
-//    << "orcl:" << topology->get_oracle_fct(flow) << " "
-//    << "rate:" << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
-//    << "infl:" << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
-//    << "drp:" << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop
-//    << std::endl;
+  std::cout
+    << "event.cpp::FlowFinishedEvent(): "
+    << "id:" << flow->id << " "
+    << "sz:" << flow->size << " "
+    << "src:" << flow->src->id << " "
+    << "dst:" << flow->dst->id << " "
+    << "strt:" << 1000000 * flow->start_time << " "
+    << "end:" << 1000000 * flow->finish_time << " "
+    << "fct:" << 1000000.0 * flow->flow_completion_time << " "
+    << "orcl:" << topology->get_oracle_fct(flow) << " "
+    << "rate:" << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
+    << "infl:" << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
+    << "drp:" << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop
+    << std::endl;
 }
 
 
@@ -455,9 +455,25 @@ void DDCHostQueueProcessingEvent::process_event() {
     while(!((Host*)(queue->src))->active_flows.empty()){
       Flow* flow = ((Host*)(queue->src))->active_flows.top();
       ((Host*)(queue->src))->active_flows.pop();
-      if(!flow->finished){
-        flow->send_pending_data();
-        break;
+      if (params.flow_type == RTS_CTS_DTS_FLOW) {
+          if (((RTSFlow*) flow)->cancelled_until > get_current_time()) {
+              ((Host*)(queue->src))->active_flows.push(flow);
+          }
+          else {
+              if (((RTSFlow*) flow)->cancelled_until > 0) {
+                  ((RTSFlow*) flow)->cancelled_until = -1;
+              }
+              if(!flow->finished){
+                  flow->send_pending_data();
+                  break;
+              }
+          }
+      }
+      else {
+        if(!flow->finished){
+          flow->send_pending_data();
+          break;
+        }
       }
     }
   }
