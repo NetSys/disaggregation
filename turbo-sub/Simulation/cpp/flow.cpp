@@ -328,10 +328,11 @@ void FountainFlow::start_flow() {
 
 
 void FountainFlow::send_pending_data() {
+//  if(this->id == 8)
+//    std::cout << get_current_time() << " flow.cpp:333 flow:" << this->id << " send seq:" << next_seq_no << "\n";
   if (!this->finished) {
     if(!src->queue->busy){
-//      if(this->id == 0)
-//        std::cout << get_current_time() << " flow.cpp:333 flow:" << this->id << " send seq:" << next_seq_no << "\n";
+
 
       send(next_seq_no);
       next_seq_no += mss;
@@ -430,6 +431,8 @@ Packet *FountainFlow::send(uint32_t seq)
   uint32_t priority = 1;
   //uint32_t priority = min_recv * mss - bytes_acked;
 
+//  if(this->id == 8 || this->id == 6)
+//    std::cout << get_current_time() << " flow " << this->id << " send seq: " << seq << "\n";
 
 
 
@@ -449,6 +452,8 @@ RTSFlow::RTSFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d
 
 void RTSFlow::start_flow() {
     Packet *p = new RTS(this, hdr_size, src, dst);
+//    if(this->id == 8 || this->id == 6)
+//      std::cout << get_current_time() << " sending RTS fid:" << this->id << "\n";
     add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
 }
 
@@ -463,12 +468,16 @@ void RTSFlow::send_pending_data() {
 
 void RTSFlow::receive(Packet *p) {
     if (p->type == NORMAL_PACKET || p->type == ACK_PACKET || p->type == PROBE_PACKET) {
+//        if(this->id == 8 || this->id == 6)
+//          std::cout << get_current_time() << " RTSFlow::receive(Packet *p) fid:" << this->id << " recv pkt id:" << p->unique_id << " type:" << p->type << " seq:" << p->seq_no << "\n";
         FountainFlow::receive(p);
     }
     else if (p->type == RTS_PACKET) {
         if (p->dst->receiving == NULL) {
             p->dst->receiving = this;
             //send a CTS
+//            if(this->id == 8 || this->id == 6)
+//              std::cout << get_current_time() << " sending CTS fid:" << this->id << "\n";
             Packet *p = new CTS(this, hdr_size, dst, src);
             add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
         }
@@ -482,10 +491,15 @@ void RTSFlow::receive(Packet *p) {
         else if (p->dst->receiving->size > this->size) {
             Flow *old_f = p->dst->receiving;
             p->dst->receiving = this;
+
+//            if(this->id == 8 || this->id == 6)
+//              std::cout << get_current_time() << " sending DTS to " << old_f->id <<  " preempting\n";
             //send a DTS to the old one
-            Packet *dts = new DTS(this, hdr_size, dst, old_f->src, retx_timeout);
+            Packet *dts = new DTS(old_f, hdr_size, dst, old_f->src, retx_timeout);
             add_to_event_queue(new PacketQueuingEvent(get_current_time(), dts, dst->queue));
             //send a CTS
+//            if(this->id == 8 || this->id == 6)
+//              std::cout << get_current_time() << " sending RTS to " << this->id <<  " preempting\n";
             Packet *p = new CTS(this, hdr_size, dst, src);
             add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
         }
@@ -493,14 +507,20 @@ void RTSFlow::receive(Packet *p) {
             //send a DTS
             //for now just wait a defined time
             //Flow *f = p->dst->receiving;
+//            if(this->id == 8 || this->id == 6)
+//              std::cout << get_current_time() << " sending DTS fid:" << this->id << "\n";
             Packet *p = new DTS(this, hdr_size, dst, src, retx_timeout);
             add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue));
         }
     }
     else if (p->type == CTS_PACKET) {
+//        if(this->id == 8 || this->id == 6)
+//          std::cout << get_current_time() << " receiving CTS fid:" << this->id <<  this->cancelled_until  << "\n";
         send_pending_data();
     }
     else if (p->type == DTS_PACKET) {
+//        if(this->id == 8 || this->id == 6)
+//          std::cout << get_current_time() << " receiving DTS fid:" << this->id << "\n";
         //cancel sending for now
         if (flow_proc_event != NULL) {
             flow_proc_event->cancelled = true;

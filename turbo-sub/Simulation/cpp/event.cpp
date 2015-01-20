@@ -102,20 +102,20 @@ FlowFinishedEvent::~FlowFinishedEvent() {
 }
 void FlowFinishedEvent::process_event() {
   //if(this->flow->id == 83)
-  std::cout
-    << "event.cpp::FlowFinishedEvent(): "
-    << "id:" << flow->id << " "
-    << "sz:" << flow->size << " "
-    << "src:" << flow->src->id << " "
-    << "dst:" << flow->dst->id << " "
-    << "strt:" << 1000000 * flow->start_time << " "
-    << "end:" << 1000000 * flow->finish_time << " "
-    << "fct:" << 1000000.0 * flow->flow_completion_time << " "
-    << "orcl:" << topology->get_oracle_fct(flow) << " "
-    << "rate:" << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
-    << "infl:" << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
-    << "drp:" << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop
-    << std::endl;
+//  std::cout
+//    << "event.cpp::FlowFinishedEvent(): "
+//    << "id:" << flow->id << " "
+//    << "sz:" << flow->size << " "
+//    << "src:" << flow->src->id << " "
+//    << "dst:" << flow->dst->id << " "
+//    << "strt:" << 1000000 * flow->start_time << " "
+//    << "end:" << 1000000 * flow->finish_time << " "
+//    << "fct:" << 1000000.0 * flow->flow_completion_time << " "
+//    << "orcl:" << topology->get_oracle_fct(flow) << " "
+//    << "rate:" << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
+//    << "infl:" << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
+//    << "drp:" << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop
+//    << std::endl;
 }
 
 
@@ -402,6 +402,8 @@ void DDCHostPacketQueuingEvent::process_event() {
 
     queue->preempt_current_transmission();
     queue->queue_proc_event = new DDCHostQueueProcessingEvent(get_current_time(), queue);
+//    if(packet->flow->id == 8 || packet->flow->id == 6)
+//      std::cout << get_current_time() << " fid:" << packet->flow->id << " in Queuing evt, adding qproc evt to now\n";
     add_to_event_queue(queue->queue_proc_event);
     queue->busy = true;
     queue->packet_transmitting = this->packet;
@@ -418,7 +420,11 @@ DDCHostQueueProcessingEvent::DDCHostQueueProcessingEvent(double time, Queue *que
 
 
 void DDCHostQueueProcessingEvent::process_event() {
+//  if(this->unique_id == 21583)
+//    std::cout << "ddc que proc " << this->unique_id << "\n";
   Packet *packet = queue->deque();
+//  if(this->unique_id == 21583)
+//    std::cout << "ddc que proc " << this->unique_id << " pkt*:" << packet <<"\n";
   if (packet) {
     queue->busy = true;
     queue->busy_events.clear();
@@ -430,6 +436,8 @@ void DDCHostQueueProcessingEvent::process_event() {
     queue->queue_proc_event = new DDCHostQueueProcessingEvent(time + td, queue);
     add_to_event_queue(queue->queue_proc_event);
     queue->busy_events.push_back(queue->queue_proc_event);
+//    if(packet->flow->id == 8 || packet->flow->id == 6)
+//      std::cout << get_current_time() << " DDCHostQueueProcessingEvent for f " << packet->flow->id << " @q:" << queue->unique_id << ", adding new with evt id:" << queue->queue_proc_event->unique_id << " @" << queue->queue_proc_event->time << "\n";
     if (next_hop == NULL) {
       Event* arrival_evt = new PacketArrivalEvent(time + td + pd, packet);
       add_to_event_queue(arrival_evt);
@@ -451,10 +459,15 @@ void DDCHostQueueProcessingEvent::process_event() {
     queue->packet_transmitting = NULL;
     queue->queue_proc_event = NULL;
 
-
-    while(!((Host*)(queue->src))->active_flows.empty()){
+    uint loop_bound = ((Host*)(queue->src))->active_flows.size();
+    for(uint i = 0; i < loop_bound && !((Host*)(queue->src))->active_flows.empty(); i++){
       Flow* flow = ((Host*)(queue->src))->active_flows.top();
       ((Host*)(queue->src))->active_flows.pop();
+//      if(this->unique_id == 21583){
+//        std::cout << "flow poped: " << flow->id << " curr#act flow:" << ((Host*)(queue->src))->active_flows.size() <<"\n";
+//        std::cout << "curr top id:" << ((Host*)(queue->src))->active_flows.top()->id << "\n";
+//      }
+
       if (params.flow_type == RTS_CTS_DTS_FLOW) {
           if (((RTSFlow*) flow)->cancelled_until > get_current_time()) {
               ((Host*)(queue->src))->active_flows.push(flow);
@@ -463,6 +476,10 @@ void DDCHostQueueProcessingEvent::process_event() {
               if (((RTSFlow*) flow)->cancelled_until > 0) {
                   ((RTSFlow*) flow)->cancelled_until = -1;
               }
+//              if(this->unique_id == 21583){
+//
+//                std::cout << get_current_time() << " flow poped:" << flow->id << " isF:" << (flow->finished?1:0) << "\n";
+//              }
               if(!flow->finished){
                   flow->send_pending_data();
                   break;
