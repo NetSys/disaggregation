@@ -328,10 +328,11 @@ void FountainFlow::start_flow() {
 
 
 void FountainFlow::send_pending_data() {
+//  if(this->id == 8)
+//    std::cout << get_current_time() << " flow.cpp:333 flow:" << this->id << " send seq:" << next_seq_no << "\n";
   if (!this->finished) {
     if(!src->queue->busy){
-//      if(this->id == 0)
-//        std::cout << get_current_time() << " flow.cpp:333 flow:" << this->id << " send seq:" << next_seq_no << "\n";
+
 
       send(next_seq_no);
       next_seq_no += mss;
@@ -430,9 +431,6 @@ Packet *FountainFlow::send(uint32_t seq)
   uint32_t priority = 1;
   //uint32_t priority = min_recv * mss - bytes_acked;
 
-
-
-
   uint32_t pkt_size = mss + hdr_size;
   p = new Packet(get_current_time(), this, seq, \
                  priority, pkt_size, \
@@ -441,5 +439,66 @@ Packet *FountainFlow::send(uint32_t seq)
 
   add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
   return p;
+}
+
+RTSFlow::RTSFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy) : FountainFlow(id, start_time, size, s, d, redundancy) {
+  cancelled_until = -1;
+}
+
+void RTSFlow::start_flow() {
+    Packet *p = new RTS(this, hdr_size, src, dst);
+    add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
+}
+
+void RTSFlow::send_pending_data() {
+    if (this->cancelled_until < get_current_time()) {
+        FountainFlow::send_pending_data();
+    }
+    else {
+        start_flow();
+    }
+}
+
+void RTSFlow::receive(Packet *p) {
+    if (p->type == NORMAL_PACKET || p->type == ACK_PACKET || p->type == PROBE_PACKET) {
+        FountainFlow::receive(p);
+    }
+    else if (p->type == RTS_PACKET) {
+        if (p->dst->receiving == NULL || p->dst->receiving->finished) {
+            p->dst->receiving = this;
+            //send a CTS
+            Packet *p = new CTS(this, hdr_size, dst, src);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
+        }
+        else if (p->dst->receiving->size > this->size) {
+            Flow *old_f = p->dst->receiving;
+            p->dst->receiving = this;
+
+            //send a DTS to the old one
+            Packet *dts = new DTS(old_f, hdr_size, dst, old_f->src, retx_timeout);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), dts, dst->queue));
+            //send a CTS
+            Packet *p = new CTS(this, hdr_size, dst, src);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
+        }
+        else {
+            //send a DTS
+            //for now just wait a defined time
+            Packet *p = new DTS(this, hdr_size, dst, src, retx_timeout);
+            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue));
+        }
+    }
+    else if (p->type == CTS_PACKET) {
+        send_pending_data();
+    }
+    else if (p->type == DTS_PACKET) {
+        //cancel sending for now
+        if (flow_proc_event != NULL) {
+            flow_proc_event->cancelled = true;
+            flow_proc_event = NULL;
+        }
+        cancelled_until = get_current_time() + ((DTS*) p)->wait_time;
+        add_to_event_queue(new FlowProcessingEvent(get_current_time() + ((DTS*) p)->wait_time, this));
+    }
 }
 

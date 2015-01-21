@@ -31,7 +31,7 @@
 #define JITTERED_PACED_FLOW 21
 
 #define FOUNTAIN_FLOW 100
-
+#define RTS_CTS_DTS_FLOW 101
 
 class Factory {
 public:
