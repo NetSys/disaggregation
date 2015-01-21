@@ -1,3 +1,4 @@
 .rmem.ko.cmd
 .rmem.mod.o.cmd
 .rmem.o.cmd
+rmem.mod.c

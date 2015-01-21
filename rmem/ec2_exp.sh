@@ -6,7 +6,6 @@ las=( 1000 10000 )
 get_record=0
 
 remote_mem=1400111
-master=$(cat /root/spark-ec2/masters)
 
 echo ============= >> ec2_exp_log.txt
 
