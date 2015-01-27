@@ -30,7 +30,9 @@ then
     echo "-------------retriving log at $slave -------------------"
     ssh root@$slave "echo 1 > /root/disaggregation/rmem/.app_running.tmp"
     sleep 0.5
-    scp root@$slave:/root/disaggregation/rmem/rmem_log.txt $result_dir/$count-$slave
+    scp root@$slave:/root/disaggregation/rmem/rmem_log.txt $result_dir/$count-mem-$slave
+    scp root@$slave:/root/disaggregation/rmem/.disk_io.blktrace.0 $result_dir/$count-disk0-$slave.blktrace.0
+    scp root@$slave:/root/disaggregation/rmem/.disk_io.blktrace.1 $result_dir/$count-disk1-$slave.blktrace.1
     count=$((count+1))
   done
   echo "results in $result_dir"

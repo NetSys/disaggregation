@@ -5,6 +5,23 @@ then
   rm rmem_log.txt
 fi
 
+if [ -z "$(mount | grep /sys/kernel/debug)" ]
+then
+  mount -t debugfs debugfs /sys/kernel/debug
+fi
+
+if [ -a .disk_io.blktrace.0 ]
+then 
+  rm .disk_io.blktrace.0
+fi
+
+if [ -a .disk_io.blktrace.1 ]
+then 
+  rm .disk_io.blktrace.1
+fi
+
+blktrace -d /dev/xvda1 -o .disk_io &
+
 count=0
 while true; do
   cat /proc/rmem_log >> rmem_log.txt
@@ -13,5 +30,7 @@ while true; do
     break
   fi
 done
+
+killall -SIGINT blktrace
 
 
