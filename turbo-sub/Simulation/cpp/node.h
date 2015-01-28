@@ -33,8 +33,6 @@ class Host : public Node {
 public:
   Host(uint32_t id, double rate, uint32_t queue_type);
   Queue *queue;
-  std::priority_queue<Flow *, std::vector<Flow *>, FlowComparator> active_flows;
-  Flow *receiving;
 };
 
 class Switch : public Node {

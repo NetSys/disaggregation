@@ -39,15 +39,3 @@ Probe::Probe(Flow *flow, uint32_t probe_priority,
   this->direction = direction;
 }
 
-RTS::RTS(Flow *flow, uint32_t size, Host *src, Host *dst) : Packet(0, flow, 0, 0, size, src, dst) {
-    this->type = RTS_PACKET;
-}
-
-CTS::CTS(Flow *flow, uint32_t size, Host *src, Host *dst) : Packet(0, flow, 0, 0, size, src, dst) {
-    this->type = CTS_PACKET;
-}
-
-DTS::DTS(Flow *flow, uint32_t size, Host *src, Host *dst, double wait) : Packet(0, flow, 0, 0, size, src, dst) {
-    this->type = DTS_PACKET;
-    this->wait_time = wait;
-}

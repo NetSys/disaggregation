@@ -61,22 +61,6 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
     case PFABRIC_FLOW_NO_SLOWSTART:
       return new PFabricFlowNoSlowStart(id, start_time, size, src, dst);
       break;
-    /*
-    case TURBO_FLOW_PERPACKET_TIMEOUT_WITHPROBING:
-      return new TurboFlowPerPacketTimeoutWithProbing(id, start_time, size,
-        src, dst);
-      break;
-    case TURBO_FLOW_PERPACKET_TIMEOUT_WITHRAREPROBING:
-      return new TurboFlowPerPacketTimeoutWithRareProbing(id, start_time, size,
-        src, dst);
-      break;
-    */
-    case FOUNTAIN_FLOW:
-      return new FountainFlow(id, start_time, size, src, dst, 1.00);
-      break;
-    case RTS_CTS_DTS_FLOW:
-      return new RTSFlow(id, start_time, size, src, dst, 1.00);
-      break;
   }
   assert(false);
   return NULL;

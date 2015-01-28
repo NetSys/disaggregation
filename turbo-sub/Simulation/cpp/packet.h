@@ -53,19 +53,5 @@ public:
 	bool direction; //Forward (true) or acking of a probe (false)
 };
 
-class RTS : public Packet {
-public:
-    RTS(Flow *flow, uint32_t size, Host *src, Host *dst);
-};
-
-class CTS : public Packet {
-public:
-    CTS(Flow *flow, uint32_t size, Host *src, Host *dst);
-};
-
-class DTS : public Packet {
-public:
-    DTS(Flow *flow, uint32_t size, Host *src, Host *dst, double wait);
-    double wait_time;
-};
 #endif
+

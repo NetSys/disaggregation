@@ -41,42 +41,6 @@ extern int get_event_queue_size();
 uint32_t duplicated_packets_received = 0;
 double start_time = -1;
 
-/* Read parameters from a config file */
-void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
-  std::ifstream input(conf_filename);
-
-  std::string temp;
-  input >> temp; input >> params.initial_cwnd;
-  input >> temp; input >> params.max_cwnd;
-  input >> temp; input >> params.retx_timeout_value;
-  input >> temp; input >> params.queue_size;
-  input >> temp; input >> params.propagation_delay;
-  input >> temp; input >> params.bandwidth;
-  input >> temp; input >> params.queue_type;
-  input >> temp; input >> params.flow_type;
-
-  input >> temp;
-
-  if (exp_type == DC_EXP_CONTINUOUS_FLOWMODEL) {
-    input >> params.end_time;
-  }
-  else {
-    input >> params.num_flows_to_run;
-  }
-  input >> temp; input >> params.cdf_or_flow_trace;
-  input >> temp; input >> params.cut_through;
-  input >> temp; input >> params.mean_flow_size;
-  input >> temp; input >> params.load_balancing;
-  input >> temp; input >> params.preemptive_queue;
-  input >> temp; input >> params.rts_cts_dts;
-  input >> temp; input >> params.big_switch;
-
-
-  params.hdr_size = 40;
-  params.mss = 1460;
-}
-
-
 /* Runs a initialized scenario */
 void run_scenario() {
   // Flow Arrivals create new flow arrivals
@@ -92,8 +56,6 @@ void run_scenario() {
     if (start_time < 0) {
       start_time = current_time;
     }
-    //event_queue.pop();
-    //std::cout << "main.cpp::run_scenario():" << get_current_time() << " Processing " << ev->type << " id:" << ev->unique_id << " evt_q_sz:" << event_queue.size() << std::endl;
     if (ev->cancelled) {
       delete ev; //TODO: Smarter
       continue;

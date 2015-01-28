@@ -292,7 +292,6 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
     Host* src = topo->hosts[i];
     Host* dst = topo->hosts[traffic_matrix[i]];
     Flow* flow = Factory::get_flow(1, nv_bytes->value() * 1460, src, dst, params.flow_type);
-    flow->useDDCTestFlowFinishedEvent = true;
     flows_to_schedule.push_back(flow);
     Event * event = new FlowArrivalEvent(flow->start_time, flow);
     add_to_event_queue(event);
@@ -342,3 +341,4 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
   "\n";
   printQueueStatistics(topo);
 }
+

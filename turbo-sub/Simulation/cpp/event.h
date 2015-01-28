@@ -26,12 +26,8 @@
 #define RETX_TIMEOUT 5
 #define FLOW_FINISHED 6
 #define FLOW_PROCESSING 7
-
 #define FLOW_CREATION_EVENT 8
-
 #define LOGGING 9
-
-
 
 
 class Event {
@@ -103,17 +99,6 @@ public:
   Flow *flow;
 };
 
-
-//A flow finished event
-class DDCTestFlowFinishedEvent : public FlowFinishedEvent {
-public:
-  DDCTestFlowFinishedEvent(double time, Flow *flow);
-  ~DDCTestFlowFinishedEvent();
-  void process_event();
-};
-
-
-
 // packet gets queued
 class PacketQueuingEvent : public Event {
 public:
@@ -183,28 +168,5 @@ public:
   double ttl;
 };
 
-
-// packet gets queued
-class DDCHostPacketQueuingEvent : public PacketQueuingEvent {
-public:
-  DDCHostPacketQueuingEvent(double time, Packet *packet, Queue *queue);
-  ~DDCHostPacketQueuingEvent();
-  void process_event();
-};
-
-class DDCHostQueueProcessingEvent : public QueueProcessingEvent {
-public:
-  DDCHostQueueProcessingEvent(double time, Queue *queue);
-  ~DDCHostQueueProcessingEvent();
-  void process_event();
-};
-
-class DDCTimeoutEvent : public Event {
-public:
-  DDCTimeoutEvent(double time, FountainFlow *flow);
-  ~DDCTimeoutEvent();
-  void process_event();
-  FountainFlow *flow;
-};
-
 #endif /* defined(EVENT_H) */
+

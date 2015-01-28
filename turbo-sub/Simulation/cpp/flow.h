@@ -71,12 +71,7 @@ public:
   double flow_completion_time;
 
   uint32_t flow_priority;
-  bool useDDCTestFlowFinishedEvent;
 };
-
-
-
-
 
 
 class PFabricFlow : public Flow {
@@ -95,34 +90,5 @@ public:
   virtual void handle_timeout();
 };
 
-class FountainFlow : public  Flow {
-private:
-  double transmission_delay;
-  int received_count;
-  int min_recv;
-  int bytes_acked;
-  std::vector<uint32_t> dummySack;
-
-
-public:
-	FountainFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy);
-	virtual void start_flow();
-	virtual void send_pending_data();
-  virtual void receive(Packet *);
-  virtual void send_ack(uint32_t, std::vector<uint32_t>);
-  uint32_t ddc_get_priority();
-  virtual Packet* send(uint32_t seq);
-
-  uint32_t goal;
-};
-
-class RTSFlow : public FountainFlow {
-public:
-  double cancelled_until;
-  RTSFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy);
-  virtual void start_flow();
-  virtual void receive(Packet *);
-  virtual void send_pending_data();
-};
-
 #endif
+

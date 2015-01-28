@@ -2,7 +2,7 @@
 #define PARAMS_H
 
 #include <string>
-#include <map>
+#include <fstream>
 
 struct DCExpParams {
 
@@ -30,9 +30,10 @@ struct DCExpParams {
   int num_agg_switches;
   int num_core_switches;
   int preemptive_queue;
-  int rts_cts_dts;
   int big_switch;
 };
+
+void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 
 /* General main function */
 #define DC_EXP_WITH_TRACE 1
@@ -41,7 +42,6 @@ struct DCExpParams {
 #define DC_EXP_CONTINUOUS_FLOWMODEL 5
 #define DC_EXP_UNIFORM_FLOWS 6
 #define DC_EXP_UNIFORM_FLOWS_SHUFFLE_TRAFFIC 7
-
 
 #define SINGLE_LINK_EXP_IONSTYLE 10
 #define SINGLE_LINK_EXP_SYLVIASTYLE 11

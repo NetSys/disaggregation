@@ -117,45 +117,9 @@ void FlowFinishedEvent::process_event() {
 }
 
 
-
-/* Flow Finished */
-DDCTestFlowFinishedEvent::DDCTestFlowFinishedEvent(double time, Flow *flow)
- : FlowFinishedEvent(time, flow) {
-}
-
-DDCTestFlowFinishedEvent::~DDCTestFlowFinishedEvent() {
-}
-void DDCTestFlowFinishedEvent::process_event() {
-//    std::cout
-//      << "event.cpp::FlowFinishedEvent(): "
-//      << "id:" << flow->id << " "
-//      << "sz:" << flow->size << " "
-//      << "src:" << flow->src->id << " "
-//      << "dst:" << flow->dst->id << " "
-//      << "strt:" << (int)(1000000 * flow->start_time) << " "
-//      << "end:" << (int)(1000000 * flow->finish_time) << " "
-//      << "fct:" << std::setprecision(2) << 1000000.0 * flow->flow_completion_time << " "
-//      << "orcl:" << topology->get_oracle_fct(flow) << " "
-//      << "rate:" << std::setprecision(2) << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
-//      << "infl:" << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
-//      << "drp:" << flow->data_pkt_drop << "/" << flow->pkt_drop
-//      << std::endl;
-  if(Factory::flow_counter < params.num_flows_to_run){
-    Flow* flow = Factory::get_flow(get_current_time(), nv_bytes->value()*1460, this->flow->src, this->flow->dst, params.flow_type);
-    flow->useDDCTestFlowFinishedEvent = true;
-    flows_to_schedule.push_back(flow);
-    Event * event = new FlowArrivalEvent(flow->start_time, flow);
-    add_to_event_queue(event);
-  }
-}
-
-
-
 /* Packet Queuing */
 PacketQueuingEvent::PacketQueuingEvent(double time, Packet *packet,
   Queue *queue) : Event(PACKET_QUEUING, time) {
-  //if(packet->flow->id == 61 || packet->flow->id == 70)
-  //  std::cout << "PacketQueuingEvent::PacketQueuingEvent() fid:" << packet->flow->id << " seq:" << packet->seq_no << " ptr:" << packet << "\n";
   this->packet = packet;
   this->queue = queue;
 }
@@ -164,16 +128,6 @@ PacketQueuingEvent::~PacketQueuingEvent() {
 }
 
 void PacketQueuingEvent::process_event() {
-//  if(this->packet->unique_id == 761){
-//    std::cout << get_current_time() << " event.cpp:173 packet queuing pkt:" << packet << " pid:" << packet->unique_id << " to q:" << queue << " qid:" << queue->unique_id <<
-//    "event ptr:" << this << " eid:" << this->unique_id << " q->busy:" << queue->busy;
-//    if (queue->busy){
-//      std::cout << " preempt?" << (this->packet->pf_priority < queue->packet_transmitting->pf_priority);
-//    }
-//    std::cout << "\n";
-//  }
-
-
   if (!queue->busy) {
     queue->queue_proc_event = new QueueProcessingEvent(get_current_time(), queue);
     add_to_event_queue(queue->queue_proc_event);
@@ -221,11 +175,7 @@ QueueProcessingEvent::QueueProcessingEvent(double time, Queue *queue)
   this->queue = queue;
 }
 QueueProcessingEvent::~QueueProcessingEvent() {
-//  if (this->unique_id == 5230)
-//    std::cout << "~~~~~~~~~~~~~~~QueueProcessingEvent()\n";
   if (queue->queue_proc_event == this) {
-//    if (this->unique_id == 5230)
-//      std::cout << "setting NULL\n";
     queue->queue_proc_event = NULL;
   }
 }
@@ -241,9 +191,6 @@ void QueueProcessingEvent::process_event() {
     double pd = queue->propagation_delay;
     //double additional_delay = 1e-10;
     queue->queue_proc_event = new QueueProcessingEvent(time + td, queue);
-//    if(queue->unique_id == 329)
-//      std::cout << get_current_time() << " event.cpp:222 this:" << this << " id:" << this->unique_id << " q:" << queue->unique_id << " qptr:" << queue <<  " add QueueProcessingEvent("<<(time + td)<<") evt ptr:"
-//      << queue->queue_proc_event << " id:" << queue->queue_proc_event->unique_id << " pkt ptr:" << packet << " transmitting:" << queue->packet_transmitting << "\n";
     add_to_event_queue(queue->queue_proc_event);
     queue->busy_events.push_back(queue->queue_proc_event);
     if (next_hop == NULL) {
@@ -259,16 +206,11 @@ void QueueProcessingEvent::process_event() {
       } else {
         queuing_evt = new PacketQueuingEvent(time + td + pd, packet, next_hop);
       }
-//      if(packet->unique_id == 761)
-//        std::cout << get_current_time() << " event.cpp:238 this:" << this << " id:" << this->unique_id << " q:" << queue->unique_id << " qptr:" << queue <<  " add PacketQueuingEvent("<< queuing_evt->time
-//        <<") evt ptr:" << queuing_evt << " pkt ptr:" << packet << " pid:" << packet->unique_id << " next hop:" << next_hop << " qid:" << next_hop->unique_id << "\n";
 
       add_to_event_queue(queuing_evt);
       queue->busy_events.push_back(queuing_evt);
     }
   } else {
-//    if(queue->unique_id == 171)
-//      std::cout << get_current_time() << " event.cpp:213 this:" << this << " q:" << queue->unique_id << " qptr:" << queue <<  "\n";
     queue->busy = false;
     queue->busy_events.clear();
     queue->packet_transmitting = NULL;
@@ -390,106 +332,3 @@ void LoggingEvent::process_event() {
   }
 }
 
-DDCHostPacketQueuingEvent::DDCHostPacketQueuingEvent(double time, Packet *packet, Queue *queue)
-: PacketQueuingEvent(time, packet, queue)
-{
-}
-
-void DDCHostPacketQueuingEvent::process_event() {
-  if (!queue->busy || ( params.preemptive_queue && this->packet->pf_priority < queue->packet_transmitting->pf_priority) ) {
-
-    queue->preempt_current_transmission();
-    queue->queue_proc_event = new DDCHostQueueProcessingEvent(get_current_time(), queue);
-    add_to_event_queue(queue->queue_proc_event);
-    queue->busy = true;
-    queue->packet_transmitting = this->packet;
-  }
-  queue->enque(packet);
-}
-
-DDCHostPacketQueuingEvent::~DDCHostPacketQueuingEvent(){}
-
-DDCHostQueueProcessingEvent::DDCHostQueueProcessingEvent(double time, Queue *queue)
-:QueueProcessingEvent(time,queue)
-{
-}
-
-
-void DDCHostQueueProcessingEvent::process_event() {
-  Packet *packet = queue->deque();
-  if (packet) {
-    queue->busy = true;
-    queue->busy_events.clear();
-    queue->packet_transmitting = packet;
-    Queue *next_hop = topology->get_next_hop(packet, queue);
-    double td = queue->get_transmission_delay(packet->size);
-    double pd = queue->propagation_delay;
-    //double additional_delay = 1e-10;
-    queue->queue_proc_event = new DDCHostQueueProcessingEvent(time + td, queue);
-    add_to_event_queue(queue->queue_proc_event);
-    queue->busy_events.push_back(queue->queue_proc_event);
-    if (next_hop == NULL) {
-      Event* arrival_evt = new PacketArrivalEvent(time + td + pd, packet);
-      add_to_event_queue(arrival_evt);
-      queue->busy_events.push_back(arrival_evt);
-    } else {
-      Event* queuing_evt = NULL;
-      if (params.cut_through == 1) {
-        double cut_through_delay = queue->get_transmission_delay(packet->flow->hdr_size);
-        queuing_evt = new PacketQueuingEvent(time + cut_through_delay + pd, packet, next_hop);
-      } else {
-        queuing_evt = new PacketQueuingEvent(time + td + pd, packet, next_hop);
-      }
-      add_to_event_queue(queuing_evt);
-      queue->busy_events.push_back(queuing_evt);
-    }
-  } else {
-    queue->busy = false;
-    queue->busy_events.clear();
-    queue->packet_transmitting = NULL;
-    queue->queue_proc_event = NULL;
-
-    uint loop_bound = ((Host*)(queue->src))->active_flows.size();
-    for(uint i = 0; i < loop_bound && !((Host*)(queue->src))->active_flows.empty(); i++){
-      Flow* flow = ((Host*)(queue->src))->active_flows.top();
-      ((Host*)(queue->src))->active_flows.pop();
-
-      if (params.flow_type == RTS_CTS_DTS_FLOW) {
-          if (((RTSFlow*) flow)->cancelled_until > get_current_time()) {
-              ((Host*)(queue->src))->active_flows.push(flow);
-          }
-          else {
-              if (((RTSFlow*) flow)->cancelled_until > 0) {
-                  ((RTSFlow*) flow)->cancelled_until = -1;
-              }
-              if(!flow->finished){
-                  flow->send_pending_data();
-                  break;
-              }
-          }
-      }
-      else {
-        if(!flow->finished){
-          flow->send_pending_data();
-          break;
-        }
-      }
-    }
-  }
-}
-
-
-DDCHostQueueProcessingEvent::~DDCHostQueueProcessingEvent(){}
-
-
-
-/* Retx Timeout */
-DDCTimeoutEvent::DDCTimeoutEvent(double time, FountainFlow *flow)
-  : Event(RETX_TIMEOUT, time) {
-  this->flow = flow;
-}
-DDCTimeoutEvent::~DDCTimeoutEvent() {
-}
-void DDCTimeoutEvent::process_event() {
-  flow->send_pending_data();
-}
