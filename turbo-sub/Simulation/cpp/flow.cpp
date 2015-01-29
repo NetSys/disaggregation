@@ -61,7 +61,6 @@ void Flow::start_flow() {
 
 void Flow::send_pending_data() {
   if (received_bytes < size) {
-    //std::cout << "Sending Pending Data" << std::endl;
     uint32_t seq = next_seq_no;
     uint32_t window = cwnd_mss * mss + scoreboard_sack_bytes;
     while ((seq + mss <= last_unacked_seq + window) &&
@@ -72,7 +71,6 @@ void Flow::send_pending_data() {
       }
       next_seq_no = seq + mss;
       seq += mss;
-      //std::cout << "Adding Retx Event" << std::endl;
       if (retx_event == NULL) {
         set_timeout(get_current_time() + retx_timeout);
       }
@@ -91,10 +89,6 @@ Packet *Flow::send(uint32_t seq)
                  priority, mss + hdr_size, \
                  src, dst);
   this->total_pkt_sent++;
-
-//  if(this->id == 61 || this->id == 70)
-//    std::cout << "Flow::send: Flow:" << this->id << "@" << (int)(get_current_time() * 1000000) << " seq:" << seq << " sz:" << size << " pri:" << priority << " ptr:" << p <<  "\n";
-
 
   add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, src->queue));
   return p;
@@ -153,7 +147,6 @@ void Flow::receive_ack(uint32_t ack, std::vector<uint32_t> sack_list) {
 
 void Flow::receive(Packet *p) {
   if (finished) {
-    //std::cout << get_current_time() << " flow.cpp:162 delete " << p << "\n";
     delete p;
     return;
   }
@@ -162,19 +155,12 @@ void Flow::receive(Packet *p) {
   if (p->type == ACK_PACKET) {
     Ack *a = (Ack *) p;
     receive_ack(a->seq_no, a->sack_list);
-    //std::cout << get_current_time() << " flow.cpp:170 delete " << p << "\n";
     delete p;
     return;
   }
 
-//  if(this->id == 70 || this->id == 61){
-//    std::cout << "Flow::receive:flow " << this->id << " " << (int)(get_current_time() * 1000000) << " get pkt seq:" << p->seq_no << " ptr:" << p << "\n";
-//  }
-  //std::cout << get_current_time() << " Received " << p->seq_no << std::endl;
-
   if (received.count(p->seq_no) == 0) {
     received[p->seq_no] = true;
-    //std::cout << get_current_time() << " Setting " << p->seq_no << std::endl;
     num_outstanding_packets -= ((p->size - hdr_size) / (mss));
     received_bytes += (p->size - hdr_size);
   } else {
@@ -189,7 +175,6 @@ void Flow::receive(Packet *p) {
   std::vector<uint32_t> sack_list;
   while (s <= max_seq_no_recv) {
     if (received.count(s) > 0) {
-      //printf("s %d: count:%d\n", s, received.count(s));
       if (in_sequence) {
         recv_till += mss;
       } else {
@@ -201,9 +186,7 @@ void Flow::receive(Packet *p) {
     s += mss;
   }
 
-  //std::cout << get_current_time() << " flow.cpp:209 delete " << p << "\n";
   delete p;
-  //std::cout << get_current_time() << " Sending ack " << recv_till << std::endl;
   send_ack(recv_till, sack_list); // Cumulative Ack
 }
 
@@ -223,7 +206,6 @@ void Flow::handle_timeout() {
   cwnd_mss = 1;
   send_pending_data(); //TODO Send again
   set_timeout(get_current_time() + retx_timeout);  // TODO
-  //std::cout << "timeout\n";
 }
 
 

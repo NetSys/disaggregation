@@ -101,19 +101,23 @@ FlowFinishedEvent::FlowFinishedEvent(double time, Flow *flow)
 FlowFinishedEvent::~FlowFinishedEvent() {
 }
 void FlowFinishedEvent::process_event() {
-  std::cout
-    << flow->id << " "
-    << flow->size << " "
-    << flow->src->id << " "
-    << flow->dst->id << " "
-    << 1000000 * flow->start_time << " "
-    << 1000000 * flow->finish_time << " "
-    << 1000000.0 * flow->flow_completion_time << " "
-    << topology->get_oracle_fct(flow) << " "
-    << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
-    << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
-    << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop
-    << std::endl;
+    this->flow->finished = true;
+    this->flow->finish_time = get_current_time();
+    this->flow->flow_completion_time = this->flow->finish_time - this->flow->start_time;
+    
+    std::cout
+      << flow->id << " "
+      << flow->size << " "
+      << flow->src->id << " "
+      << flow->dst->id << " "
+      << 1000000 * flow->start_time << " "
+      << 1000000 * flow->finish_time << " "
+      << 1000000.0 * flow->flow_completion_time << " "
+      << topology->get_oracle_fct(flow) << " "
+      << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
+      << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
+      << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop
+      << std::endl;
 }
 
 

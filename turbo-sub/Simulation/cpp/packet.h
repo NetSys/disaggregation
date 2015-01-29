@@ -10,10 +10,6 @@
 #define ACK_PACKET 1
 #define PROBE_PACKET 2
 
-#define RTS_PACKET 5
-#define CTS_PACKET 6
-#define DTS_PACKET 7
-
 class Packet {
 
 public:
@@ -31,6 +27,11 @@ public:
 	static uint32_t instance_count;
 
 	uint32_t type; // Normal or Ack packet
+};
+
+class PlainAck : public Packet {
+public:
+    PlainAck(Flow *flow, uint32_t seq_no_acked, uint32_t size, Host* src, Host* dst);
 };
 
 class Ack : public Packet {

@@ -17,6 +17,11 @@ Packet::Packet(double sending_time, Flow *flow, uint32_t seq_no, uint32_t pf_pri
   this->unique_id = Packet::instance_count++;
 }
 
+PlainAck::PlainAck(Flow *flow, uint32_t seq_no_acked, uint32_t size, Host* src, Host *dst)
+  : Packet(0, flow, seq_no_acked, 0, size, src, dst)
+{
+  this->type = ACK_PACKET;
+}
 
 Ack::Ack(Flow *flow, uint32_t seq_no_acked, std::vector<uint32_t> sack_list,
   uint32_t size,

@@ -5,6 +5,7 @@
 #include "queue.h"
 #include "pacedflow.h"
 #include "turboflow.h"
+#include "fountainflow.h"
 #include "turboqueue.h"
 #include "turboflow_perpkt.h"
 
@@ -29,6 +30,8 @@
 
 #define PACED_FLOW 20
 #define JITTERED_PACED_FLOW 21
+
+#define FOUNTAIN_FLOW 100
 
 class Factory {
 public:

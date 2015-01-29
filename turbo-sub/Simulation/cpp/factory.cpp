@@ -61,6 +61,9 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
     case PFABRIC_FLOW_NO_SLOWSTART:
       return new PFabricFlowNoSlowStart(id, start_time, size, src, dst);
       break;
+    case FOUNTAIN_FLOW:
+      return new FountainFlow(id, start_time, size, src, dst);
+      break;
   }
   assert(false);
   return NULL;
