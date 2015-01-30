@@ -30,6 +30,7 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
     input >> temp; input >> params.load_balancing;
     input >> temp; input >> params.preemptive_queue;
     input >> temp; input >> params.big_switch;
+    input >> temp; input >> params.host_type;
 
     params.hdr_size = 40;
     params.mss = 1460;

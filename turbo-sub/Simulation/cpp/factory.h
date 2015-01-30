@@ -8,6 +8,8 @@
 #include "fountainflow.h"
 #include "turboqueue.h"
 #include "turboflow_perpkt.h"
+#include "node.h"
+#include "schedulinghost.h"
 
 /* Queue types */
 #define DROPTAIL_QUEUE 1
@@ -32,6 +34,11 @@
 #define JITTERED_PACED_FLOW 21
 
 #define FOUNTAIN_FLOW 100
+#define FOUNTAIN_FLOW_SCHEDULING_HOST 101
+
+/* Host types */
+#define NORMAL_HOST 1
+#define SCHEDULING_HOST 2
 
 class Factory {
 public:
@@ -45,6 +52,7 @@ public:
   static Queue *get_queue(uint32_t id, double rate,
                           uint32_t queue_size, uint32_t type,
                           double drop_prob, int location);
+  static Host* get_host(uint32_t id, double rate, uint32_t queue_type, uint32_t host_type);
 };
 
 #endif

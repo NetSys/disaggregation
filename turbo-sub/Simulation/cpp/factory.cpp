@@ -64,7 +64,22 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
     case FOUNTAIN_FLOW:
       return new FountainFlow(id, start_time, size, src, dst);
       break;
+    case FOUNTAIN_FLOW_SCHEDULING_HOST:
+      return new FountainFlowWithSchedulingHost(id, start_time, size, src, dst);
   }
   assert(false);
   return NULL;
+}
+
+Host* Factory::get_host(uint32_t id, double rate, uint32_t queue_type, uint32_t host_type) {
+    switch (host_type) {
+        case NORMAL_HOST:
+            return new Host(id, rate, queue_type);
+            break;
+        case SCHEDULING_HOST:
+            return new SchedulingHost(id, rate, queue_type);
+            break;
+    }
+    assert(false);
+    return NULL;
 }

@@ -53,3 +53,46 @@ void FountainFlow::receive(Packet *p) {
     }
 }
 
+
+FountainFlowWithSchedulingHost::FountainFlowWithSchedulingHost(uint32_t id, double start_time, uint32_t size, Host *s, Host *d) : FountainFlow(id, start_time, size, s, d) {
+}
+
+void FountainFlowWithSchedulingHost::start_flow() {
+    ((SchedulingHost*) this->src)->start(this);
+}
+
+void FountainFlowWithSchedulingHost::send_ack() {
+    //IN THIS METHOD DST IS THE SRC
+    Packet *ack = new PlainAck(this, 0, hdr_size, dst, src);
+    add_to_event_queue(new PacketQueuingEvent(get_current_time(), ack, dst->queue));
+}
+
+void FountainFlowWithSchedulingHost::send_pending_data() {
+    if (this->finished) {
+        ((SchedulingHost*) this->src)->send();
+        return;
+    }
+
+    Packet *p = this->send(next_seq_no);
+    next_seq_no += mss;
+
+    double td = src->queue->get_transmission_delay(p->size);
+    ((SchedulingHost*) src)->host_proc_event = new HostProcessingEvent(get_current_time() + td, (SchedulingHost*) src);
+    add_to_event_queue(((SchedulingHost*) src)->host_proc_event);    
+}
+
+void FountainFlowWithSchedulingHost::receive(Packet *p) {
+    if (this->finished) {
+        return;
+    }
+    if (p->type == NORMAL_PACKET) {
+        received_count++;
+        //only send one ack per bdp
+        if (received_count >= goal && (received_count - goal) % 7 == 0) {
+            send_ack();
+        }
+    }
+    else if (p->type == ACK_PACKET) {
+        add_to_event_queue(new FlowFinishedEvent(get_current_time(), this));
+    }
+}

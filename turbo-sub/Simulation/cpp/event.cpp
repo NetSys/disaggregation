@@ -336,3 +336,15 @@ void LoggingEvent::process_event() {
   }
 }
 
+
+HostProcessingEvent::HostProcessingEvent(double time, SchedulingHost *h) : Event(HOST_PROCESSING, time) {
+    this->host = h;
+}
+
+HostProcessingEvent::~HostProcessingEvent() {
+    this->host = NULL;
+}
+
+void HostProcessingEvent::process_event() {
+    this->host->send();
+}

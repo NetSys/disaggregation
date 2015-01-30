@@ -15,5 +15,14 @@ public:
     uint32_t goal;
 };
 
+class FountainFlowWithSchedulingHost : public FountainFlow {
+public:
+    FountainFlowWithSchedulingHost(uint32_t id, double start_time, uint32_t size, Host *s, Host *d);
+    virtual void start_flow();
+    virtual void send_pending_data();
+    virtual void receive(Packet *p);
+    virtual void send_ack();
+};
+
 #endif
 

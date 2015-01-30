@@ -1,5 +1,6 @@
 
 #include "topology.h"
+#include "factory.h"
 
 extern DCExpParams params;
 
@@ -30,7 +31,7 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
 
   // Create Hosts
   for (uint32_t i = 0; i < num_hosts; i++) {
-    hosts.push_back(new Host(i, c1, queue_type));
+    hosts.push_back(Factory::get_host(i, c1, queue_type, params.host_type)); // new Host(i, c1, queue_type)
   }
 
   // Create Switches

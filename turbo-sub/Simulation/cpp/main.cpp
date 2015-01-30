@@ -35,7 +35,7 @@ uint32_t num_outstanding_packets;
 uint32_t max_outstanding_packets;
 
 extern DCExpParams params;
-extern double get_current_time(); // TODO
+extern double get_current_time();
 extern void add_to_event_queue(Event *);
 extern int get_event_queue_size();
 uint32_t duplicated_packets_received = 0;

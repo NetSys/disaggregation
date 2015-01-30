@@ -11,11 +11,12 @@
 
 #include <iostream>
 #include <math.h>
+#include <queue>
 #include "node.h"
 #include "queue.h"
 #include "flow.h"
-#include <queue>
 #include "random_variable.h"
+#include "schedulinghost.h"
 
 //TODO import globals
 
@@ -29,6 +30,7 @@
 #define FLOW_CREATION_EVENT 8
 #define LOGGING 9
 
+#define HOST_PROCESSING 10
 
 class Event {
 public:
@@ -80,7 +82,7 @@ public:
   Flow *flow;
 };
 
-//A flow arrival event
+//A flow processing event
 class FlowProcessingEvent : public Event {
 public:
   FlowProcessingEvent(double time, Flow *flow);
@@ -166,6 +168,15 @@ public:
   ~LoggingEvent();
   void process_event();
   double ttl;
+};
+
+class HostProcessingEvent : public Event {
+public:
+  HostProcessingEvent(double time, SchedulingHost *host);
+  ~HostProcessingEvent();
+
+  void process_event();
+  SchedulingHost *host;
 };
 
 #endif /* defined(EVENT_H) */

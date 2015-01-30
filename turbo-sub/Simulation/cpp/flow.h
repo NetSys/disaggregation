@@ -1,8 +1,8 @@
 #ifndef FLOW_H
 #define FLOW_H
 
-#include "node.h"
 #include <unordered_map>
+#include "node.h"
 
 class Packet;
 class Ack;
