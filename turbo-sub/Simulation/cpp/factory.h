@@ -1,13 +1,16 @@
 #ifndef FACTORY_H
 #define FACTORY_H
 
-#include "flow.h"
 #include "queue.h"
+#include "turboqueue.h"
+
+#include "flow.h"
 #include "pacedflow.h"
 #include "turboflow.h"
-#include "fountainflow.h"
-#include "turboqueue.h"
 #include "turboflow_perpkt.h"
+#include "fountainflow.h"
+#include "rtsctsflow.h"
+
 #include "node.h"
 #include "schedulinghost.h"
 
@@ -35,10 +38,12 @@
 
 #define FOUNTAIN_FLOW 100
 #define FOUNTAIN_FLOW_SCHEDULING_HOST 101
+#define RTSCTS_FLOW 102
 
 /* Host types */
 #define NORMAL_HOST 1
 #define SCHEDULING_HOST 2
+#define RTSCTS_HOST 3
 
 class Factory {
 public:

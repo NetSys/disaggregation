@@ -181,6 +181,7 @@ QueueProcessingEvent::QueueProcessingEvent(double time, Queue *queue)
 QueueProcessingEvent::~QueueProcessingEvent() {
   if (queue->queue_proc_event == this) {
     queue->queue_proc_event = NULL;
+    queue->busy = false; //TODO is this ok??
   }
 }
 void QueueProcessingEvent::process_event() {
@@ -342,7 +343,9 @@ HostProcessingEvent::HostProcessingEvent(double time, SchedulingHost *h) : Event
 }
 
 HostProcessingEvent::~HostProcessingEvent() {
-    this->host = NULL;
+    if (host->host_proc_event == this) {
+        host->host_proc_event = NULL;
+    }
 }
 
 void HostProcessingEvent::process_event() {

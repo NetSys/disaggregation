@@ -10,6 +10,9 @@
 #define ACK_PACKET 1
 #define PROBE_PACKET 2
 
+#define RTS_PACKET 3
+#define CTS_PACKET 4
+
 class Packet {
 
 public:
@@ -52,6 +55,13 @@ public:
 		Host* src, Host *dst);
 	uint32_t probe_id;
 	bool direction; //Forward (true) or acking of a probe (false)
+};
+
+
+class RTSCTS : public Packet {
+public:
+    //type: true if RTS, false if CTS
+    RTSCTS(bool type, double sending_time, Flow *f, uint32_t size, Host *src, Host *dst);
 };
 
 #endif

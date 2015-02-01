@@ -61,12 +61,6 @@ void FountainFlowWithSchedulingHost::start_flow() {
     ((SchedulingHost*) this->src)->start(this);
 }
 
-void FountainFlowWithSchedulingHost::send_ack() {
-    //IN THIS METHOD DST IS THE SRC
-    Packet *ack = new PlainAck(this, 0, hdr_size, dst, src);
-    add_to_event_queue(new PacketQueuingEvent(get_current_time(), ack, dst->queue));
-}
-
 void FountainFlowWithSchedulingHost::send_pending_data() {
     if (this->finished) {
         ((SchedulingHost*) this->src)->send();

@@ -44,3 +44,12 @@ Probe::Probe(Flow *flow, uint32_t probe_priority,
   this->direction = direction;
 }
 
+RTSCTS::RTSCTS(bool type, double sending_time, Flow *f, uint32_t size, Host *src, Host *dst) : Packet(sending_time, f, 0, 0, size, src, dst) {
+    if (type) {
+        this->type = RTS_PACKET;
+    }
+    else {
+        this->type = CTS_PACKET;
+    }
+}
+

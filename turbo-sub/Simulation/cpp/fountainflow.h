@@ -21,7 +21,6 @@ public:
     virtual void start_flow();
     virtual void send_pending_data();
     virtual void receive(Packet *p);
-    virtual void send_ack();
 };
 
 #endif
