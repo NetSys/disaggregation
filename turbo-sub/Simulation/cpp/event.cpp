@@ -349,5 +349,7 @@ HostProcessingEvent::~HostProcessingEvent() {
 }
 
 void HostProcessingEvent::process_event() {
+    this->host->host_proc_event = NULL;
     this->host->send();
 }
+

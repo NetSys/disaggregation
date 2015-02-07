@@ -37,7 +37,6 @@ void SchedulingHost::send() {
             this->sending_flows.pop();    
         }
         if (this->sending_flows.empty()) {
-            this->host_proc_event = NULL;
             return;
         }
         (this->sending_flows.top())->send_pending_data();
