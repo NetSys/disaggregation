@@ -38,6 +38,7 @@ class PipelineSchedulingHost : public SchedulingHost {
 public:
     PipelineSchedulingHost(uint32_t id, double rate, uint32_t queue_type);
     void start(Flow* f);
+    void try_send();
     void send();
     void send_RTS();
     void handle_rts(RTS* rts, FountainFlowWithPipelineSchedulingHost* f);
