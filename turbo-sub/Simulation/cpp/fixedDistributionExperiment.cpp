@@ -34,6 +34,7 @@ extern uint32_t max_outstanding_packets;
 extern DCExpParams params;
 extern void add_to_event_queue(Event *);
 extern void read_experiment_parameters(std::string conf_filename, uint32_t exp_type);
+extern void read_flows_to_schedule(std::string filename, uint32_t num_lines, Topology *topo);
 extern uint32_t duplicated_packets_received;
 
 extern double start_time;
@@ -126,7 +127,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   uint32_t num_flows = params.num_flows_to_run;
 
   //no reading flows to schedule in this mode.
-  generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
+  read_flows_to_schedule(params.cdf_or_flow_trace, num_flows, topology);
+  //generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
 
   std::deque<Flow *> flows_sorted = flows_to_schedule;
   struct FlowComparator {

@@ -152,8 +152,8 @@ void PacketQueuingEvent::process_event() {
       queue->packet_transmitting = packet;
     }
   }
-  queue->enque(packet);
 
+  queue->enque(packet);
 }
 
 
@@ -185,7 +185,6 @@ QueueProcessingEvent::~QueueProcessingEvent() {
   }
 }
 void QueueProcessingEvent::process_event() {
-
   Packet *packet = queue->deque();
   if (packet) {
     queue->busy = true;

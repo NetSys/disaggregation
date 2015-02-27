@@ -49,6 +49,8 @@ void run_scenario() {
     add_to_event_queue(flow_arrivals.front());
     flow_arrivals.pop_front();
   }
+  int last_evt_type = -1;
+  int same_evt_count = 0;
   while (event_queue.size() > 0) {
     Event *ev = event_queue.top();
     event_queue.pop();
@@ -62,6 +64,18 @@ void run_scenario() {
     }
     ev->process_event();
     delete ev;
+
+    if(last_evt_type == ev->type)
+      same_evt_count++;
+    else
+      same_evt_count = 0;
+
+    last_evt_type = ev->type;
+
+    if(same_evt_count > 100){
+      std::cout << "Ended event dead loop. Type:" << last_evt_type << "\n";
+      break;
+    }
   }
 }
 

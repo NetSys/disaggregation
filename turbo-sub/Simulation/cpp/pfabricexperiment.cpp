@@ -43,7 +43,7 @@ extern double start_time;
 /* pFabric Experiments */
 /* Reads flow information from an input trace */
 void read_flows_to_schedule(std::string filename, uint32_t num_lines,
-                           PFabricTopology *topo) {
+                           Topology *topo) {
   std::ifstream input(filename);
   for (uint32_t i = 0; i < num_lines; i++) {
     double start_time, temp;

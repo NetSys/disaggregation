@@ -12,6 +12,8 @@
 
 #define RTS_PACKET 3
 #define CTS_PACKET 4
+#define OFFER_PACKET 5
+#define DECISION_PACKET 6
 
 class Packet {
 
@@ -62,6 +64,31 @@ class RTSCTS : public Packet {
 public:
     //type: true if RTS, false if CTS
     RTSCTS(bool type, double sending_time, Flow *f, uint32_t size, Host *src, Host *dst);
+};
+
+class RTS : public Packet{
+public:
+  RTS(Flow *flow, Host *src, Host *dst, double delay, int iter);
+  double delay;
+  int iter;
+};
+
+class OfferPkt : public Packet{
+public:
+  OfferPkt(Flow *flow, Host *src, Host *dst, bool is_free, int iter);
+  bool is_free;
+  int iter;
+};
+
+class DecisionPkt : public Packet{
+public:
+  DecisionPkt(Flow *flow, Host *src, Host *dst, bool accept);
+  bool accept;
+};
+
+class CTS : public Packet{
+public:
+  CTS(Flow *flow, Host *src, Host *dst);
 };
 
 #endif

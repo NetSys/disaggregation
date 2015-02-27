@@ -1,5 +1,7 @@
 #include "packet.h"
+#include "params.h"
 
+extern DCExpParams params;
 uint32_t Packet::instance_count = 0;
 
 Packet::Packet(double sending_time, Flow *flow, uint32_t seq_no, uint32_t pf_priority,
@@ -44,7 +46,7 @@ Probe::Probe(Flow *flow, uint32_t probe_priority,
   this->direction = direction;
 }
 
-RTSCTS::RTSCTS(bool type, double sending_time, Flow *f, uint32_t size, Host *src, Host *dst) : Packet(sending_time, f, 0, 0, size, src, dst) {
+RTSCTS::RTSCTS(bool type, double sending_time, Flow *f, uint32_t size, Host *src, Host *dst) : Packet(sending_time, f, 0, 0, f->hdr_size, src, dst) {
     if (type) {
         this->type = RTS_PACKET;
     }
@@ -53,3 +55,25 @@ RTSCTS::RTSCTS(bool type, double sending_time, Flow *f, uint32_t size, Host *src
     }
 }
 
+
+RTS::RTS(Flow *flow, Host *src, Host *dst, double delay, int iter) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
+  this->type = RTS_PACKET;
+  this->delay = delay;
+  this->iter = iter;
+}
+
+
+OfferPkt::OfferPkt(Flow *flow, Host *src, Host *dst, bool is_free, int iter) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
+  this->type = OFFER_PACKET;
+  this->is_free = is_free;
+  this->iter = iter;
+}
+
+DecisionPkt::DecisionPkt(Flow *flow, Host *src, Host *dst, bool accept) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
+  this->type = DECISION_PACKET;
+  this->accept = accept;
+}
+
+CTS::CTS(Flow *flow, Host *src, Host *dst) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
+  this->type = CTS_PACKET;
+}

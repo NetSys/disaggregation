@@ -23,5 +23,15 @@ public:
     virtual void receive(Packet *p);
 };
 
+class FountainFlowWithPipelineSchedulingHost : public FountainFlowWithSchedulingHost {
+public:
+  FountainFlowWithPipelineSchedulingHost(uint32_t id, double start_time, uint32_t size, Host *s, Host *d);
+  void receive(Packet *p);
+  void send_pending_data();
+  double ack_timeout;
+  int send_count;
+  bool scheduled;
+};
+
 #endif
 

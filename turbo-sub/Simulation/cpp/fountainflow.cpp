@@ -51,7 +51,13 @@ void FountainFlow::receive(Packet *p) {
         }
         add_to_event_queue(new FlowFinishedEvent(get_current_time(), this));
     }
+    else if (p->type == RTS_PACKET){
+
+    }
 }
+
+
+
 
 
 FountainFlowWithSchedulingHost::FountainFlowWithSchedulingHost(uint32_t id, double start_time, uint32_t size, Host *s, Host *d) : FountainFlow(id, start_time, size, s, d) {
@@ -81,6 +87,7 @@ void FountainFlowWithSchedulingHost::receive(Packet *p) {
     }
     if (p->type == NORMAL_PACKET) {
         received_count++;
+
         //only send one ack per bdp
         if (received_count >= goal && (received_count - goal) % 7 == 0) {
             send_ack();
@@ -89,4 +96,70 @@ void FountainFlowWithSchedulingHost::receive(Packet *p) {
     else if (p->type == ACK_PACKET) {
         add_to_event_queue(new FlowFinishedEvent(get_current_time(), this));
     }
+}
+
+
+
+
+
+
+
+FountainFlowWithPipelineSchedulingHost::FountainFlowWithPipelineSchedulingHost(uint32_t id, double start_time, uint32_t size, Host *s, Host *d)
+  : FountainFlowWithSchedulingHost(id, start_time, size, s, d) {
+    this->ack_timeout = 0;
+    this->send_count = 0;
+    this->scheduled = false;
+}
+
+void FountainFlowWithPipelineSchedulingHost::send_pending_data() {
+    if (this->finished) {
+        return;
+    }
+
+    Packet *p = this->send(next_seq_no);
+    next_seq_no += mss;
+    send_count++;
+
+    double td = src->queue->get_transmission_delay(p->size);
+    ((SchedulingHost*) src)->host_proc_event = new HostProcessingEvent(get_current_time() + td, (SchedulingHost*) src);
+    add_to_event_queue(((SchedulingHost*) src)->host_proc_event);
+}
+
+void FountainFlowWithPipelineSchedulingHost::receive(Packet *p) {
+    if (this->finished) {
+        return;
+    }
+    if (p->type == NORMAL_PACKET) {
+        received_count++;
+
+        if( ((PipelineSchedulingHost*)(this->dst))->receiver_schedule_state == 1){
+            assert(((PipelineSchedulingHost*)(this->dst))->receiver_offer);
+            if(((PipelineSchedulingHost*)(this->dst))->receiver_offer == p->flow){
+                ((PipelineSchedulingHost*)(this->dst))->receiver_offer_unlock();
+                ((PipelineSchedulingHost*)(this->dst))->receiver_busy_until = get_current_time() + (size_in_pkt - received_count) * 0.0000012;
+                assert(((PipelineSchedulingHost*)(this->dst))->receiver_busy_until >= get_current_time());
+            }
+        }
+
+        //only send one ack per bdp
+        if (received_count >= goal && (received_count - goal) % 7 == 0) {
+            send_ack();
+        }
+    }
+    else if (p->type == ACK_PACKET) {
+        add_to_event_queue(new FlowFinishedEvent(get_current_time(), this));
+    }
+    else if (p->type == RTS_PACKET){
+        ((PipelineSchedulingHost*)(p->dst))->handle_rts((RTS*)p, (FountainFlowWithPipelineSchedulingHost*)(p->flow));
+    }
+    else if (p->type == OFFER_PACKET){
+        ((PipelineSchedulingHost*)(p->dst))->handle_offer_pkt((OfferPkt*)p, (FountainFlowWithPipelineSchedulingHost*)(p->flow));
+    }
+    else if (p->type == DECISION_PACKET){
+        ((PipelineSchedulingHost*)(p->dst))->handle_decision_pkt((DecisionPkt*)p, (FountainFlowWithPipelineSchedulingHost*)(p->flow));
+    }
+//    else if (p->type == CTS_PACKET){
+//        ((PipelineSchedulingHost*)(p->dst))->handle_cts((CTS*)p, (FountainFlowWithSchedulingHost*)(p->flow));
+//    }
+
 }
