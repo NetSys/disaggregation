@@ -29,6 +29,7 @@ public:
   void receive(Packet *p);
   void send_pending_data();
   double ack_timeout;
+  double first_send_time;
   int send_count;
   bool scheduled;
 };

@@ -13,6 +13,7 @@
 #include "factory.h"
 #include <iomanip>
 #include "random_variable.h"
+#include "debug.h"
 
 
 extern Topology *topology;
@@ -105,19 +106,21 @@ void FlowFinishedEvent::process_event() {
     this->flow->finish_time = get_current_time();
     this->flow->flow_completion_time = this->flow->finish_time - this->flow->start_time;
     
-    std::cout
-      << flow->id << " "
-      << flow->size << " "
-      << flow->src->id << " "
-      << flow->dst->id << " "
-      << 1000000 * flow->start_time << " "
-      << 1000000 * flow->finish_time << " "
-      << 1000000.0 * flow->flow_completion_time << " "
-      << topology->get_oracle_fct(flow) << " "
-      << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
-      << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
-      << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop
-      << std::endl;
+    if(print_flow_result())
+        std::cout
+          << flow->id << " "
+          << flow->size << " "
+          << flow->src->id << " "
+          << flow->dst->id << " "
+          << 1000000 * flow->start_time << " "
+          << 1000000 * flow->finish_time << " "
+          << 1000000.0 * flow->flow_completion_time << " "
+          << topology->get_oracle_fct(flow) << " "
+          << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
+          << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
+          << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop << " "
+          << ((FountainFlowWithPipelineSchedulingHost*)flow)->first_send_time - flow->start_time << " "
+          << std::endl;
 }
 
 

@@ -127,8 +127,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   uint32_t num_flows = params.num_flows_to_run;
 
   //no reading flows to schedule in this mode.
-  read_flows_to_schedule(params.cdf_or_flow_trace, num_flows, topology);
-  //generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
+  //read_flows_to_schedule(params.cdf_or_flow_trace, num_flows, topology);
+  generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
 
   std::deque<Flow *> flows_sorted = flows_to_schedule;
   struct FlowComparator {
@@ -161,19 +161,20 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   write_flows_to_file(flows_sorted, "flow.tmp");
   // print statistics
-  double sum = 0, sum_norm = 0, sum_inflation = 0;
+  double sum = 0, sum_norm = 0, sum_inflation = 0, sum_waiting = 0;
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
     if(!f->finished)
       std::cout << "unfinished flow " << "size:" << f->size << " id:" << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes << "\n";
     sum += 1000000.0 * f->flow_completion_time;
-    sum_norm += 1000000.0 * f->flow_completion_time /
-      topology->get_oracle_fct(f);
+    sum_norm += 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
     sum_inflation += (double)f->total_pkt_sent / (f->size/f->mss);
+    sum_waiting += ((FountainFlowWithPipelineSchedulingHost*)f)->first_send_time - f->start_time;
   }
   std::cout << "AverageFCT " << sum / flows_sorted.size() <<
   " MeanSlowdown " << sum_norm / flows_sorted.size() <<
   " MeanInflation " << sum_inflation / flows_sorted.size() <<
+  " MeanWaiting " << sum_waiting / flows_sorted.size() <<
   "\n";
   printQueueStatistics(topology);
 }

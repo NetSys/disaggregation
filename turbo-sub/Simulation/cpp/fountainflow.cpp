@@ -1,6 +1,7 @@
 #include "fountainflow.h"
 #include "event.h"
 #include "packet.h"
+#include "debug.h"
 
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
@@ -109,6 +110,7 @@ FountainFlowWithPipelineSchedulingHost::FountainFlowWithPipelineSchedulingHost(u
     this->ack_timeout = 0;
     this->send_count = 0;
     this->scheduled = false;
+    this->first_send_time = -1;
 }
 
 void FountainFlowWithPipelineSchedulingHost::send_pending_data() {
@@ -120,6 +122,9 @@ void FountainFlowWithPipelineSchedulingHost::send_pending_data() {
     next_seq_no += mss;
     send_count++;
 
+    if(this->first_send_time < 0)
+        this->first_send_time = get_current_time();
+
     double td = src->queue->get_transmission_delay(p->size);
     ((SchedulingHost*) src)->host_proc_event = new HostProcessingEvent(get_current_time() + td, (SchedulingHost*) src);
     add_to_event_queue(((SchedulingHost*) src)->host_proc_event);
@@ -130,13 +135,15 @@ void FountainFlowWithPipelineSchedulingHost::receive(Packet *p) {
         return;
     }
     if (p->type == NORMAL_PACKET) {
+        if(debug_flow(this->id)) std::cout << get_current_time() << " flow " << this->id << " received pkt seq no " << p->seq_no << "\n";
         received_count++;
+        received_bytes += (p->size - hdr_size);
 
         if( ((PipelineSchedulingHost*)(this->dst))->receiver_schedule_state == 1){
             assert(((PipelineSchedulingHost*)(this->dst))->receiver_offer);
             if(((PipelineSchedulingHost*)(this->dst))->receiver_offer == p->flow){
                 ((PipelineSchedulingHost*)(this->dst))->receiver_offer_unlock();
-                ((PipelineSchedulingHost*)(this->dst))->receiver_busy_until = get_current_time() + (size_in_pkt - received_count) * 0.0000012;
+                ((PipelineSchedulingHost*)(this->dst))->receiver_busy_until = get_current_time() + (size_in_pkt - received_count) * 0.0000018;
                 assert(((PipelineSchedulingHost*)(this->dst))->receiver_busy_until >= get_current_time());
             }
         }

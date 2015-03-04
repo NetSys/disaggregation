@@ -29,14 +29,14 @@ def get_mean_flow_size(cdf_file):
     return int(get_mean_flowsize(cdf_file))
 
 experiments = {
-        'pfabric_alllong_100k' : [2, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
-        'pfabric_allshort_100k' : [2, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
-        'fountain_alllong_vanilla_100k' : [100, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
-        'fountain_allshort_vanilla_100k' : [100, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
+#        'pfabric_alllong_100k' : [2, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
+#        'pfabric_allshort_100k' : [2, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
+#        'fountain_alllong_vanilla_100k' : [100, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
+#        'fountain_allshort_vanilla_100k' : [100, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
         'fountain_alllong_scheduled_100k' : [101, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 2],
         'fountain_allshort_scheduled_100k' : [101, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 2],
-        'rtscts_alllong_vanilla_100k' : [102, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 3],
-        'rtscts_allshort_vanilla_100k' : [102, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 3]
+#        'rtscts_alllong_vanilla_100k' : [102, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 3],
+#        'rtscts_allshort_vanilla_100k' : [102, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 3]
 }
 
 def run_exp(exp_name):
