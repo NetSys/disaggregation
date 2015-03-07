@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <ctime>
 
+
 #include "flow.h"
 #include "turboflow.h"
 
@@ -52,7 +53,7 @@ Topology *topo) {
   EmpiricalRandomVariable *nv_bytes = new CDFRandomVariable(filename);
   params.mean_flow_size = nv_bytes->mean_flow_size;
 
-  double lambda = params.bandwidth * 0.8 /
+  double lambda = params.bandwidth * params.load /
   (params.mean_flow_size * 8.0 / 1460 * 1500);
   double lambda_per_host = lambda / (topo->hosts.size() - 1);
   std::cout << "Lambda: " << lambda_per_host << std::endl;
@@ -162,6 +163,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   write_flows_to_file(flows_sorted, "flow.tmp");
   // print statistics
   double sum = 0, sum_norm = 0, sum_inflation = 0, sum_waiting = 0;
+  uint data_pkt_sent = 0, parity_pkt_sent = 0, data_pkt_drop = 0, parity_pkt_drop = 0;
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
     if(!f->finished)
@@ -170,6 +172,10 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     sum_norm += 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
     sum_inflation += (double)f->total_pkt_sent / (f->size/f->mss);
     sum_waiting += ((FountainFlowWithPipelineSchedulingHost*)f)->first_send_time - f->start_time;
+    data_pkt_sent += std::min(f->size_in_pkt, (int)f->total_pkt_sent);
+    parity_pkt_sent += std::max(0, (int)(f->total_pkt_sent - f->size_in_pkt));
+    data_pkt_drop += f->data_pkt_drop;
+    parity_pkt_drop += std::max(0, f->pkt_drop - f->data_pkt_drop);
   }
   std::cout << "AverageFCT " << sum / flows_sorted.size() <<
   " MeanSlowdown " << sum_norm / flows_sorted.size() <<
@@ -177,6 +183,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   " MeanWaiting " << sum_waiting / flows_sorted.size() <<
   "\n";
   printQueueStatistics(topology);
+  std::cout << "Data Pkt Drop Rate: " << (double)data_pkt_drop/data_pkt_sent << " Parity Drop Rate:" << (double)parity_pkt_drop/parity_pkt_sent << "\n";
 }
 
 
@@ -334,8 +341,7 @@ void run_fixedDistribution_experiment_shuffle_traffic(int argc, char **argv, uin
     if(!f->finished)
       std::cout << "unfinished flow " << "size:" << f->size << " id:" << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes << "\n";
     sum += 1000000.0 * f->flow_completion_time;
-    sum_norm += 1000000.0 * f->flow_completion_time /
-      topology->get_oracle_fct(f);
+    sum_norm += 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
     sum_inflation += (double)f->total_pkt_sent / (f->size/f->mss);
   }
   std::cout << "AverageFCT " << sum / flows_sorted.size() <<

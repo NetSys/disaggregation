@@ -32,6 +32,7 @@ struct DCExpParams {
   int preemptive_queue;
   int big_switch;
   int host_type;
+  double load;
 };
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 

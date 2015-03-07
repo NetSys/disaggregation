@@ -2,7 +2,7 @@
 #include <set>
 
 bool debug_mode = false;
-bool print_flow = false;
+bool print_flow = true;
 
 bool debug_all_flows = false;
 std::set<uint32_t> flows_to_debug_set = {91};

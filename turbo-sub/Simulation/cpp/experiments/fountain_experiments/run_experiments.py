@@ -20,6 +20,7 @@ load_balancing: 0
 preemptive_queue: 0
 big_switch: 0
 host_type: {4}
+load: {5}
 
 '''
 
@@ -29,14 +30,22 @@ def get_mean_flow_size(cdf_file):
     return int(get_mean_flowsize(cdf_file))
 
 experiments = {
-#        'pfabric_alllong_100k' : [2, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
-#        'pfabric_allshort_100k' : [2, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
-#        'fountain_alllong_vanilla_100k' : [100, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
-#        'fountain_allshort_vanilla_100k' : [100, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
-        'fountain_alllong_scheduled_100k' : [101, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 2],
-        'fountain_allshort_scheduled_100k' : [101, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 2],
-#        'rtscts_alllong_vanilla_100k' : [102, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 3],
-#        'rtscts_allshort_vanilla_100k' : [102, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 3]
+#        'pfabric_alllong_100k_0.6' : [2, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1, 0.6],
+#        'pfabric_allshort_100k_0.6' : [2, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1, 0.6],
+#        'pfabric_alllong_100k_0.8' : [2, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1, 0.8],
+#        'pfabric_allshort_100k_0.8' : [2, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1, 0.8],
+#        'fountain_alllong_vanilla_100k' : [100, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1, 0.8],
+#        'fountain_allshort_vanilla_100k' : [100, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1, 0.8],
+#        'fountain_alllong_scheduled_100k' : [101, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 2, 0.8],
+#        'fountain_allshort_scheduled_100k' : [101, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 2, 0.8],
+#        'rtscts_alllong_vanilla_100k' : [102, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 3, 0.8],
+#        'rtscts_allshort_vanilla_100k' : [102, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 3, 0.8]
+#        'fountain_alllong_pipeline_100k' : [111, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 11, 0.8],
+#        'fountain_allshort_pipeline_100k' : [111, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 11, 0.8],
+        'fountain_alllong_pipeline_100k_0.6' : [111, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 11, 0.6],
+#        'fountain_allshort_pipeline_100k_0.6' : [111, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 11, 0.6],
+#        'fountain_alllong_pipeline_100k_0.8' : [111, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 11, 0.8],
+#        'fountain_allshort_pipeline_100k_0.8' : [111, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 11, 0.8],
 }
 
 def run_exp(exp_name):
@@ -46,7 +55,9 @@ def run_exp(exp_name):
         conf_file.write(conf_file_str)
     result_file_name = 'results_' + exp_name + '.txt'
     with open(result_file_name, 'w') as res_file:
-        subprocess.call(['../../simulator', '6', conf_file_name], stdout = res_file)
+        cmd = ['../../simulator', '6', conf_file_name]
+        print " ".join(cmd)
+        subprocess.call(cmd, stdout = res_file)
 
 threads = []
 for exp_name in experiments:

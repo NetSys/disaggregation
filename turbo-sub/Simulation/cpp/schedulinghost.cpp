@@ -64,8 +64,8 @@ bool FFPipelineTimeoutComparator::operator() (FountainFlowWithPipelineScheduling
 
 #define RTS_BATCH_SIZE 5
 #define RTS_TIMEOUT 0.000003
-#define RTS_ADVANCE 0.00000245
-#define RECEIVER_ADVANCE 0.000001
+#define RTS_ADVANCE 0.0000036
+#define RECEIVER_ADVANCE 0.0000035 + 0.000001
 
 
 PipelineSchedulingHost::PipelineSchedulingHost(uint32_t id, double rate, uint32_t queue_type) : SchedulingHost(id, rate, queue_type) {
@@ -123,7 +123,7 @@ void PipelineSchedulingHost::send() {
         QueueProcessingEvent *qpe = this->queue->queue_proc_event;
         uint32_t queue_size = this->queue->bytes_in_queue;
         double td = this->queue->get_transmission_delay(queue_size);
-        this->host_proc_event = new HostProcessingEvent(qpe->time + td, this);
+        this->host_proc_event = new HostProcessingEvent(qpe->time + td + 0.000000001, this);
         add_to_event_queue(this->host_proc_event);
     }
     else
@@ -183,11 +183,24 @@ void PipelineSchedulingHost::send() {
                 " src:" << current_sending_flow->src->id << " dst:" << current_sending_flow->dst->id <<
                 " seq:" << current_sending_flow->next_seq_no << "\n";
             this->current_sending_flow->send_pending_data();
+            pkt_sent = true;
         }
         else if(host_proc_evt_time < 10000){
             this->host_proc_event = new HostProcessingEvent(host_proc_evt_time, this);
             add_to_event_queue(this->host_proc_event);
         }
+//        else if(!pkt_sent){
+//            while(!this->sending_flows.empty()){
+//                if(this->sending_flows.top()->finished)
+//                    this->sending_flows.pop();
+//                else{
+//                    this->sending_flows.top()->send_pending_data();
+//                    pkt_sent = true;
+//                    break;
+//                }
+//            }
+//        }
+
     }
 }
 
@@ -198,6 +211,8 @@ void PipelineSchedulingHost::send_RTS(){
     for(int i = 0; i < RTS_BATCH_SIZE && !sending_flows.empty(); i++)
     {
         FountainFlowWithPipelineSchedulingHost* f = (FountainFlowWithPipelineSchedulingHost*)sending_flows.top();
+        if(f->finished)
+            continue;
         sending_flows.pop();
         if(!f->scheduled){
             RTS* rts = new RTS(f, f->src, f->dst, RECEIVER_ADVANCE, this->sender_iteration);

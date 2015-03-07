@@ -67,7 +67,7 @@ void read_flows_to_schedule(std::string filename, uint32_t num_lines,
 void generate_flows_to_schedule(std::string filename, uint32_t num_flows,
                                 PFabricTopology *topo) {
   //double lambda = 4.0966649051007566;
-  double lambda = params.bandwidth * 0.8 /
+  double lambda = params.bandwidth * params.load /
                   (params.mean_flow_size * 8.0 / 1460 * 1500);
   double lambda_per_host = lambda / (topo->hosts.size() - 1);
   std::cout << "Lambda: " << lambda_per_host << std::endl;

@@ -55,6 +55,8 @@ Event::~Event() {
 
 
 /* Flow Arrival */
+int flow_arrival_count = 0;
+
 FlowArrivalEvent::FlowArrivalEvent(double time, Flow *flow)
   : Event(FLOW_ARRIVAL, time) {
   this->flow = flow;
@@ -70,10 +72,27 @@ void FlowArrivalEvent::process_event() {
     max_outstanding_packets = num_outstanding_packets;
   }
   this->flow->start_flow();
+  flow_arrival_count++;
   if (flow_arrivals.size() > 0) {
     add_to_event_queue(flow_arrivals.front());
     flow_arrivals.pop_front();
   }
+
+
+  if(flow_arrival_count % (int)(params.num_flows_to_run * 0.1) == 0){
+      double curr_time = get_current_time();
+      uint32_t num_unfinished_flows = 0;
+      for (uint32_t i = 0; i < flows_to_schedule.size(); i++) {
+          Flow *f = flows_to_schedule[i];
+          if (f->start_time < curr_time) {
+              if (!f->finished) {
+                  num_unfinished_flows ++;
+              }
+          }
+      }
+      std::cout << "## " << current_time << " NumUnfinishedFlows " << num_unfinished_flows << " StartedFlows " << flow_arrival_count << "\n";
+  }
+
 }
 
 
