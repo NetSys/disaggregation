@@ -2,6 +2,7 @@
 #define RANDOM_VARIABLE_H
 
 #include <vector>
+#include <random>
 
 class UniformRandomVariable {
 public:
@@ -72,5 +73,15 @@ public:
   virtual double value();
 };
 
+class GaussianRandomVariable{
+  public:
+  double value();
+  GaussianRandomVariable(double avg, double std);
+  double avg;
+  double std;
+
+  std::default_random_engine generator;
+  std::normal_distribution<double> *distribution;
+};
 
 #endif

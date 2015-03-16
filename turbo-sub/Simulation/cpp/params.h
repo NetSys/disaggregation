@@ -32,6 +32,7 @@ struct DCExpParams {
   int preemptive_queue;
   int big_switch;
   int host_type;
+  double traffic_imbalance;
   double load;
 };
 

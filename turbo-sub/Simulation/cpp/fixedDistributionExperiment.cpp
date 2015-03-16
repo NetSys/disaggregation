@@ -86,6 +86,66 @@ Topology *topo) {
   current_time = 0;
 }
 
+void generate_flows_to_schedule_fd_with_traffic_pattern(std::string filename, uint32_t num_flows,
+Topology *topo) {
+
+ EmpiricalRandomVariable *nv_bytes = new CDFRandomVariable(filename);
+  params.mean_flow_size = nv_bytes->mean_flow_size;
+
+  double lambda = params.bandwidth * params.load / (params.mean_flow_size * 8.0 / 1460 * 1500);
+
+
+
+  GaussianRandomVariable popularity(10, params.traffic_imbalance);
+  std::vector<int> sources;
+  std::vector<int> destinations;
+
+  int self_connection_count = 0;
+  for(int i = 0; i < topo->hosts.size(); i++){
+    int src_count = (int)(round(popularity.value()));
+    int dst_count = (int)(round(popularity.value()));
+    std::cout << "node:" << i << " #src:" << src_count << " #dst:" << dst_count << "\n";
+    self_connection_count += src_count * dst_count;
+    for(int j = 0; j < src_count; j++)
+      sources.push_back(i);
+    for(int j = 0; j < dst_count; j++)
+      destinations.push_back(i);
+  }
+
+  double flows_per_host = (sources.size() * destinations.size() - self_connection_count) / (double)topo->hosts.size();
+  double lambda_per_flow = lambda / flows_per_host;
+  std::cout << "Lambda: " << lambda_per_flow << std::endl;
+  ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_flow);
+
+
+  //* [expr ($link_rate*$load*1000000000)/($meanFlowSize*8.0/1460*1500)]
+  for (uint32_t i = 0; i < sources.size(); i++) {
+    for (uint32_t j = 0; j < destinations.size(); j++) {
+      if (sources[i] != destinations[j]) {
+       double first_flow_time = 1.0 + nv_intarr->value();
+        add_to_event_queue(
+            new FlowCreationForInitializationEvent(first_flow_time,
+                topo->hosts[sources[i]], topo->hosts[destinations[j]],
+                nv_bytes, nv_intarr)
+        );
+      }
+    }
+  }
+
+
+  while (event_queue.size() > 0) {
+    Event *ev = event_queue.top();
+    event_queue.pop();
+    current_time = ev->time;
+    if (flows_to_schedule.size() < num_flows) {
+      ev->process_event();
+    }
+    delete ev;
+  }
+  current_time = 0;
+}
+
+
 void write_flows_to_file(std::deque<Flow *> flows, std::string file){
   std::ofstream output(file);
   output.precision(20);
@@ -129,8 +189,10 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   //no reading flows to schedule in this mode.
   //read_flows_to_schedule(params.cdf_or_flow_trace, num_flows, topology);
-  generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
-
+  if(params.traffic_imbalance < 0.01)
+      generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
+  else
+      generate_flows_to_schedule_fd_with_traffic_pattern(params.cdf_or_flow_trace, num_flows, topology);
   std::deque<Flow *> flows_sorted = flows_to_schedule;
   struct FlowComparator {
     bool operator() (Flow *a, Flow *b) {

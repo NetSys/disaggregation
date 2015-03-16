@@ -154,3 +154,15 @@ double CDFRandomVariable::value() {
 //  std::cout << " notfound " << table_[numEntry_-1].cdf_ << " " << table_[numEntry_-1].val_ << "\n";
   return table_[numEntry_-1].val_;
 }
+
+
+GaussianRandomVariable::GaussianRandomVariable(double avg, double std) {
+  this->avg = avg;
+  this->std = std;
+
+  distribution = new std::normal_distribution<double>(avg,std);
+}
+
+double GaussianRandomVariable::value() {
+  return (*distribution)(generator);
+}
