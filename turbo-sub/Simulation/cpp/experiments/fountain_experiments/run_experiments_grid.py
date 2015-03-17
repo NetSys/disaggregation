@@ -43,8 +43,8 @@ experiments = {
 #		'pipeline_allshort_test_100k' : [111, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 11, 0, 0.8],
 }
 
-load = [0.6, 0.8]
-fsize = ["alllong", "allshort"]
+load = [0.4, 0.6, 0.8]
+fsize = ["alllong", "50short", "allshort"]
 skew =  [0.0, 0.5, 1.0, 1.5, 2.0]
 
 
