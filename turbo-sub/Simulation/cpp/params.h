@@ -34,6 +34,7 @@ struct DCExpParams {
   int host_type;
   double traffic_imbalance;
   double load;
+  double reauth_limit;
 };
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
