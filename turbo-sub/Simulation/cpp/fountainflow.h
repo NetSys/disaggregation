@@ -28,10 +28,12 @@ public:
   FountainFlowWithPipelineSchedulingHost(uint32_t id, double start_time, uint32_t size, Host *s, Host *d);
   void receive(Packet *p);
   void send_pending_data();
+  int get_num_pkt_to_schd();
   double ack_timeout;
   double first_send_time;
   int send_count;
   bool scheduled;
+  int remaining_schd_pkt;
 };
 
 #endif

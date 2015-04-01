@@ -2,9 +2,11 @@
 #include "event.h"
 #include "packet.h"
 #include "debug.h"
+#include "params.h"
 
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
+extern DCExpParams params;
 
 FountainFlow::FountainFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d) : Flow(id, start_time, size, s, d) {
     this->goal = this->size_in_pkt;
@@ -121,6 +123,10 @@ void FountainFlowWithPipelineSchedulingHost::send_pending_data() {
     Packet *p = this->send(next_seq_no);
     next_seq_no += mss;
     send_count++;
+    if(remaining_schd_pkt > 0)
+        remaining_schd_pkt--;
+    p->remaining_pkts_in_batch = remaining_schd_pkt;
+
 
     if(this->first_send_time < 0)
         this->first_send_time = get_current_time();
@@ -143,7 +149,7 @@ void FountainFlowWithPipelineSchedulingHost::receive(Packet *p) {
             assert(((PipelineSchedulingHost*)(this->dst))->receiver_offer);
             if(((PipelineSchedulingHost*)(this->dst))->receiver_offer == p->flow){
                 ((PipelineSchedulingHost*)(this->dst))->receiver_offer_unlock();
-                ((PipelineSchedulingHost*)(this->dst))->receiver_busy_until = get_current_time() + (size_in_pkt - received_count) * 0.0000018;
+                ((PipelineSchedulingHost*)(this->dst))->receiver_busy_until = get_current_time() + p->remaining_pkts_in_batch * 0.0000018;
                 assert(((PipelineSchedulingHost*)(this->dst))->receiver_busy_until >= get_current_time());
             }
         }
@@ -169,4 +175,9 @@ void FountainFlowWithPipelineSchedulingHost::receive(Packet *p) {
 //        ((PipelineSchedulingHost*)(p->dst))->handle_cts((CTS*)p, (FountainFlowWithSchedulingHost*)(p->flow));
 //    }
 
+}
+
+int FountainFlowWithPipelineSchedulingHost::get_num_pkt_to_schd()
+{
+    return std::max((int)1, std::min((int)params.reauth_limit, (int)(this->size_in_pkt - this->total_pkt_sent)));
 }

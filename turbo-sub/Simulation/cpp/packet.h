@@ -30,6 +30,7 @@ public:
 	Host *dst;
 	uint32_t unique_id;
 	static uint32_t instance_count;
+	int remaining_pkts_in_batch;
 
 	uint32_t type; // Normal or Ack packet
 };
