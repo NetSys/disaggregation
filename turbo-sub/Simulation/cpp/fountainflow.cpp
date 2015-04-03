@@ -113,6 +113,7 @@ FountainFlowWithPipelineSchedulingHost::FountainFlowWithPipelineSchedulingHost(u
     this->send_count = 0;
     this->scheduled = false;
     this->first_send_time = -1;
+    this->rts_send_count = 0;
 }
 
 void FountainFlowWithPipelineSchedulingHost::send_pending_data() {
@@ -131,9 +132,11 @@ void FountainFlowWithPipelineSchedulingHost::send_pending_data() {
     if(this->first_send_time < 0)
         this->first_send_time = get_current_time();
 
-    double td = src->queue->get_transmission_delay(p->size);
-    ((SchedulingHost*) src)->host_proc_event = new HostProcessingEvent(get_current_time() + td, (SchedulingHost*) src);
-    add_to_event_queue(((SchedulingHost*) src)->host_proc_event);
+    if(((SchedulingHost*) src)->host_proc_event == NULL){
+        double td = src->queue->get_transmission_delay(p->size);
+        ((SchedulingHost*) src)->host_proc_event = new HostProcessingEvent(get_current_time() + td, (SchedulingHost*) src);
+        add_to_event_queue(((SchedulingHost*) src)->host_proc_event);
+    }
 }
 
 void FountainFlowWithPipelineSchedulingHost::receive(Packet *p) {
@@ -174,7 +177,7 @@ void FountainFlowWithPipelineSchedulingHost::receive(Packet *p) {
 //    else if (p->type == CTS_PACKET){
 //        ((PipelineSchedulingHost*)(p->dst))->handle_cts((CTS*)p, (FountainFlowWithSchedulingHost*)(p->flow));
 //    }
-
+    delete p;
 }
 
 int FountainFlowWithPipelineSchedulingHost::get_num_pkt_to_schd()

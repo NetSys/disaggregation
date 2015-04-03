@@ -64,7 +64,7 @@ bool FFPipelineTimeoutComparator::operator() (FountainFlowWithPipelineScheduling
 }
 
 
-#define RTS_BATCH_SIZE 5
+#define RTS_BATCH_SIZE 30
 #define RTS_TIMEOUT 0.000003
 #define RTS_ADVANCE 0.0000036
 #define RECEIVER_ADVANCE 0.0000035 + 0.000001
@@ -103,22 +103,44 @@ void PipelineSchedulingHost::send() {
         std::cout << get_current_time() << " PipelineSchedulingHost::send() at host" << this->id << "\n";
     //put a flow to sending_redundency if all data pkts are sent
 
+    while(this->current_sending_flow && this->current_sending_flow->finished){
+        this->current_sending_flow = NULL;
+
+        if(next_sending_flow){
+            if(debug_host(this->id))
+                std::cout << get_current_time() << " exist next_sending_flow, setting cur_sending_flow to " << this->next_sending_flow->id << "\n";
+
+            this->current_sending_flow = next_sending_flow;
+            this->sender_busy_until = get_current_time() + 0.0000012 * this->current_sending_flow->remaining_schd_pkt;
+            next_sending_flow = NULL;
+        }
+    }
+
+
 
     if(this->current_sending_flow && ((FountainFlowWithPipelineSchedulingHost*)(this->current_sending_flow))->remaining_schd_pkt == 0){
 
-        this->current_sending_flow->scheduled = false;
-        if(((FountainFlowWithPipelineSchedulingHost*)(this->current_sending_flow))->send_count >= this->current_sending_flow->size_in_pkt){
+
+        if(((FountainFlowWithPipelineSchedulingHost*)(this->current_sending_flow))->total_pkt_sent >= this->current_sending_flow->size_in_pkt){
             ((FountainFlowWithPipelineSchedulingHost*)(this->current_sending_flow))->ack_timeout = get_current_time() + 0.0000095;
             this->sending_redundency.push((FountainFlowWithPipelineSchedulingHost*)(this->current_sending_flow));
+            if(debug_host(this->id))
+                std::cout << get_current_time() << " current flow " << this->current_sending_flow->id << " finished sending data pkt\n";
         }
         else{
+            this->current_sending_flow->scheduled = false;
             this->sending_flows.push(this->current_sending_flow);
+            if(debug_host(this->id))
+                std::cout << get_current_time() << " current flow " << this->current_sending_flow->id << " finished sending in this round\n";
 
         }
 
         this->current_sending_flow = NULL;
 
         if(next_sending_flow){
+            if(debug_host(this->id))
+                std::cout << get_current_time() << " exist next_sending_flow, setting cur_sending_flow to " << this->next_sending_flow->id << "\n";
+
             this->current_sending_flow = next_sending_flow;
             this->sender_busy_until = get_current_time() + 0.0000012 * this->current_sending_flow->remaining_schd_pkt;
             next_sending_flow = NULL;
@@ -135,7 +157,7 @@ void PipelineSchedulingHost::send() {
             uint32_t queue_size = this->queue->bytes_in_queue;
             double td = this->queue->get_transmission_delay(queue_size);
             if(this->host_proc_event == NULL){
-                this->host_proc_event = new HostProcessingEvent(qpe->time + td + 0.000000001, this);
+                this->host_proc_event = new HostProcessingEvent(qpe->time + td + 0.000000000001, this);
                 add_to_event_queue(this->host_proc_event);
             }
         }
@@ -151,7 +173,7 @@ void PipelineSchedulingHost::send() {
 
         //send rts
         if(this->sender_busy_until <= get_current_time() + RTS_ADVANCE && sender_schedule_state == 0){
-            if(debug_host(this->id) && get_current_time() > 1.00131931320947)
+            if(debug_host(this->id) )
                 std::cout << get_current_time() << " calling sendRTS() at " << this->id << " sender_schedule_state:" << sender_schedule_state <<
                     " sender_last_rts_send_time:" << sender_last_rts_send_time << " sender_busy_until:" << sender_busy_until <<  "\n";
             this->send_RTS();
@@ -162,7 +184,7 @@ void PipelineSchedulingHost::send() {
 
                 double td = this->queue->get_transmission_delay(this->queue->bytes_in_queue);
                 if(this->host_proc_event == NULL){
-                    this->host_proc_event = new HostProcessingEvent(get_current_time() + td + 0.000000001, this);
+                    this->host_proc_event = new HostProcessingEvent(get_current_time() + td + 0.000000000001, this);
                     add_to_event_queue(this->host_proc_event);
                 }
             }
@@ -195,15 +217,15 @@ void PipelineSchedulingHost::send() {
 
         //send normal data packet
         if (!pkt_sent && this->current_sending_flow){
-            if(debug_flow(current_sending_flow->id))
+            if(debug_flow(current_sending_flow->id) || debug_host(this->id))
                 std::cout << get_current_time() << " send data pkt for flow id:" << current_sending_flow->id <<
-                " src:" << current_sending_flow->src->id << " dst:" << current_sending_flow->dst->id <<
-                " seq:" << current_sending_flow->next_seq_no << "\n";
+                    " src:" << current_sending_flow->src->id << " dst:" << current_sending_flow->dst->id <<
+                    " seq:" << current_sending_flow->next_seq_no << "\n";
             this->current_sending_flow->send_pending_data();
             pkt_sent = true;
         }
         else if(host_proc_evt_time < 10000 && this->host_proc_event == NULL){
-            this->host_proc_event = new HostProcessingEvent(host_proc_evt_time + 0.000000001, this);
+            this->host_proc_event = new HostProcessingEvent(host_proc_evt_time + 0.000000000001, this);
             add_to_event_queue(this->host_proc_event);
         }
 //        else if(!pkt_sent){
@@ -241,17 +263,18 @@ void PipelineSchedulingHost::send_RTS(){
     for(int i = 0; i < RTS_BATCH_SIZE && !sending_flows.empty(); i++)
     {
         f = (FountainFlowWithPipelineSchedulingHost*)sending_flows.top();
+        sending_flows.pop();
         if(f->finished)
             continue;
-        sending_flows.pop();
         if(!f->scheduled){
             RTS* rts = new RTS(f, f->src, f->dst, RECEIVER_ADVANCE, this->sender_iteration);
+            f->rts_send_count++;
             if(debug_flow(rts->flow->id) || debug_host(this->id))
                 std::cout << get_current_time() << " send rts for flow id:" << rts->flow->id
                 << " src:" << rts->src->id << " dst:" << rts->dst->id << " iter:" << this->sender_iteration << "\n";
             assert(f->src->queue->limit_bytes - f->src->queue->bytes_in_queue >= rts->size);
             add_to_event_queue(new PacketQueuingEvent(get_current_time(), rts, rts->src->queue));
-            rts_sent.push(f);
+            rts_sent.push(f); //TODO:fix this
             sender_rts_sent_count++;
         }
     }
@@ -296,7 +319,7 @@ void PipelineSchedulingHost::handle_offer_pkt(OfferPkt* offer_pkt, FountainFlowW
            std::cout << get_current_time() << " host " << this->id << " got offer for flow "
            << offer_pkt->flow->id << " curr_iter:" << this->sender_iteration << " pkt_iter:" << offer_pkt->iter << "\n";
        //accept
-       if(this->sender_iteration == offer_pkt->iter){
+       if(this->sender_iteration == offer_pkt->iter && (current_sending_flow == NULL || next_sending_flow == NULL)){
            f->scheduled = true;
            f->remaining_schd_pkt = std::max((int)1, std::min((int)params.reauth_limit, (int)(f->size_in_pkt - f->total_pkt_sent)));
 
@@ -307,6 +330,7 @@ void PipelineSchedulingHost::handle_offer_pkt(OfferPkt* offer_pkt, FountainFlowW
 
            if(current_sending_flow)
            {
+               assert(this->next_sending_flow == NULL);
                this->next_sending_flow = (FountainFlowWithPipelineSchedulingHost*)offer_pkt->flow;
                this->sender_busy_until = get_current_time() + 0.0000012 * this->next_sending_flow->remaining_schd_pkt;
                if(debug_host(this->id))
@@ -315,18 +339,18 @@ void PipelineSchedulingHost::handle_offer_pkt(OfferPkt* offer_pkt, FountainFlowW
            }
            else
            {
-               if(debug_host(this->id)) std::cout << get_current_time() << " host " << this->id << " set current sending flow" << "\n";
+               if(debug_host(this->id)) std::cout << get_current_time() << " host " << this->id << " set current sending flow to " << offer_pkt->flow->id << "\n";
                this->current_sending_flow = (FountainFlowWithPipelineSchedulingHost*)offer_pkt->flow;
                this->sender_busy_until = get_current_time() + 0.0000012 * this->current_sending_flow->remaining_schd_pkt;
                this->try_send();
            }
        }
        //reject
-       else if(this->sender_iteration > offer_pkt->iter){
-           DecisionPkt* decision = new DecisionPkt(f, offer_pkt->src, offer_pkt->dst, false);
+       else if(this->sender_iteration < offer_pkt->iter){
+           assert(false);
        }
        else{
-           assert(false);
+           DecisionPkt* decision = new DecisionPkt(f, offer_pkt->src, offer_pkt->dst, false);
        }
    }else{
        if(this->sender_iteration == offer_pkt->iter){

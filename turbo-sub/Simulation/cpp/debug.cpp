@@ -1,31 +1,34 @@
 #include "debug.h"
 #include <set>
 
-bool debug_mode = true;
+extern double get_current_time();
+
+bool debug_mode = false;
 bool print_flow = false;
+double debug_start_time = 1.00870121206939;
 
 bool debug_all_flows = false;
-std::set<uint32_t> flows_to_debug_set = {15};
+std::set<uint32_t> flows_to_debug_set = {9044};
 bool debug_all_queues = false;
 std::set<uint32_t> queues_to_debug_set = {};
 bool debug_all_hosts = false;
-std::set<uint32_t> hosts_to_debug_set = {86};
+std::set<uint32_t> hosts_to_debug_set = {29};
 
 bool debug_flow(uint32_t fid){
-    return debug_mode?(debug_all_flows||flows_to_debug_set.count(fid)):false;
+    return debug_mode && get_current_time() >= debug_start_time?(debug_all_flows||flows_to_debug_set.count(fid)):false;
 }
 
 
 bool debug_queue(uint32_t qid){
-    return debug_mode?(debug_all_queues||queues_to_debug_set.count(qid)):false;
+    return debug_mode && get_current_time() >= debug_start_time?(debug_all_queues||queues_to_debug_set.count(qid)):false;
 }
 
 bool debug_host(uint32_t qid){
-    return debug_mode?(debug_all_hosts||hosts_to_debug_set.count(qid)):false;
+    return debug_mode &&  get_current_time() >= debug_start_time?(debug_all_hosts||hosts_to_debug_set.count(qid)):false;
 }
 
 bool debug(){
-    return debug_mode;
+    return debug_mode &&  get_current_time() >= debug_start_time;
 }
 
 bool print_flow_result(){

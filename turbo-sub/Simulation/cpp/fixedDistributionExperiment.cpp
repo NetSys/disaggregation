@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <cstdlib>
 #include <ctime>
-
+#include <map>
 
 #include "flow.h"
 #include "turboflow.h"
@@ -226,10 +226,24 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   // print statistics
   double sum = 0, sum_norm = 0, sum_inflation = 0, sum_waiting = 0;
   uint data_pkt_sent = 0, parity_pkt_sent = 0, data_pkt_drop = 0, parity_pkt_drop = 0;
+  std::map<unsigned, int> rts_send_count_by_size;
+  std::map<unsigned, double> flow_total_slowdown_by_size;
+  std::map<unsigned, int> flow_count_by_size;
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
     if(!f->finished)
       std::cout << "unfinished flow " << "size:" << f->size << " id:" << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes  << " src:" << f->src->id << " dst:" << f->dst->id << "\n";
+
+    if(flow_count_by_size.find(f->size_in_pkt) == flow_count_by_size.end()){
+        flow_count_by_size[f->size_in_pkt] = 0;
+        flow_total_slowdown_by_size[f->size_in_pkt] = 0;
+        rts_send_count_by_size[f->size_in_pkt] = 0;
+    }
+    flow_count_by_size[f->size_in_pkt]++;
+    rts_send_count_by_size[f->size_in_pkt] += ((FountainFlowWithPipelineSchedulingHost*)f)->rts_send_count;
+    flow_total_slowdown_by_size[f->size_in_pkt] += 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
+
+
     sum += 1000000.0 * f->flow_completion_time;
     sum_norm += 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
     sum_inflation += (double)f->total_pkt_sent / (f->size/f->mss);
@@ -244,6 +258,11 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   " MeanInflation " << sum_inflation / flows_sorted.size() <<
   " MeanWaiting " << sum_waiting / flows_sorted.size() <<
   "\n";
+  for(auto it = flow_count_by_size.begin(); it != flow_count_by_size.end(); ++it){
+      unsigned key = it->first;
+      std::cout << key << ": " << flow_total_slowdown_by_size[it->first]/ it->second << " " << (double)rts_send_count_by_size[it->first]/it->second <<  "   ";
+  }
+  std::cout << "\n";
   printQueueStatistics(topology);
   std::cout << "Data Pkt Drop Rate: " << (double)data_pkt_drop/data_pkt_sent << " Parity Drop Rate:" << (double)parity_pkt_drop/parity_pkt_sent << "\n";
 }

@@ -3,6 +3,9 @@
 import sys
 import subprocess
 import threading
+import os
+
+os.system("cd ../..;make;cd -")
 
 conf_str = '''init_cwnd: 4
 max_cwnd: 7
@@ -22,6 +25,7 @@ big_switch: 0
 host_type: {4}
 traffic_imbalance: {5}
 load: {6}
+reauth_limit: 3
 '''
 
 def get_mean_flow_size(cdf_file):
@@ -43,15 +47,15 @@ experiments = {
 #		'pipeline_allshort_test_100k' : [111, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 11, 0, 0.8],
 }
 
-load = [0.4, 0.6, 0.8]
-fsize = ["alllong", "50short", "allshort"]
-skew =  [0.0, 0.5, 1.0, 1.5, 2.0]
+load = [0.8]
+fsize = ["alllong", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
+skew =  [0.0]
 
 
 for l in load:
     for f in fsize:
         for s in skew:
-            key = 'pipeline_' + f + '_load' + str(l) + '_skew' + str(s) + '_100k'
+            key = 'pipeline-1bcts_' + f + '_load' + str(l) + '_skew' + str(s) + '_100k'
             value = [111, 100000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), 11, s, l]
             experiments[key] = value
     

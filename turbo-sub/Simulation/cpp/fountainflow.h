@@ -34,6 +34,7 @@ public:
   int send_count;
   bool scheduled;
   int remaining_schd_pkt;
+  int rts_send_count;
 };
 
 #endif
