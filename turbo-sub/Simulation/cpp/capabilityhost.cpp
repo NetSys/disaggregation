@@ -18,7 +18,12 @@ extern DCExpParams params;
 
 bool CapabilityFlowComparator::operator() (CapabilityFlow* a, CapabilityFlow* b){
     //return a->size_in_pkt > b->size_in_pkt;
-    return a->remaining_pkts_at_sender > b->remaining_pkts_at_sender;
+    if(a->remaining_pkts_at_sender > b->remaining_pkts_at_sender)
+        return true;
+    else if(a->remaining_pkts_at_sender == b->remaining_pkts_at_sender)
+        return rand()%2;
+    else
+        return false;
 }
 
 bool CapabilityFlowComparatorAtReceiver::operator() (CapabilityFlow* a, CapabilityFlow* b){
@@ -91,7 +96,6 @@ void CapabilityHost::send(){
 
             if(top_flow->has_capability())
             {
-                top_flow->use_capability();
                 top_flow->send_pending_data();
                 break;
             }
@@ -111,6 +115,8 @@ void CapabilityHost::send(){
 
 
 void CapabilityHost::send_capability(){
+    //if(debug_host(this->id))
+    //    std::cout << get_current_time() << " CapabilityHost::send_capability() at host " << this->id << "\n";
     assert(capa_proc_evt == NULL);
 
     bool capability_sent = false;
@@ -121,37 +127,60 @@ void CapabilityHost::send_capability(){
     while(!this->active_receiving_flows.empty())
     {
         CapabilityFlow* f = this->active_receiving_flows.top();
+        this->active_receiving_flows.pop();
+        if(debug_flow(f->id))
+            std::cout << get_current_time() << " pop out flow " << f->id << "\n";
+
+
         if(f->finished_at_receiver)
         {
-            this->active_receiving_flows.pop();
             continue;
         }
+        flows_tried.push(f);
 
-        //not yet timed out
+        //not yet timed out, shouldn't send
         if(f->redundancy_ctrl_timeout > get_current_time()){
-            flows_tried.push(f);
             if(f->redundancy_ctrl_timeout < closet_timeout)
             {
                 closet_timeout = f->redundancy_ctrl_timeout;
             }
-            this->active_receiving_flows.pop();
         }
+        //ok to send
         else
         {
-            //just timeout
+            //just timeout, reset timeout state
             if(f->redundancy_ctrl_timeout > 0){
                 f->redundancy_ctrl_timeout = -1;
                 f->capability_goal += f->remaining_pkts();
             }
 
-            f->send_capability_pkt();
-            capability_sent = true;
+            if(f->capability_gap() >= CAPABILITY_WINDOW)
+            {
+                if(get_current_time() >= f->latest_cap_sent_time + CAPABILITY_WINDOW_TIMEOUT)
+                    f->relax_capability_gap();
+                else{
+                    if(f->latest_cap_sent_time + CAPABILITY_WINDOW_TIMEOUT < closet_timeout)
+                    {
+                        closet_timeout = f->latest_cap_sent_time + CAPABILITY_WINDOW_TIMEOUT;
+                    }
+                }
 
-            if(f->capability_sent_count == f->capability_goal){
-                f->redundancy_ctrl_timeout = get_current_time() + CAPABILITY_RESEND_TIMEOUT;
             }
 
-            break;
+
+            if(f->capability_gap() < CAPABILITY_WINDOW)
+            {
+                f->send_capability_pkt();
+                capability_sent = true;
+
+                if(f->capability_sent_count == f->capability_goal){
+                    f->redundancy_ctrl_timeout = get_current_time() + CAPABILITY_RESEND_TIMEOUT;
+                }
+
+                break;
+            }
+
+
         }
     }
 

@@ -8,6 +8,7 @@
 struct Capability //for extendability
 {
     double timeout;
+    int seq_num;
 };
 
 class CapabilityComparator{
@@ -22,14 +23,18 @@ public:
     virtual void start_flow();
     virtual void send_pending_data();
     virtual void receive(Packet *p);
-    Packet* send(uint32_t seq);
+    Packet* send(uint32_t seq, int capa_seq);
     void send_capability_pkt();
     void send_rts_pkt();
     bool has_capability();
-    void use_capability();
+    int use_capability();
+    Capability* top_capability();
+    double top_capability_timeout();
     int remaining_pkts();
     void assign_init_capability();
     void set_capability_sent_count();
+    int capability_gap();
+    void relax_capability_gap();
 
     std::priority_queue<Capability*, std::vector<Capability*>, CapabilityComparator> capabilities;
     bool finished_at_receiver;
@@ -37,6 +42,8 @@ public:
     double redundancy_ctrl_timeout;
     int capability_goal;
     int remaining_pkts_at_sender;
+    int largest_cap_seq_received;
+    double latest_cap_sent_time;
 };
 
 

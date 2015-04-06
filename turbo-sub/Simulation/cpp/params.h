@@ -38,9 +38,11 @@ struct DCExpParams {
   int use_flow_trace;
 };
 
-#define CAPABILITY_TIMEOUT 0.000010
+#define CAPABILITY_TIMEOUT 0.000002
 #define CAPABILITY_RESEND_TIMEOUT 0.0000095
 #define CAPABILITY_INITIAL 7
+#define CAPABILITY_WINDOW 9
+#define CAPABILITY_WINDOW_TIMEOUT 0.000020
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 

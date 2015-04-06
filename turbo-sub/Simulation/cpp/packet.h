@@ -32,6 +32,7 @@ public:
 	uint32_t unique_id;
 	static uint32_t instance_count;
 	int remaining_pkts_in_batch;
+	int capability_seq_num_in_data;
 
 	uint32_t type; // Normal or Ack packet
 };
@@ -95,9 +96,10 @@ public:
 
 class CapabilityPkt : public Packet{
 public:
-    CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining);
+    CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining, int seq_num);
     double ttl;
     int remaining_sz;
+    int cap_seq_num;
 };
 
 #endif
