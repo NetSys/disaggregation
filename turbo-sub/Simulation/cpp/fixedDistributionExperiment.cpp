@@ -23,6 +23,7 @@
 
 #include "factory.h"
 #include "random_variable.h"
+#include "fountainflow.h"
 
 extern Topology *topology;
 extern double current_time;
@@ -188,11 +189,15 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   uint32_t num_flows = params.num_flows_to_run;
 
   //no reading flows to schedule in this mode.
-  //read_flows_to_schedule(params.cdf_or_flow_trace, num_flows, topology);
-  if(params.traffic_imbalance < 0.01)
-      generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
-  else
-      generate_flows_to_schedule_fd_with_traffic_pattern(params.cdf_or_flow_trace, num_flows, topology);
+  if(params.use_flow_trace){
+      read_flows_to_schedule(params.cdf_or_flow_trace, num_flows, topology);
+  }
+  else{
+      if(params.traffic_imbalance < 0.01)
+          generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
+      else
+          generate_flows_to_schedule_fd_with_traffic_pattern(params.cdf_or_flow_trace, num_flows, topology);
+  }
   std::deque<Flow *> flows_sorted = flows_to_schedule;
   struct FlowComparator {
     bool operator() (Flow *a, Flow *b) {
@@ -253,6 +258,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     data_pkt_drop += f->data_pkt_drop;
     parity_pkt_drop += std::max(0, f->pkt_drop - f->data_pkt_drop);
   }
+
   std::cout << "AverageFCT " << sum / flows_sorted.size() <<
   " MeanSlowdown " << sum_norm / flows_sorted.size() <<
   " MeanInflation " << sum_inflation / flows_sorted.size() <<

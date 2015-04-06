@@ -16,7 +16,7 @@
 #include "queue.h"
 #include "flow.h"
 #include "random_variable.h"
-#include "schedulinghost.h"
+
 
 //TODO import globals
 
@@ -31,6 +31,11 @@
 #define LOGGING 9
 
 #define HOST_PROCESSING 10
+#define CAPABILITY_PROCESSING 11
+
+class CapabilityHost;
+class CapabilityFlow;
+class SchedulingHost;
 
 class Event {
 public:
@@ -178,6 +183,18 @@ public:
   void process_event();
   SchedulingHost *host;
 };
+
+
+class CapabilityProcessingEvent : public Event {
+public:
+  CapabilityProcessingEvent(double time, CapabilityHost *host, bool is_timeout);
+  ~CapabilityProcessingEvent();
+
+  void process_event();
+  CapabilityHost *host;
+  bool is_timeout_evt;
+};
+
 
 #endif /* defined(EVENT_H) */
 

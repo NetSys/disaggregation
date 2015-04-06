@@ -35,7 +35,12 @@ struct DCExpParams {
   double traffic_imbalance;
   double load;
   double reauth_limit;
+  int use_flow_trace;
 };
+
+#define CAPABILITY_TIMEOUT 0.000010
+#define CAPABILITY_RESEND_TIMEOUT 0.0000095
+#define CAPABILITY_INITIAL 7
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 
@@ -51,5 +56,7 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type);
 #define SINGLE_LINK_EXP_SYLVIASTYLE 11
 
 #define N_TO_1_EXP 20
+
+#define INFINITESIMAL_TIME 0.000000000001
 
 #endif

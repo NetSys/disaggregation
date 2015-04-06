@@ -26,6 +26,7 @@ host_type: {4}
 traffic_imbalance: {5}
 load: {6}
 reauth_limit: 3
+use_flow_trace: 0
 '''
 
 def get_mean_flow_size(cdf_file):
@@ -55,8 +56,8 @@ skew =  [0.0]
 for l in load:
     for f in fsize:
         for s in skew:
-            key = 'pipeline-1bcts_' + f + '_load' + str(l) + '_skew' + str(s) + '_100k'
-            value = [111, 100000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), 11, s, l]
+            key = 'capability_' + f + '_load' + str(l) + '_skew' + str(s) + '_100k'
+            value = [112, 100000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), 12, s, l]
             experiments[key] = value
     
 

@@ -12,9 +12,11 @@
 #include "params.h"
 #include "factory.h"
 #include <iomanip>
-#include "random_variable.h"
 #include "debug.h"
 
+
+#include "capabilityflow.h"
+#include "capabilityhost.h"
 
 extern Topology *topology;
 extern std::priority_queue<Event *, std::vector<Event *>,
@@ -79,7 +81,7 @@ void FlowArrivalEvent::process_event() {
   }
 
 
-  if(flow_arrival_count % (int)(params.num_flows_to_run * 0.1) == 0){
+  if(params.num_flows_to_run > 10 && flow_arrival_count % (int)(params.num_flows_to_run * 0.1) == 0){
       double curr_time = get_current_time();
       uint32_t num_unfinished_flows = 0;
       for (uint32_t i = 0; i < flows_to_schedule.size(); i++) {
@@ -125,7 +127,7 @@ void FlowFinishedEvent::process_event() {
     this->flow->finish_time = get_current_time();
     this->flow->flow_completion_time = this->flow->finish_time - this->flow->start_time;
     
-    if(print_flow_result())
+    if(print_flow_result()){
         std::cout
           << flow->id << " "
           << flow->size << " "
@@ -136,10 +138,15 @@ void FlowFinishedEvent::process_event() {
           << 1000000.0 * flow->flow_completion_time << " "
           << topology->get_oracle_fct(flow) << " "
           << 1000000 * flow->flow_completion_time / topology->get_oracle_fct(flow) << " "
-          << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << " "
-          << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop << " "
-          << ((FountainFlowWithPipelineSchedulingHost*)flow)->first_send_time - flow->start_time << " "
-          << std::endl;
+          << flow->total_pkt_sent << "/" << (flow->size/flow->mss) << "//" << flow->received_count << " "
+          << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop << " ";
+        if(params.flow_type == FOUNTAIN_FLOW_PIPELINE_SCHEDULING_HOST)
+            std::cout << ((FountainFlowWithPipelineSchedulingHost*)flow)->first_send_time - flow->start_time << " ";
+        if(params.flow_type == CAPABILITY_FLOW){
+            std::cout << ((CapabilityFlow*)flow)->capability_sent_count << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 
@@ -373,4 +380,26 @@ void HostProcessingEvent::process_event() {
     this->host->host_proc_event = NULL;
     this->host->send();
 }
+
+
+
+
+
+
+CapabilityProcessingEvent::CapabilityProcessingEvent(double time, CapabilityHost *h, bool is_timeout) : Event(CAPABILITY_PROCESSING, time) {
+    this->host = h;
+    this->is_timeout_evt = is_timeout;
+}
+
+CapabilityProcessingEvent::~CapabilityProcessingEvent() {
+    if (host->capa_proc_evt == this) {
+        host->capa_proc_evt = NULL;
+    }
+}
+
+void CapabilityProcessingEvent::process_event() {
+    this->host->capa_proc_evt = NULL;
+    this->host->send_capability();
+}
+
 

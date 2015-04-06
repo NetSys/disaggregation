@@ -63,7 +63,7 @@ public:
   int pkt_drop;
   int data_pkt_drop;
   int ack_pkt_drop;
-
+  uint32_t received_count;
   // Sack
   uint32_t scoreboard_sack_bytes;
   // finished variables

@@ -11,7 +11,6 @@ public:
     virtual void receive(Packet *p);
     virtual Packet* send(uint32_t seq);
     virtual void send_ack();
-    uint32_t received_count;
     uint32_t goal;
 };
 

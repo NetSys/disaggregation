@@ -1,4 +1,16 @@
+
 #include "factory.h"
+#include "turboqueue.h"
+
+
+#include "pacedflow.h"
+#include "turboflow.h"
+#include "turboflow_perpkt.h"
+#include "fountainflow.h"
+#include "rtsctsflow.h"
+#include "schedulinghost.h"
+#include "capabilityhost.h"
+#include "capabilityflow.h"
 
 /* Factory method to return appropriate queue */
 Queue* Factory::get_queue(uint32_t id, double rate,
@@ -73,6 +85,9 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
     case FOUNTAIN_FLOW_PIPELINE_SCHEDULING_HOST:
       return new FountainFlowWithPipelineSchedulingHost(id, start_time, size, src, dst);
       break;
+    case CAPABILITY_FLOW:
+      return new CapabilityFlow(id, start_time, size, src, dst);
+      break;
   }
   assert(false);
   return NULL;
@@ -91,6 +106,9 @@ Host* Factory::get_host(uint32_t id, double rate, uint32_t queue_type, uint32_t 
             break;
         case PIPELINE_SCHEDULING_HOST:
             return new PipelineSchedulingHost(id, rate, queue_type);
+            break;
+        case CAPABILITY_HOST:
+            return new CapabilityHost(id, rate, queue_type);
             break;
     }
     assert(false);

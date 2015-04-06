@@ -1,6 +1,8 @@
 #include "rtsctsflow.h"
 #include "event.h"
 #include "packet.h"
+#include "schedulinghost.h"
+
 
 extern double get_current_time();
 extern double add_to_event_queue(Event*);

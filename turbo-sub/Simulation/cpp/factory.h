@@ -1,18 +1,10 @@
 #ifndef FACTORY_H
 #define FACTORY_H
 
-#include "queue.h"
-#include "turboqueue.h"
 
 #include "flow.h"
-#include "pacedflow.h"
-#include "turboflow.h"
-#include "turboflow_perpkt.h"
-#include "fountainflow.h"
-#include "rtsctsflow.h"
-
 #include "node.h"
-#include "schedulinghost.h"
+#include "queue.h"
 
 /* Queue types */
 #define DROPTAIL_QUEUE 1
@@ -40,12 +32,14 @@
 #define FOUNTAIN_FLOW_SCHEDULING_HOST 101
 #define RTSCTS_FLOW 102
 #define FOUNTAIN_FLOW_PIPELINE_SCHEDULING_HOST 111
+#define CAPABILITY_FLOW 112
 
 /* Host types */
 #define NORMAL_HOST 1
 #define SCHEDULING_HOST 2
 #define RTSCTS_HOST 3
 #define PIPELINE_SCHEDULING_HOST 11
+#define CAPABILITY_HOST 12
 
 class Factory {
 public:

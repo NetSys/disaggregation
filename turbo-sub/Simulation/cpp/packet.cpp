@@ -55,27 +55,33 @@ RTSCTS::RTSCTS(bool type, double sending_time, Flow *f, uint32_t size, Host *src
     }
 }
 
-#define CTRL_PKT_SZ 1
 
 
-RTS::RTS(Flow *flow, Host *src, Host *dst, double delay, int iter) : Packet(0, flow, 0, 0, CTRL_PKT_SZ, src, dst) {
+
+RTS::RTS(Flow *flow, Host *src, Host *dst, double delay, int iter) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
   this->type = RTS_PACKET;
   this->delay = delay;
   this->iter = iter;
 }
 
 
-OfferPkt::OfferPkt(Flow *flow, Host *src, Host *dst, bool is_free, int iter) : Packet(0, flow, 0, 0, CTRL_PKT_SZ, src, dst) {
+OfferPkt::OfferPkt(Flow *flow, Host *src, Host *dst, bool is_free, int iter) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
   this->type = OFFER_PACKET;
   this->is_free = is_free;
   this->iter = iter;
 }
 
-DecisionPkt::DecisionPkt(Flow *flow, Host *src, Host *dst, bool accept) : Packet(0, flow, 0, 0, CTRL_PKT_SZ, src, dst) {
+DecisionPkt::DecisionPkt(Flow *flow, Host *src, Host *dst, bool accept) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
   this->type = DECISION_PACKET;
   this->accept = accept;
 }
 
-CTS::CTS(Flow *flow, Host *src, Host *dst) : Packet(0, flow, 0, 0, CTRL_PKT_SZ, src, dst) {
+CTS::CTS(Flow *flow, Host *src, Host *dst) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
   this->type = CTS_PACKET;
+}
+
+CapabilityPkt::CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
+  this->type = CAPABILITY_PACKET;
+  this->ttl = ttl;
+  this->remaining_sz = remaining;
 }

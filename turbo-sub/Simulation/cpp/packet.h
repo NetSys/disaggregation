@@ -14,6 +14,7 @@
 #define CTS_PACKET 4
 #define OFFER_PACKET 5
 #define DECISION_PACKET 6
+#define CAPABILITY_PACKET 7
 
 class Packet {
 
@@ -90,6 +91,13 @@ public:
 class CTS : public Packet{
 public:
   CTS(Flow *flow, Host *src, Host *dst);
+};
+
+class CapabilityPkt : public Packet{
+public:
+    CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining);
+    double ttl;
+    int remaining_sz;
 };
 
 #endif

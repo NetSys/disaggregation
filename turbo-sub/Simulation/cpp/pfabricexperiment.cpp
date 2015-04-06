@@ -45,7 +45,7 @@ extern double start_time;
 void read_flows_to_schedule(std::string filename, uint32_t num_lines,
                            Topology *topo) {
   std::ifstream input(filename);
-  for (uint32_t i = 0; i < num_lines; i++) {
+  while(!input.eof()) {
     double start_time, temp;
     uint32_t size, s, d;
     uint32_t id;
@@ -60,6 +60,7 @@ void read_flows_to_schedule(std::string filename, uint32_t num_lines,
     flows_to_schedule.push_back(Factory::get_flow(id, start_time, size,
       topo->hosts[s], topo->hosts[d], params.flow_type));
   }
+  params.num_flows_to_run = flows_to_schedule.size();
   input.close();
 }
 

@@ -3,6 +3,7 @@
 #include "packet.h"
 #include "debug.h"
 #include "params.h"
+#include "schedulinghost.h"
 
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
