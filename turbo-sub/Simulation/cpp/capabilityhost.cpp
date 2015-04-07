@@ -154,7 +154,7 @@ void CapabilityHost::send_capability(){
                 f->capability_goal += f->remaining_pkts();
             }
 
-            if(f->capability_gap() >= CAPABILITY_WINDOW)
+            if(f->capability_gap() > CAPABILITY_WINDOW)
             {
                 if(get_current_time() >= f->latest_cap_sent_time + CAPABILITY_WINDOW_TIMEOUT)
                     f->relax_capability_gap();
@@ -168,7 +168,7 @@ void CapabilityHost::send_capability(){
             }
 
 
-            if(f->capability_gap() < CAPABILITY_WINDOW)
+            if(f->capability_gap() <= CAPABILITY_WINDOW)
             {
                 f->send_capability_pkt();
                 capability_sent = true;

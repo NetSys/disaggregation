@@ -4,6 +4,7 @@
 #include "params.h"
 #include "capabilityhost.h"
 #include "capabilityflow.h"
+#include "math.h"
 
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
@@ -24,7 +25,7 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     this->finished_at_receiver = false;
     this->capability_sent_count = 0;
     this->redundancy_ctrl_timeout = -1;
-    this->capability_goal = this->size_in_pkt;
+    this->capability_goal = (int)(std::ceil(this->size_in_pkt * 1.01));
     this->remaining_pkts_at_sender = this->size_in_pkt;
     this->largest_cap_seq_received = -1;
     this->latest_cap_sent_time = start_time;
@@ -36,7 +37,6 @@ void CapabilityFlow::start_flow()
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " starts\n";
     assign_init_capability();
-    set_capability_sent_count();
     ((CapabilityHost*) this->src)->start_capability_flow(this);
 }
 
@@ -103,6 +103,7 @@ void CapabilityFlow::receive(Packet *p)
         if(debug_flow(p->flow->id))
             std::cout << get_current_time() << " received RTS for flow " << p->flow->id << "\n";
 
+        set_capability_sent_count();
         ((CapabilityHost*)(this->dst))->active_receiving_flows.push(this);
 
         if( ((CapabilityHost*)(this->dst))->capa_proc_evt &&
@@ -148,7 +149,7 @@ void CapabilityFlow::set_capability_sent_count(){
     int init_capa = std::min(this->size_in_pkt, CAPABILITY_INITIAL);
     this->capability_sent_count = init_capa;
     if(this->capability_sent_count == this->capability_goal){
-        this->redundancy_ctrl_timeout = get_current_time() + CAPABILITY_RESEND_TIMEOUT;
+        this->redundancy_ctrl_timeout = get_current_time() + init_capa * 0.0000012 *2;
     }
 }
 
@@ -216,5 +217,5 @@ int CapabilityFlow::capability_gap(){
 void CapabilityFlow::relax_capability_gap()
 {
     assert(this->capability_sent_count - this->largest_cap_seq_received >= 0);
-    this->largest_cap_seq_received = this->capability_sent_count - CAPABILITY_WINDOW + 1;
+    this->largest_cap_seq_received = this->capability_sent_count - CAPABILITY_WINDOW;
 }
