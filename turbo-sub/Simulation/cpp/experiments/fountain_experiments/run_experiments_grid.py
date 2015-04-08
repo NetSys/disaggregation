@@ -50,7 +50,7 @@ experiments = {
 
 load = [0.8]
 fsize = ["alllong", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
-skew =  [0.0]
+skew =  [2.0]
 
 
 for l in load:

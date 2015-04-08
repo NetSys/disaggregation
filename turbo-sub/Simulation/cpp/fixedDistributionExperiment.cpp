@@ -51,7 +51,12 @@ Topology *topo) {
   //use an NAryRandomVariable for true uniform/bimodal/trimodal/etc
   // EmpiricalRandomVariable *nv_bytes =
   // new NAryRandomVariable(filename);
-  EmpiricalRandomVariable *nv_bytes = new CDFRandomVariable(filename);
+  EmpiricalRandomVariable *nv_bytes;
+  if(params.smooth_cdf)
+      nv_bytes = new EmpiricalRandomVariable(filename);
+  else
+      nv_bytes = new CDFRandomVariable(filename);
+
   params.mean_flow_size = nv_bytes->mean_flow_size;
 
   double lambda = params.bandwidth * params.load /

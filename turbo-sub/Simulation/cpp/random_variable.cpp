@@ -49,7 +49,8 @@ double ExponentialRandomVariable::value() {
 /* Empirical Random Variable with random interpolation
  * Ported from NS2
  */
-EmpiricalRandomVariable::EmpiricalRandomVariable(std::string filename) {
+EmpiricalRandomVariable::EmpiricalRandomVariable(std::string filename, bool smooth) {
+  this->smooth = smooth;
   minCDF_ = 0;
   maxCDF_ = 1;
   maxEntry_ = 32;
@@ -94,23 +95,26 @@ int EmpiricalRandomVariable::loadCDF(std::string filename) {
   std::ifstream myfile(filename);
   assert(myfile.good());
   numEntry_ = 0;
-  double prev = 0;
+  double prev_cd = 0;
+  int prev_sz = 1;
   double w_sum = 0;
   while (std::getline(myfile, line))
-	{
+  {
     std::istringstream is(line);
     is >> table_[numEntry_].val_;
     is >> table_[numEntry_].cdf_;
     is >> table_[numEntry_].cdf_;
 
-    double freq = table_[numEntry_].cdf_ - prev;
+    double freq = table_[numEntry_].cdf_ - prev_cd;
+    double flow_sz = this->smooth?(table_[numEntry_].val_ + prev_sz)/2.0:table_[numEntry_].val_;
     assert(freq >= 0);
-    w_sum += freq * table_[numEntry_].val_;
-    prev = table_[numEntry_].cdf_;
+    w_sum += freq * flow_sz;
+    prev_cd = table_[numEntry_].cdf_;
+    prev_sz = table_[numEntry_].val_;
     numEntry_ ++;
-	}
+  }
   this->mean_flow_size = w_sum * 1460.0;
-  std::cout << "Mean flow size derived from CDF file:" << this->mean_flow_size << "\n";
+  std::cout << "Mean flow size derived from CDF file:" << this->mean_flow_size << " smooth = " << this->smooth << "\n";
   //std::cout << "Number of lines in text file: " << numEntry_ << "\n";
 	myfile.close();
   return numEntry_;
@@ -139,7 +143,7 @@ double NAryRandomVariable::value() {
 }
 
 CDFRandomVariable::CDFRandomVariable(std::string filename)
- : EmpiricalRandomVariable(filename) {}
+ : EmpiricalRandomVariable(filename, false) {}
 
 double CDFRandomVariable::value() {
   double val = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
@@ -154,6 +158,8 @@ double CDFRandomVariable::value() {
 //  std::cout << " notfound " << table_[numEntry_-1].cdf_ << " " << table_[numEntry_-1].val_ << "\n";
   return table_[numEntry_-1].val_;
 }
+
+
 
 
 GaussianRandomVariable::GaussianRandomVariable(double avg, double std) {

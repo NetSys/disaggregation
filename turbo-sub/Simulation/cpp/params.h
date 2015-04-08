@@ -36,6 +36,7 @@ struct DCExpParams {
   double load;
   double reauth_limit;
   int use_flow_trace;
+  int smooth_cdf;
 };
 
 #define CAPABILITY_TIMEOUT 0.0000018

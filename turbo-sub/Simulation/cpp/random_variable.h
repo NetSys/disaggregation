@@ -35,10 +35,12 @@ public:
   virtual double value();
   double interpolate(double u, double x1, double y1, double x2, double y2);
 
-  EmpiricalRandomVariable(std::string filename);
+  EmpiricalRandomVariable(std::string filename, bool smooth = true);
   int loadCDF(std::string filename);
 
   double mean_flow_size;
+
+  bool smooth;
 
 protected:
   int lookup(double u);

@@ -35,6 +35,7 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
     input >> temp; input >> params.load;
     input >> temp; input >> params.reauth_limit;
     input >> temp; input >> params.use_flow_trace;
+    input >> temp; input >> params.smooth_cdf;
     params.hdr_size = 40;
     params.mss = 1460;
 }
