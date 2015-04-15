@@ -29,6 +29,12 @@ extern std::deque<Flow *> flows_to_schedule;
 extern uint32_t num_outstanding_packets;
 extern uint32_t max_outstanding_packets;
 
+extern uint32_t num_outstanding_packets_at_50;
+extern uint32_t num_outstanding_packets_at_100;
+extern uint32_t arrival_packets_at_50;
+extern uint32_t arrival_packets_at_100;
+extern uint32_t arrival_packets_count;
+
 extern EmpiricalRandomVariable *nv_bytes;
 
 void add_to_event_queue(Event *ev) {
@@ -70,6 +76,7 @@ void FlowArrivalEvent::process_event() {
   //First packet scheduled to be queued
 
   num_outstanding_packets += (this->flow->size / this->flow->mss);
+  arrival_packets_count += this->flow->size_in_pkt;
   if (num_outstanding_packets > max_outstanding_packets) {
     max_outstanding_packets = num_outstanding_packets;
   }
@@ -92,7 +99,19 @@ void FlowArrivalEvent::process_event() {
               }
           }
       }
-      std::cout << "## " << current_time << " NumUnfinishedFlows " << num_unfinished_flows << " StartedFlows " << flow_arrival_count << "\n";
+      if(flow_arrival_count == (int)(params.num_flows_to_run * 0.5))
+      {
+          arrival_packets_at_50 = arrival_packets_count;
+          num_outstanding_packets_at_50 = num_outstanding_packets;
+      }
+      if(flow_arrival_count == params.num_flows_to_run)
+      {
+          arrival_packets_at_100 = arrival_packets_count;
+          num_outstanding_packets_at_100 = num_outstanding_packets;
+      }
+      std::cout << "## " << current_time << " NumPacketOutstanding " << num_outstanding_packets
+              << " NumUnfinishedFlows " << num_unfinished_flows << " StartedFlows " << flow_arrival_count
+              << " StartedPkts " << arrival_packets_count << "\n";
   }
 
 }

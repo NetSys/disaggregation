@@ -159,6 +159,9 @@ void Flow::receive(Packet *p) {
     return;
   }
 
+  received_count++;
+  total_queuing_time += p->total_queuing_delay;
+
   if (received.count(p->seq_no) == 0) {
     received[p->seq_no] = true;
     num_outstanding_packets -= ((p->size - hdr_size) / (mss));
@@ -229,7 +232,10 @@ void Flow::increase_cwnd() {
   }
 }
 
-
+double Flow::get_avg_queuing_delay_in_us()
+{
+    return total_queuing_time/received_count * 1000000;
+}
 
 /* Implementation for pFabric Flow */
 
@@ -262,6 +268,10 @@ void PFabricFlow::handle_timeout() {
   }
   Flow::handle_timeout();
 }
+
+
+
+
 
 PFabricFlowNoSlowStart::PFabricFlowNoSlowStart(uint32_t id, double start_time, uint32_t size, Host *s, Host *d)
   : PFabricFlow(id, start_time, size, s, d) {

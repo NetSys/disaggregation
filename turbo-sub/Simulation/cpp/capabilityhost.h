@@ -34,6 +34,7 @@ public:
     void schedule_capa_proc_evt(double time, bool is_timeout);
     std::priority_queue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparatorAtReceiver> active_receiving_flows;
     CapabilityProcessingEvent *capa_proc_evt;
+    int hold_on;
 };
 
 

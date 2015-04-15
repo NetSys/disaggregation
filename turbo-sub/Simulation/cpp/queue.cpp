@@ -129,12 +129,11 @@ PFabricQueue::PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes, int l
 }
 
 void PFabricQueue::enque(Packet *packet) {
-  //if(this->unique_id == 354)
-  //  std::cout << get_current_time() << " queue.cpp129 q:" << this->unique_id << " qptr:" << this << " enqueue pkt:" << packet << " id:" << packet->unique_id << "\n" << std::flush;
   p_arrivals += 1;
   b_arrivals += packet->size;
   packets.push_back(packet);
   bytes_in_queue += packet->size;
+  packet->last_enque_time = get_current_time();
   if (bytes_in_queue > limit_bytes) {
     uint32_t worst_priority = 0;
     uint32_t worst_index = 0;
@@ -205,6 +204,7 @@ Packet * PFabricQueue::deque() {
     b_departures += p->size;
 
     //std::cout << get_current_time() <<  " queue.cpp:200 deque pkt ptr:" << p << " id:" << p->unique_id << "qid:" << this->unique_id << "\n" << std::flush;
+    p->total_queuing_delay += get_current_time() - p->last_enque_time;
 
     return p;
 

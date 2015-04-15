@@ -33,6 +33,11 @@ std::deque<Event *> flow_arrivals;
 
 uint32_t num_outstanding_packets;
 uint32_t max_outstanding_packets;
+uint32_t num_outstanding_packets_at_50;
+uint32_t num_outstanding_packets_at_100;
+uint32_t arrival_packets_at_50;
+uint32_t arrival_packets_at_100;
+uint32_t arrival_packets_count = 0;
 
 extern DCExpParams params;
 extern double get_current_time();

@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <map>
+#include <iomanip>
 
 #include "flow.h"
 #include "turboflow.h"
@@ -24,6 +25,7 @@
 #include "factory.h"
 #include "random_variable.h"
 #include "fountainflow.h"
+#include "stats.h"
 
 extern Topology *topology;
 extern double current_time;
@@ -38,6 +40,11 @@ extern void add_to_event_queue(Event *);
 extern void read_experiment_parameters(std::string conf_filename, uint32_t exp_type);
 extern void read_flows_to_schedule(std::string filename, uint32_t num_lines, Topology *topo);
 extern uint32_t duplicated_packets_received;
+
+extern uint32_t num_outstanding_packets_at_50;
+extern uint32_t num_outstanding_packets_at_100;
+extern uint32_t arrival_packets_at_50;
+extern uint32_t arrival_packets_at_100;
 
 extern double start_time;
 extern double get_current_time();
@@ -95,7 +102,12 @@ Topology *topo) {
 void generate_flows_to_schedule_fd_with_traffic_pattern(std::string filename, uint32_t num_flows,
 Topology *topo) {
 
- EmpiricalRandomVariable *nv_bytes = new CDFRandomVariable(filename);
+  EmpiricalRandomVariable *nv_bytes;
+  if(params.smooth_cdf)
+      nv_bytes = new EmpiricalRandomVariable(filename);
+  else
+      nv_bytes = new CDFRandomVariable(filename);
+
   params.mean_flow_size = nv_bytes->mean_flow_size;
 
   double lambda = params.bandwidth * params.load / (params.mean_flow_size * 8.0 / 1460 * 1500);
@@ -161,6 +173,30 @@ void write_flows_to_file(std::deque<Flow *> flows, std::string file){
   }
   output.close();
 
+}
+
+void validate_flow(Flow* f){
+    double slowdown = 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
+    if(slowdown < 0.999999){
+        std::cout << "Flow " << f->id << " has slowdown " << slowdown << "\n";
+        //assert(false);
+    }
+}
+
+
+void debug_flow_stats(std::deque<Flow *> flows){
+    std::map<int,int> freq;
+    for (uint32_t i = 0; i < flows.size(); i++) {
+        Flow *f = flows[i];
+        if(f->size_in_pkt == 3){
+            int fct = (int)(1000000.0 * f->flow_completion_time);
+            if(freq.find(fct) == freq.end())
+                freq[fct] = 0;
+            freq[fct]++;
+        }
+    }
+    for(auto it = freq.begin(); it != freq.end(); it++)
+        std::cout << it->first << " " << it->second << "\n";
 }
 
 
@@ -233,49 +269,62 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   run_scenario();
 
   write_flows_to_file(flows_sorted, "flow.tmp");
-  // print statistics
-  double sum = 0, sum_norm = 0, sum_inflation = 0, sum_waiting = 0;
-  uint data_pkt_sent = 0, parity_pkt_sent = 0, data_pkt_drop = 0, parity_pkt_drop = 0;
-  std::map<unsigned, int> rts_send_count_by_size;
-  std::map<unsigned, double> flow_total_slowdown_by_size;
-  std::map<unsigned, int> flow_count_by_size;
+
+  Stats slowdown, inflation, fct, oracle_fct;
+  Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop;
+  std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size, fct_by_size, drop_rate_by_size;
+
+  std::cout <<   std::setprecision(4) ;
+
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
+    validate_flow(f);
     if(!f->finished)
       std::cout << "unfinished flow " << "size:" << f->size << " id:" << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes  << " src:" << f->src->id << " dst:" << f->dst->id << "\n";
 
-    if(flow_count_by_size.find(f->size_in_pkt) == flow_count_by_size.end()){
-        flow_count_by_size[f->size_in_pkt] = 0;
-        flow_total_slowdown_by_size[f->size_in_pkt] = 0;
-        rts_send_count_by_size[f->size_in_pkt] = 0;
+    double slow = 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
+    if(slowdown_by_size.find(f->size_in_pkt) == slowdown_by_size.end()){
+        slowdown_by_size[f->size_in_pkt] = new Stats();
+        queuing_delay_by_size[f->size_in_pkt] = new Stats();
+        fct_by_size[f->size_in_pkt] = new Stats();
+        drop_rate_by_size[f->size_in_pkt] = new Stats();
     }
-    flow_count_by_size[f->size_in_pkt]++;
-    rts_send_count_by_size[f->size_in_pkt] += ((FountainFlowWithPipelineSchedulingHost*)f)->rts_send_count;
-    flow_total_slowdown_by_size[f->size_in_pkt] += 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
+    slowdown_by_size[f->size_in_pkt]->input_data(slow);
+    queuing_delay_by_size[f->size_in_pkt]->input_data(f->get_avg_queuing_delay_in_us());
+    fct_by_size[f->size_in_pkt]->input_data(f->flow_completion_time * 1000000);
+    drop_rate_by_size[f->size_in_pkt]->input_data((double)(f->data_pkt_drop)/f->total_pkt_sent);
 
+    slowdown += slow;
+    inflation += (double)f->total_pkt_sent / (f->size/f->mss);
+    fct += (1000000.0 * f->flow_completion_time);
+    oracle_fct += topology->get_oracle_fct(f);
 
-    sum += 1000000.0 * f->flow_completion_time;
-    sum_norm += 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
-    sum_inflation += (double)f->total_pkt_sent / (f->size/f->mss);
-    sum_waiting += ((FountainFlowWithPipelineSchedulingHost*)f)->first_send_time - f->start_time;
     data_pkt_sent += std::min(f->size_in_pkt, (int)f->total_pkt_sent);
     parity_pkt_sent += std::max(0, (int)(f->total_pkt_sent - f->size_in_pkt));
     data_pkt_drop += f->data_pkt_drop;
     parity_pkt_drop += std::max(0, f->pkt_drop - f->data_pkt_drop);
   }
 
-  std::cout << "AverageFCT " << sum / flows_sorted.size() <<
-  " MeanSlowdown " << sum_norm / flows_sorted.size() <<
-  " MeanInflation " << sum_inflation / flows_sorted.size() <<
-  " MeanWaiting " << sum_waiting / flows_sorted.size() <<
-  "\n";
-  for(auto it = flow_count_by_size.begin(); it != flow_count_by_size.end(); ++it){
+  double stability = (double)(num_outstanding_packets_at_100 - num_outstanding_packets_at_50)/(arrival_packets_at_100 - arrival_packets_at_50);
+
+  std::cout << "AverageFCT " << fct.avg() << " MeanSlowdown " << slowdown.avg() << " MeanInflation " << inflation.avg() <<
+          " NFCT " << fct.total()/oracle_fct.total() << " Stability " << stability << "\n";
+
+  int i = 0;
+  for(auto it = slowdown_by_size.begin(); it != slowdown_by_size.end() && i < 6; ++it, ++i){
       unsigned key = it->first;
-      std::cout << key << ": " << flow_total_slowdown_by_size[it->first]/ it->second << " " << (double)rts_send_count_by_size[it->first]/it->second <<  "   ";
+      std::cout << key << ": " << it->second->avg() <<  " " << fct_by_size[it->first]->avg() << " " <<
+              queuing_delay_by_size[it->first]->avg() << "(" << queuing_delay_by_size[it->first]->sd() << ") " <<
+              drop_rate_by_size[it->first]->avg() << " "
+              << "    ";
   }
   std::cout << "\n";
+
   printQueueStatistics(topology);
-  std::cout << "Data Pkt Drop Rate: " << (double)data_pkt_drop/data_pkt_sent << " Parity Drop Rate:" << (double)parity_pkt_drop/parity_pkt_sent << "\n";
+  std::cout << "Data Pkt Drop Rate: " << data_pkt_drop.total()/data_pkt_sent.total() << " Parity Drop Rate:" << parity_pkt_drop.total()/parity_pkt_sent.total() << "\n";
+
+  //debug_flow_stats(flows_to_schedule);
+
 }
 
 

@@ -17,6 +17,7 @@ Packet::Packet(double sending_time, Flow *flow, uint32_t seq_no, uint32_t pf_pri
 
   this->type = NORMAL_PACKET;
   this->unique_id = Packet::instance_count++;
+  this->total_queuing_delay = 0;
 }
 
 PlainAck::PlainAck(Flow *flow, uint32_t seq_no_acked, uint32_t size, Host* src, Host *dst)

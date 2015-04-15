@@ -17,24 +17,36 @@ extern DCExpParams params;
 
 
 bool CapabilityFlowComparator::operator() (CapabilityFlow* a, CapabilityFlow* b){
-    //return a->size_in_pkt > b->size_in_pkt;
+    //return a->remaining_pkts_at_sender > b->remaining_pkts_at_sender;
     if(a->remaining_pkts_at_sender > b->remaining_pkts_at_sender)
         return true;
     else if(a->remaining_pkts_at_sender == b->remaining_pkts_at_sender)
-        return rand()%2;
+        return a->start_time > b->start_time;
     else
         return false;
+    //return a->latest_data_pkt_send_time > b->latest_data_pkt_send_time;
+    //return a->start_time > b->start_time;
 }
 
 bool CapabilityFlowComparatorAtReceiver::operator() (CapabilityFlow* a, CapabilityFlow* b){
     //return a->size_in_pkt > b->size_in_pkt;
-    return a->remaining_pkts() > b->remaining_pkts();
+
+    if(a->remaining_pkts() > b->remaining_pkts())
+        return true;
+    else if (a->remaining_pkts() == b->remaining_pkts())
+        return a->start_time > b->start_time; //TODO: this is cheating. but not a big problem
+    else
+        return false;
+
+    //return a->latest_cap_sent_time > b->latest_cap_sent_time;
+    //return a->start_time > b->start_time;
 }
 
 CapabilityHost::CapabilityHost(uint32_t id, double rate, uint32_t queue_type)
     :SchedulingHost(id, rate, queue_type)
 {
     this->capa_proc_evt = NULL;
+    this->hold_on = 0;
 }
 
 void CapabilityHost::start_capability_flow(CapabilityFlow* f){
@@ -91,13 +103,16 @@ void CapabilityHost::send(){
             }
 
             CapabilityFlow* top_flow = this->active_sending_flows.top();
-            this->active_sending_flows.pop();
-            flows_tried.push(top_flow);
+
 
             if(top_flow->has_capability())
             {
                 top_flow->send_pending_data();
                 break;
+            }
+            else{
+                this->active_sending_flows.pop();
+                flows_tried.push(top_flow);
             }
 
         }
@@ -123,8 +138,12 @@ void CapabilityHost::send_capability(){
     std::queue<CapabilityFlow*> flows_tried;
     double closet_timeout = 999999;
 
+    if(this->hold_on > 0){
+        hold_on--;
+        capability_sent = true;
+    }
 
-    while(!this->active_receiving_flows.empty())
+    while(!this->active_receiving_flows.empty() && !capability_sent)
     {
         CapabilityFlow* f = this->active_receiving_flows.top();
         this->active_receiving_flows.pop();
@@ -149,7 +168,8 @@ void CapabilityHost::send_capability(){
         else
         {
             //just timeout, reset timeout state
-            if(f->redundancy_ctrl_timeout > 0){
+            if(f->redundancy_ctrl_timeout > 0)
+            {
                 f->redundancy_ctrl_timeout = -1;
                 f->capability_goal += f->remaining_pkts();
             }
@@ -194,7 +214,7 @@ void CapabilityHost::send_capability(){
 
     if(capability_sent)// pkt sent
     {
-        this->schedule_capa_proc_evt(0.0000012, false);
+        this->schedule_capa_proc_evt(0.000001232, false);
     }
     else if(closet_timeout < 999999) //has unsend flow, but its within timeout
     {

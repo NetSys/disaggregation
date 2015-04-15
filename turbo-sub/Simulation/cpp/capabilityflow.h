@@ -35,6 +35,7 @@ public:
     void set_capability_sent_count();
     int capability_gap();
     void relax_capability_gap();
+    int init_capa_size();
 
     std::priority_queue<Capability*, std::vector<Capability*>, CapabilityComparator> capabilities;
     bool finished_at_receiver;
@@ -44,6 +45,8 @@ public:
     int remaining_pkts_at_sender;
     int largest_cap_seq_received;
     double latest_cap_sent_time;
+    bool rts_received;
+    double latest_data_pkt_send_time;
 };
 
 

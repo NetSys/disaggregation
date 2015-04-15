@@ -33,6 +33,7 @@ public:
 
   virtual uint32_t get_priority(uint32_t seq);
   virtual void increase_cwnd();
+  virtual double get_avg_queuing_delay_in_us();
 
   uint32_t id;
   double start_time;
@@ -69,6 +70,7 @@ public:
   // finished variables
   bool finished;
   double flow_completion_time;
+  double total_queuing_time;
 
   uint32_t flow_priority;
 };

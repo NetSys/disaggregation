@@ -27,6 +27,7 @@ traffic_imbalance: {5}
 load: {6}
 reauth_limit: 3
 use_flow_trace: 0
+smooth_cdf: {7}
 '''
 
 def get_mean_flow_size(cdf_file):
@@ -34,31 +35,25 @@ def get_mean_flow_size(cdf_file):
     from calculate_mean_flowsize import get_mean_flowsize
     return int(get_mean_flowsize(cdf_file))
 
-experiments = {
-#        'pfabric_alllong_100k' : [2, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
-#        'pfabric_allshort_100k' : [2, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
-#        'fountain_alllong_vanilla_100k' : [100, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 1],
-#        'fountain_allshort_vanilla_100k' : [100, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 1],
-#        'fountain_alllong_scheduled_100k' : [101, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 2],
-#        'fountain_allshort_scheduled_100k' : [101, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 2],
-#        'fountain_alllong_quick_scheduled_100k' : [103, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 4],
-#        'fountain_allshort_quick_scheduled_100k' : [103, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 4, 0, 0.8],
-#        'rtscts_alllong_vanilla_100k' : [102, 100000, "../CDF_alllong.txt", get_mean_flow_size("../CDF_alllong.txt"), 3],
-#        'rtscts_allshort_vanilla_100k' : [102, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 3]
-#		'pipeline_allshort_test_100k' : [111, 100000, "../CDF_allshort.txt", get_mean_flow_size("../CDF_allshort.txt"), 11, 0, 0.8],
+experiments = {}
+
+schemes = {
+	#"pfabric" : [2, 1],
+	"capability" : [112, 12],
 }
-
-load = [0.8]
+load = [0.6]
 fsize = ["alllong", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
-skew =  [2.0]
+#fsize = ["dctcp", "datamining"]
+skew =  [0.0]
+smooth = 0
 
-
-for l in load:
-    for f in fsize:
-        for s in skew:
-            key = 'capability_' + f + '_load' + str(l) + '_skew' + str(s) + '_100k'
-            value = [112, 100000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), 12, s, l]
-            experiments[key] = value
+for sh in schemes:
+	for l in load:
+	    for f in fsize:
+	        for s in skew:
+	            key = sh + '_' + f + '_load' + str(l) + '_skew' + str(s) + '_100k'
+	            value = [schemes[sh][0], 100000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), schemes[sh][1], s, l, smooth]
+	            experiments[key] = value
     
 
 def run_exp(exp_name):

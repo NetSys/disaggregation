@@ -35,6 +35,8 @@ public:
 	int capability_seq_num_in_data;
 
 	uint32_t type; // Normal or Ack packet
+	double total_queuing_delay;
+	double last_enque_time;
 };
 
 class PlainAck : public Packet {

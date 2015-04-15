@@ -9,7 +9,7 @@
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
 extern DCExpParams params;
-
+extern uint32_t num_outstanding_packets;
 
 bool CapabilityComparator::operator() (Capability* a, Capability* b)
 {
@@ -25,10 +25,13 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     this->finished_at_receiver = false;
     this->capability_sent_count = 0;
     this->redundancy_ctrl_timeout = -1;
-    this->capability_goal = (int)(std::ceil(this->size_in_pkt * 1.01));
+    this->capability_goal = (int)(std::ceil(this->size_in_pkt * 1.00));
     this->remaining_pkts_at_sender = this->size_in_pkt;
     this->largest_cap_seq_received = -1;
+    this->total_queuing_time = 0;
+    this->rts_received = false;
     this->latest_cap_sent_time = start_time;
+    this->latest_data_pkt_send_time = start_time;
 }
 
 
@@ -66,8 +69,11 @@ void CapabilityFlow::receive(Packet *p)
 
     if(p->type == NORMAL_PACKET)
     {
+        assert(this->rts_received);
         received_count++;
         received_bytes += (p->size - hdr_size);
+        num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+        total_queuing_time += p->total_queuing_delay;
         if(p->capability_seq_num_in_data > largest_cap_seq_received)
             largest_cap_seq_received = p->capability_seq_num_in_data;
         if(debug_flow(this->id))
@@ -103,7 +109,9 @@ void CapabilityFlow::receive(Packet *p)
         if(debug_flow(p->flow->id))
             std::cout << get_current_time() << " received RTS for flow " << p->flow->id << "\n";
 
+        this->rts_received = true;
         set_capability_sent_count();
+        ((CapabilityHost*)(this->dst))->hold_on += this->init_capa_size();
         ((CapabilityHost*)(this->dst))->active_receiving_flows.push(this);
 
         if( ((CapabilityHost*)(this->dst))->capa_proc_evt &&
@@ -125,6 +133,9 @@ void CapabilityFlow::receive(Packet *p)
 Packet* CapabilityFlow::send(uint32_t seq, int capa_seq)
 {
     uint32_t priority = 1;
+    this->latest_data_pkt_send_time = get_current_time();
+    if(capa_seq > std::min(CAPABILITY_INITIAL, this->size_in_pkt))
+        priority = 2;
     Packet *p = new Packet(get_current_time(), this, seq, priority, mss + hdr_size, src, dst);
     p->capability_seq_num_in_data = capa_seq;
     total_pkt_sent++;
@@ -135,10 +146,10 @@ Packet* CapabilityFlow::send(uint32_t seq, int capa_seq)
 
 void CapabilityFlow::assign_init_capability(){
     //sender side
-    int init_capa = std::min(this->size_in_pkt, CAPABILITY_INITIAL);
+    int init_capa = this->init_capa_size();
     for(int i = 0; i < init_capa; i++){
         Capability* c = new Capability();
-        c->timeout = get_current_time() + i * 0.0000012 + CAPABILITY_TIMEOUT;
+        c->timeout = get_current_time() + init_capa * 0.0000012 + CAPABILITY_TIMEOUT;
         c->seq_num = i;
         this->capabilities.push(c);
     }
@@ -146,10 +157,10 @@ void CapabilityFlow::assign_init_capability(){
 
 
 void CapabilityFlow::set_capability_sent_count(){
-    int init_capa = std::min(this->size_in_pkt, CAPABILITY_INITIAL);
+    int init_capa = this->init_capa_size();
     this->capability_sent_count = init_capa;
     if(this->capability_sent_count == this->capability_goal){
-        this->redundancy_ctrl_timeout = get_current_time() + init_capa * 0.0000012 *2;
+        this->redundancy_ctrl_timeout = get_current_time() + init_capa * 0.0000012 * 2;
     }
 }
 
@@ -219,3 +230,9 @@ void CapabilityFlow::relax_capability_gap()
     assert(this->capability_sent_count - this->largest_cap_seq_received >= 0);
     this->largest_cap_seq_received = this->capability_sent_count - CAPABILITY_WINDOW;
 }
+
+int CapabilityFlow::init_capa_size(){
+    return std::min(this->size_in_pkt, CAPABILITY_INITIAL);
+}
+
+
