@@ -37,8 +37,6 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
 
 void CapabilityFlow::start_flow()
 {
-    if(debug_flow(this->id))
-        std::cout << get_current_time() << " flow " << this->id << " starts\n";
     assign_init_capability();
     ((CapabilityHost*) this->src)->start_capability_flow(this);
 }
@@ -69,10 +67,15 @@ void CapabilityFlow::receive(Packet *p)
 
     if(p->type == NORMAL_PACKET)
     {
+        if(!rts_received)
+            std::cout << get_current_time() << " flow " << this->id << " hasn't receive rts\n";
         assert(this->rts_received);
         received_count++;
         received_bytes += (p->size - hdr_size);
-        num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+        if(num_outstanding_packets >= ((p->size - hdr_size) / (mss)))
+            num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+        else
+            num_outstanding_packets = 0;
         total_queuing_time += p->total_queuing_delay;
         if(p->capability_seq_num_in_data > largest_cap_seq_received)
             largest_cap_seq_received = p->capability_seq_num_in_data;
@@ -134,7 +137,7 @@ Packet* CapabilityFlow::send(uint32_t seq, int capa_seq)
 {
     uint32_t priority = 1;
     this->latest_data_pkt_send_time = get_current_time();
-    if(capa_seq > std::min(CAPABILITY_INITIAL, this->size_in_pkt))
+    if(this->size_in_pkt > CAPABILITY_INITIAL)
         priority = 2;
     Packet *p = new Packet(get_current_time(), this, seq, priority, mss + hdr_size, src, dst);
     p->capability_seq_num_in_data = capa_seq;

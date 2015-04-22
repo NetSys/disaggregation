@@ -5,14 +5,14 @@ extern double get_current_time();
 
 bool debug_mode = false;
 bool print_flow = false;
-double debug_start_time = 1.00704579965369;
+double debug_start_time = 0;
 
 bool debug_all_flows = false;
-std::set<uint32_t> flows_to_debug_set = {9867};
+std::set<uint32_t> flows_to_debug_set = {};
 bool debug_all_queues = false;
 std::set<uint32_t> queues_to_debug_set = {};
 bool debug_all_hosts = false;
-std::set<uint32_t> hosts_to_debug_set = {74};
+std::set<uint32_t> hosts_to_debug_set = {0};
 
 bool debug_flow(uint32_t fid){
     return debug_mode && get_current_time() >= debug_start_time?(debug_all_flows||flows_to_debug_set.count(fid)):false;

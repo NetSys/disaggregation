@@ -71,6 +71,7 @@ public:
   bool finished;
   double flow_completion_time;
   double total_queuing_time;
+  double first_byte_send_time;
 
   uint32_t flow_priority;
 };

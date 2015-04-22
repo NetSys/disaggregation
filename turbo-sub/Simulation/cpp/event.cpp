@@ -147,6 +147,7 @@ void FlowFinishedEvent::process_event() {
     this->flow->flow_completion_time = this->flow->finish_time - this->flow->start_time;
     
     if(print_flow_result()){
+        std::cout << std::setprecision(4) << std::fixed ;
         std::cout
           << flow->id << " "
           << flow->size << " "
@@ -164,6 +165,7 @@ void FlowFinishedEvent::process_event() {
         if(params.flow_type == CAPABILITY_FLOW){
             std::cout << ((CapabilityFlow*)flow)->capability_sent_count << " ";
         }
+        std::cout << 1000000 * (flow->first_byte_send_time - flow->start_time) << " ";
         std::cout << std::endl;
     }
 }
@@ -380,7 +382,7 @@ void LoggingEvent::process_event() {
     << " StartedFlows " << started_flows << "\n";
 
   if (!finished_simulation && ttl > get_current_time()) {
-    add_to_event_queue(new LoggingEvent(current_time + 0.05, ttl));
+    add_to_event_queue(new LoggingEvent(current_time + 0.001, ttl));
   }
 }
 

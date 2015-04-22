@@ -48,6 +48,7 @@ Flow::Flow(uint32_t id, double start_time, uint32_t size,
   this->data_pkt_drop = 0;
   this->ack_pkt_drop = 0;
   this->flow_priority = 0;
+  this->first_byte_send_time = -1;
 }
 
 Flow::~Flow() {
@@ -164,7 +165,10 @@ void Flow::receive(Packet *p) {
 
   if (received.count(p->seq_no) == 0) {
     received[p->seq_no] = true;
-    num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+    if(num_outstanding_packets >= ((p->size - hdr_size) / (mss)))
+        num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+    else
+        num_outstanding_packets = 0;
     received_bytes += (p->size - hdr_size);
   } else {
     duplicated_packets_received += 1;

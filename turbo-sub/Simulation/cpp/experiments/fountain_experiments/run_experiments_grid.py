@@ -28,6 +28,7 @@ load: {6}
 reauth_limit: 3
 use_flow_trace: 0
 smooth_cdf: {7}
+burst_at_beginning: 0
 '''
 
 def get_mean_flow_size(cdf_file):
@@ -38,22 +39,24 @@ def get_mean_flow_size(cdf_file):
 experiments = {}
 
 schemes = {
-	#"pfabric" : [2, 1],
-	"capability" : [112, 12],
+	"pfabric" : [2, 1],
+	"capability-prio" : [112, 12],
 }
-load = [0.6]
-fsize = ["alllong", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
-#fsize = ["dctcp", "datamining"]
+nflow = [100]
+load = [0.6, 0.8]
+#fsize = ["00short", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
+fsize = ["aditya", "dctcp", "datamining"]
 skew =  [0.0]
-smooth = 0
+smooth = 1
 
 for sh in schemes:
 	for l in load:
 	    for f in fsize:
 	        for s in skew:
-	            key = sh + '_' + f + '_load' + str(l) + '_skew' + str(s) + '_100k'
-	            value = [schemes[sh][0], 100000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), schemes[sh][1], s, l, smooth]
-	            experiments[key] = value
+	        	for nf in nflow:
+		            key = sh + '_' + f + '_load' + str(l) + '_skew' + str(s) + '_' + str(nf) + 'k'
+		            value = [schemes[sh][0], nf * 1000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), schemes[sh][1], s, l, smooth]
+		            experiments[key] = value
     
 
 def run_exp(exp_name):

@@ -166,11 +166,12 @@ void printQueueStatistics(Topology *topo) {
 
   double simulation_time = current_time - start_time;
   double utilization = (totalSentFromHosts * 8.0 / 144.0) / simulation_time;
+  double dst_utilization = (totalSentToHosts * 8.0 / 144.0) / simulation_time;
 
   std::cout << "DeadPackets " << 100.0 * (dead_bytes/total_bytes)
     << "% DuplicatedPackets "
     << 100.0 * duplicated_packets_received * 1460.0 / total_bytes
-    << "% Utilization " << utilization / 10000000000 * 100 << "%\n";
+    << "% Utilization " << utilization / 10000000000 * 100 << "% " << dst_utilization / 10000000000 * 100  << "%\n";
   std::cout 
       << "Drops (May not be correct) SS " << drop_ss
       << " SL " << drop_sl 

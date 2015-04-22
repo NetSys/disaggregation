@@ -50,6 +50,10 @@ CapabilityHost::CapabilityHost(uint32_t id, double rate, uint32_t queue_type)
 }
 
 void CapabilityHost::start_capability_flow(CapabilityFlow* f){
+    if(debug_flow(f->id) || debug_host(this->id))
+        std::cout << get_current_time() << " flow " << f->id << " starts at" << this->id
+            << " curr q size" << this->queue->bytes_in_queue <<"\n";
+
     this->active_sending_flows.push(f);
     f->send_rts_pkt();
     if(f->has_capability() && ((CapabilityHost*)(f->src))->host_proc_event == NULL){
@@ -138,10 +142,10 @@ void CapabilityHost::send_capability(){
     std::queue<CapabilityFlow*> flows_tried;
     double closet_timeout = 999999;
 
-    if(this->hold_on > 0){
-        hold_on--;
-        capability_sent = true;
-    }
+//    if(this->hold_on > 0){
+//        hold_on--;
+//        capability_sent = true;
+//    }
 
     while(!this->active_receiving_flows.empty() && !capability_sent)
     {

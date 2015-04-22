@@ -52,6 +52,8 @@ extern double get_current_time();
 extern void printQueueStatistics(Topology *topo);
 extern void run_scenario();
 
+
+
 void generate_flows_to_schedule_fd(std::string filename, uint32_t num_flows,
 Topology *topo) {
   //double lambda = 4.0966649051007566;
@@ -72,9 +74,12 @@ Topology *topo) {
   std::cout << "Lambda: " << lambda_per_host << std::endl;
 
 
+  ExponentialRandomVariable *nv_intarr;
+  if(params.burst_at_beginning)
+      nv_intarr = new ExponentialRandomVariable(0.000000001);
+  else
+      nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_host);
 
-
-  ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_host);
   //* [expr ($link_rate*$load*1000000000)/($meanFlowSize*8.0/1460*1500)]
   for (uint32_t i = 0; i < topo->hosts.size(); i++) {
     for (uint32_t j = 0; j < topo->hosts.size(); j++) {
@@ -133,8 +138,13 @@ Topology *topo) {
   double flows_per_host = (sources.size() * destinations.size() - self_connection_count) / (double)topo->hosts.size();
   double lambda_per_flow = lambda / flows_per_host;
   std::cout << "Lambda: " << lambda_per_flow << std::endl;
-  ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_flow);
 
+
+  ExponentialRandomVariable *nv_intarr;
+  if(params.burst_at_beginning)
+      nv_intarr = new ExponentialRandomVariable(0.000000001);
+  else
+      nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_flow);
 
   //* [expr ($link_rate*$load*1000000000)/($meanFlowSize*8.0/1460*1500)]
   for (uint32_t i = 0; i < sources.size(); i++) {
@@ -181,6 +191,9 @@ void validate_flow(Flow* f){
         std::cout << "Flow " << f->id << " has slowdown " << slowdown << "\n";
         //assert(false);
     }
+    if(f->first_byte_send_time < 0 || f->first_byte_send_time < f->start_time - INFINITESIMAL_TIME)
+        std::cout << "Flow " << f->id << " first_byte_send_time: " << f->first_byte_send_time << " start time:"
+        << f->start_time << "\n";
 }
 
 
@@ -252,7 +265,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     flow_arrivals.push_back(new FlowArrivalEvent(f->start_time, f));
   }
 
-  add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time + 0.01));
+  add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
 
   std::cout << "Running " << num_flows << " Flows\nCDF_File " <<
     params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
@@ -270,11 +283,12 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   write_flows_to_file(flows_sorted, "flow.tmp");
 
-  Stats slowdown, inflation, fct, oracle_fct;
+  Stats slowdown, inflation, fct, oracle_fct, first_send_time;
   Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop;
-  std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size, fct_by_size, drop_rate_by_size;
+  std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size,
+      fct_by_size, drop_rate_by_size, wait_time_by_size;
 
-  std::cout <<   std::setprecision(4) ;
+  std::cout << std::setprecision(4) ;
 
   for (uint32_t i = 0; i < flows_sorted.size(); i++) {
     Flow *f = flows_to_schedule[i];
@@ -288,16 +302,19 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
         queuing_delay_by_size[f->size_in_pkt] = new Stats();
         fct_by_size[f->size_in_pkt] = new Stats();
         drop_rate_by_size[f->size_in_pkt] = new Stats();
+        wait_time_by_size[f->size_in_pkt] = new Stats();
     }
     slowdown_by_size[f->size_in_pkt]->input_data(slow);
     queuing_delay_by_size[f->size_in_pkt]->input_data(f->get_avg_queuing_delay_in_us());
     fct_by_size[f->size_in_pkt]->input_data(f->flow_completion_time * 1000000);
     drop_rate_by_size[f->size_in_pkt]->input_data((double)(f->data_pkt_drop)/f->total_pkt_sent);
+    wait_time_by_size[f->size_in_pkt]->input_data(f->first_byte_send_time - f->start_time);
 
     slowdown += slow;
     inflation += (double)f->total_pkt_sent / (f->size/f->mss);
     fct += (1000000.0 * f->flow_completion_time);
     oracle_fct += topology->get_oracle_fct(f);
+
 
     data_pkt_sent += std::min(f->size_in_pkt, (int)f->total_pkt_sent);
     parity_pkt_sent += std::max(0, (int)(f->total_pkt_sent - f->size_in_pkt));
@@ -305,7 +322,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     parity_pkt_drop += std::max(0, f->pkt_drop - f->data_pkt_drop);
   }
 
-  double stability = (double)(num_outstanding_packets_at_100 - num_outstanding_packets_at_50)/(arrival_packets_at_100 - arrival_packets_at_50);
+  double stability = ((double)num_outstanding_packets_at_100 - (double)num_outstanding_packets_at_50)/(arrival_packets_at_100 - arrival_packets_at_50);
 
   std::cout << "AverageFCT " << fct.avg() << " MeanSlowdown " << slowdown.avg() << " MeanInflation " << inflation.avg() <<
           " NFCT " << fct.total()/oracle_fct.total() << " Stability " << stability << "\n";
@@ -315,7 +332,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
       unsigned key = it->first;
       std::cout << key << ": " << it->second->avg() <<  " " << fct_by_size[it->first]->avg() << " " <<
               queuing_delay_by_size[it->first]->avg() << "(" << queuing_delay_by_size[it->first]->sd() << ") " <<
-              drop_rate_by_size[it->first]->avg() << " "
+              drop_rate_by_size[it->first]->avg() << " " << wait_time_by_size[it->first]->avg()*1000000
               << "    ";
   }
   std::cout << "\n";

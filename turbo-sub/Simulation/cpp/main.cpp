@@ -46,6 +46,20 @@ extern int get_event_queue_size();
 uint32_t duplicated_packets_received = 0;
 double start_time = -1;
 
+
+const std::string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+    return buf;
+}
+
+
 /* Runs a initialized scenario */
 void run_scenario() {
   // Flow Arrivals create new flow arrivals
@@ -77,7 +91,7 @@ void run_scenario() {
 
     last_evt_type = ev->type;
 
-    if(same_evt_count > 1000){
+    if(same_evt_count > 1000000){
       std::cout << "Ended event dead loop. Type:" << last_evt_type << "\n";
       break;
     }
@@ -130,5 +144,5 @@ int main (int argc, char ** argv) {
   time_t end_time;
   time(&end_time);
   double duration = difftime(end_time, start_time);
-  cout << "Simulator ended. Execution time: " << duration << " seconds\n";
+  cout << currentDateTime() << " Simulator ended. Execution time: " << duration << " seconds\n";
 }

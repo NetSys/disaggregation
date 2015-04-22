@@ -37,13 +37,14 @@ struct DCExpParams {
   double reauth_limit;
   int use_flow_trace;
   int smooth_cdf;
+  int burst_at_beginning;
 };
 
 #define CAPABILITY_TIMEOUT 0.0000018
 #define CAPABILITY_RESEND_TIMEOUT 0.000010
 #define CAPABILITY_INITIAL 8
-#define CAPABILITY_WINDOW 8
-#define CAPABILITY_WINDOW_TIMEOUT 0.000015
+#define CAPABILITY_WINDOW 10
+#define CAPABILITY_WINDOW_TIMEOUT 0.000010
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 
