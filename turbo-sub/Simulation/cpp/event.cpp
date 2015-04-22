@@ -18,6 +18,9 @@
 #include "capabilityflow.h"
 #include "capabilityhost.h"
 
+#include "magicflow.h"
+#include "magichost.h"
+
 extern Topology *topology;
 extern std::priority_queue<Event *, std::vector<Event *>,
                            EventComparator> event_queue;
@@ -421,6 +424,20 @@ CapabilityProcessingEvent::~CapabilityProcessingEvent() {
 void CapabilityProcessingEvent::process_event() {
     this->host->capa_proc_evt = NULL;
     this->host->send_capability();
+}
+
+
+
+MagicHostScheduleEvent::MagicHostScheduleEvent(double time, MagicHost *h) : Event(MAGIC_HOST_SCHEDULE, time) {
+    this->host = h;
+}
+
+MagicHostScheduleEvent::~MagicHostScheduleEvent() {
+}
+
+void MagicHostScheduleEvent::process_event() {
+    //std::cout << "calling schd() at event.cpp 369 for host" << this->host->id << "\n";
+    this->host->schedule();
 }
 
 

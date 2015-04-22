@@ -11,6 +11,8 @@
 #include "schedulinghost.h"
 #include "capabilityhost.h"
 #include "capabilityflow.h"
+#include "magicflow.h"
+#include "magichost.h"
 
 /* Factory method to return appropriate queue */
 Queue* Factory::get_queue(uint32_t id, double rate,
@@ -88,6 +90,9 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
     case CAPABILITY_FLOW:
       return new CapabilityFlow(id, start_time, size, src, dst);
       break;
+    case MAGIC_FLOW:
+      return new MagicFlow(id, start_time, size, src, dst);
+      break;
   }
   assert(false);
   return NULL;
@@ -109,6 +114,9 @@ Host* Factory::get_host(uint32_t id, double rate, uint32_t queue_type, uint32_t 
             break;
         case CAPABILITY_HOST:
             return new CapabilityHost(id, rate, queue_type);
+            break;
+        case MAGIC_HOST:
+            return new MagicHost(id, rate, queue_type);
             break;
     }
     assert(false);

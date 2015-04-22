@@ -32,10 +32,13 @@
 
 #define HOST_PROCESSING 10
 #define CAPABILITY_PROCESSING 11
+#define MAGIC_HOST_SCHEDULE 12
 
 class CapabilityHost;
 class CapabilityFlow;
 class SchedulingHost;
+class MagicHost;
+class MagicFlow;
 
 class Event {
 public:
@@ -195,6 +198,13 @@ public:
   bool is_timeout_evt;
 };
 
+class MagicHostScheduleEvent : public Event {
+public:
+    MagicHostScheduleEvent(double time, MagicHost *host);
+  ~MagicHostScheduleEvent();
+  void process_event();
+  MagicHost *host;
+};
 
 #endif /* defined(EVENT_H) */
 

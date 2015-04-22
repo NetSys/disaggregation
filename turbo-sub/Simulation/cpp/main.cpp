@@ -91,7 +91,7 @@ void run_scenario() {
 
     last_evt_type = ev->type;
 
-    if(same_evt_count > 1000000){
+    if(same_evt_count > 100){
       std::cout << "Ended event dead loop. Type:" << last_evt_type << "\n";
       break;
     }

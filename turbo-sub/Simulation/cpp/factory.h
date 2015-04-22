@@ -33,6 +33,7 @@
 #define RTSCTS_FLOW 102
 #define FOUNTAIN_FLOW_PIPELINE_SCHEDULING_HOST 111
 #define CAPABILITY_FLOW 112
+#define MAGIC_FLOW 113
 
 /* Host types */
 #define NORMAL_HOST 1
@@ -40,6 +41,7 @@
 #define RTSCTS_HOST 3
 #define PIPELINE_SCHEDULING_HOST 11
 #define CAPABILITY_HOST 12
+#define MAGIC_HOST 13
 
 class Factory {
 public:
