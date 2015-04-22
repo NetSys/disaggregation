@@ -8,11 +8,11 @@ bool print_flow = false;
 double debug_start_time = 0;
 
 bool debug_all_flows = false;
-std::set<uint32_t> flows_to_debug_set = {};
+std::set<uint32_t> flows_to_debug_set = {7};
 bool debug_all_queues = false;
 std::set<uint32_t> queues_to_debug_set = {};
 bool debug_all_hosts = false;
-std::set<uint32_t> hosts_to_debug_set = {0};
+std::set<uint32_t> hosts_to_debug_set = {50};
 
 bool debug_flow(uint32_t fid){
     return debug_mode && get_current_time() >= debug_start_time?(debug_all_flows||flows_to_debug_set.count(fid)):false;

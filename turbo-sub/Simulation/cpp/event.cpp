@@ -438,6 +438,7 @@ MagicHostScheduleEvent::~MagicHostScheduleEvent() {
 void MagicHostScheduleEvent::process_event() {
     //std::cout << "calling schd() at event.cpp 369 for host" << this->host->id << "\n";
     this->host->schedule();
+    this->host->try_send();
 }
 
 

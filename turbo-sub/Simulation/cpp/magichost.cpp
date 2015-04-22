@@ -156,6 +156,9 @@ void MagicHost::try_send() {
 
 void MagicHost::send() {
 
+    if(debug_host(this->id))
+        std::cout << get_current_time() << " send at host " << this->id << "\n";
+
     if(this->flow_sending && this->flow_sending->finished)
     {
         if(debug_host(this->id))
@@ -181,7 +184,7 @@ void MagicHost::send() {
             QueueProcessingEvent *qpe = this->queue->queue_proc_event;
             uint32_t queue_size = this->queue->bytes_in_queue;
             double td = this->queue->get_transmission_delay(queue_size);
-            this->host_proc_event = new HostProcessingEvent(qpe->time + td + 0.000000001, this);
+            this->host_proc_event = new HostProcessingEvent(qpe->time + td + INFINITESIMAL_TIME, this);
             this->is_host_proc_event_a_timeout = false;
             add_to_event_queue(this->host_proc_event);
         }
