@@ -24,11 +24,11 @@ bool has_higher_priority(MagicFlow* a, MagicFlow* b) {
         return false;
 }
 
-bool MagicFlowComparator::operator() (MagicFlow* a, MagicFlow* b) {
+bool MagicHostFlowComparator::operator() (MagicFlow* a, MagicFlow* b) {
     // use FIFO ordering since all flows are same size
-    if(a->size_in_pkt > b->size_in_pkt)
+    if(a->remaining_pkt() > b->remaining_pkt())
         return true;
-    else if(a->size_in_pkt == b->size_in_pkt)
+    else if(a->remaining_pkt() == b->remaining_pkt())
         return a->start_time > b->start_time;
     else
         return false;
@@ -54,7 +54,7 @@ void MagicHost::start(Flow* f) {
 
     ((MagicFlow*)f)->last_pkt_sent_at = get_current_time();
 
-    this->sending_flows.push((MagicFlow*)f);
+    this->active_sending_flows.push((MagicFlow*)f);
 
 
     this->schedule();
@@ -76,9 +76,9 @@ void MagicHost::schedule() {
         std::queue<Flow*> flows_tried;
 
         bool has_short_flow_to_delay = false;
-        while(!sending_flows.empty()){
-            MagicFlow* f = (MagicFlow*)sending_flows.top();
-            sending_flows.pop();
+        while(!active_sending_flows.empty()){
+            MagicFlow* f = (MagicFlow*)active_sending_flows.top();
+            active_sending_flows.pop();
 
             if(f->finished)
                 continue;
@@ -119,7 +119,7 @@ void MagicHost::schedule() {
                     if(f->size_in_pkt < 10 && slack < params.reauth_limit * 0.0000012 * 0.9){
                         has_short_flow_to_delay = true;
                     }
-                    if(sending_flows.size() > 0 && sending_flows.top()->size_in_pkt > 10 && has_short_flow_to_delay)
+                    if(active_sending_flows.size() > 0 && active_sending_flows.top()->size_in_pkt > 10 && has_short_flow_to_delay)
                         break;
                 }
             }
@@ -129,11 +129,11 @@ void MagicHost::schedule() {
         while(!flows_tried.empty()){
             Flow* f = flows_tried.front();
             flows_tried.pop();
-            sending_flows.push((MagicFlow*)f);
+            active_sending_flows.push((MagicFlow*)f);
         }
 
         //has sending flow, but no flow can be scheduled
-        if(!scheduled && !sending_flows.empty() && min_finish_time < 999999){
+        if(!scheduled && !active_sending_flows.empty() && min_finish_time < 999999){
             if (min_finish_time > get_current_time())
                 add_to_event_queue(new MagicHostScheduleEvent(min_finish_time, this) );
             else
@@ -169,7 +169,7 @@ void MagicHost::send() {
         if( ((MagicFlow*)(this->flow_sending))->send_count >= (int)ceil(this->flow_sending->size_in_pkt * 1) ){
             ((MagicFlow*)(this->flow_sending))->ack_timeout = get_current_time() + 0.0000095;
         }
-        this->sending_flows.push((MagicFlow*)(this->flow_sending));
+        this->active_sending_flows.push((MagicFlow*)(this->flow_sending));
         this->reschedule();
     }
 

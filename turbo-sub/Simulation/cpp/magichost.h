@@ -10,7 +10,7 @@
 
 class MagicFlow;
 
-class MagicFlowComparator {
+class MagicHostFlowComparator {
 public:
     bool operator() (MagicFlow* a, MagicFlow* b);
 };
@@ -27,12 +27,13 @@ public:
     void schedule();
     void reschedule();
     void try_send();
-    virtual void send();
+    void send();
     Flow* flow_sending;
     //Flow* flow_receiving;
     double recv_busy_until;
     bool is_host_proc_event_a_timeout;
     //FountainFlowWithQuickSchedulingHost* next_receiving_flow;
+    std::priority_queue<MagicFlow*, std::vector<MagicFlow*>, MagicHostFlowComparator> active_sending_flows;
     std::priority_queue<MagicFlow*, std::vector<MagicFlow*>, MagicFlowTimeoutComparator> sending_redundency;
     std::map<uint32_t, MagicFlow*> receiver_pending_flows;
 };
