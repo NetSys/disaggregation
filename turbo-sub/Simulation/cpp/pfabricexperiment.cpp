@@ -49,7 +49,8 @@ void read_flows_to_schedule(std::string filename, uint32_t num_lines,
     double start_time, temp;
     uint32_t size, s, d;
     uint32_t id;
-    input >> id;
+    if((input >> id).eof())
+        break;
     input >> start_time;
     input >> temp;
     input >> temp; size = (uint32_t) (params.mss * temp);

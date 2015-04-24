@@ -4,10 +4,10 @@
 extern double get_current_time();
 
 bool debug_mode = false;
-bool print_flow = true;
+bool print_flow = false;
 double debug_start_time = 0;
 
-bool debug_all_flows = false;
+bool debug_all_flows = true;
 std::set<uint32_t> flows_to_debug_set = {7};
 bool debug_all_queues = false;
 std::set<uint32_t> queues_to_debug_set = {};

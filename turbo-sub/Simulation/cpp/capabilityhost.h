@@ -32,9 +32,12 @@ public:
 
     void send_capability();
     void schedule_capa_proc_evt(double time, bool is_timeout);
+    bool check_better_schedule(CapabilityFlow* f);
     std::priority_queue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparatorAtReceiver> active_receiving_flows;
     CapabilityProcessingEvent *capa_proc_evt;
     int hold_on;
+    int total_capa_schd_evt_count;
+    int could_better_schd_count;
 };
 
 

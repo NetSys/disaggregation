@@ -26,6 +26,7 @@
 #include "random_variable.h"
 #include "fountainflow.h"
 #include "stats.h"
+#include "capabilityflow.h"
 
 extern Topology *topology;
 extern double current_time;
@@ -265,7 +266,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     flow_arrivals.push_back(new FlowArrivalEvent(f->start_time, f));
   }
 
-  add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
+  //add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
 
   std::cout << "Running " << num_flows << " Flows\nCDF_File " <<
     params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
@@ -285,8 +286,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   Stats slowdown, inflation, fct, oracle_fct, first_send_time;
   Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop;
-  std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size,
-      fct_by_size, drop_rate_by_size, wait_time_by_size;
+  std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size, capa_sent_by_size,
+      fct_by_size, drop_rate_by_size, wait_time_by_size, first_hop_depart_by_size, last_hop_depart_by_size;
 
   std::cout << std::setprecision(4) ;
 
@@ -294,7 +295,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     Flow *f = flows_to_schedule[i];
     validate_flow(f);
     if(!f->finished)
-      std::cout << "unfinished flow " << "size:" << f->size << " id:" << f->id << " next_seq:" << f->next_seq_no << " recv:" << f->received_bytes  << " src:" << f->src->id << " dst:" << f->dst->id << "\n";
+        std::cout << "unfinished flow " << "size:" << f->size << " id:" << f->id << " next_seq:" <<
+            f->next_seq_no << " recv:" << f->received_bytes  << " src:" << f->src->id << " dst:" << f->dst->id << "\n";
 
     double slow = 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
     if(slowdown_by_size.find(f->size_in_pkt) == slowdown_by_size.end()){
@@ -303,17 +305,25 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
         fct_by_size[f->size_in_pkt] = new Stats();
         drop_rate_by_size[f->size_in_pkt] = new Stats();
         wait_time_by_size[f->size_in_pkt] = new Stats();
+        capa_sent_by_size[f->size_in_pkt] = new Stats();
+        first_hop_depart_by_size[f->size_in_pkt] = new Stats();
+        last_hop_depart_by_size[f->size_in_pkt] = new Stats();
     }
     slowdown_by_size[f->size_in_pkt]->input_data(slow);
     queuing_delay_by_size[f->size_in_pkt]->input_data(f->get_avg_queuing_delay_in_us());
     fct_by_size[f->size_in_pkt]->input_data(f->flow_completion_time * 1000000);
     drop_rate_by_size[f->size_in_pkt]->input_data((double)(f->data_pkt_drop)/f->total_pkt_sent);
     wait_time_by_size[f->size_in_pkt]->input_data(f->first_byte_send_time - f->start_time);
+    first_hop_depart_by_size[f->size_in_pkt]->input_data(f->first_hop_departure);
+    last_hop_depart_by_size[f->size_in_pkt]->input_data(f->last_hop_departure);
+    if(params.flow_type == CAPABILITY_FLOW)
+        capa_sent_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_count);
 
     slowdown += slow;
     inflation += (double)f->total_pkt_sent / (f->size/f->mss);
     fct += (1000000.0 * f->flow_completion_time);
     oracle_fct += topology->get_oracle_fct(f);
+
 
 
     data_pkt_sent += std::min(f->size_in_pkt, (int)f->total_pkt_sent);
@@ -330,10 +340,13 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   int i = 0;
   for(auto it = slowdown_by_size.begin(); it != slowdown_by_size.end() && i < 6; ++it, ++i){
       unsigned key = it->first;
-      std::cout << key << ": " << it->second->avg() <<  " " << fct_by_size[it->first]->avg() << " " <<
-              queuing_delay_by_size[it->first]->avg() << "(" << queuing_delay_by_size[it->first]->sd() << ") " <<
-              drop_rate_by_size[it->first]->avg() << " " << wait_time_by_size[it->first]->avg()*1000000
-              << "    ";
+      std::cout << key << ": Sl:" << it->second->avg() <<  " FCT:" << fct_by_size[it->first]->avg() << " QD:" <<
+              queuing_delay_by_size[it->first]->avg() << "(" << queuing_delay_by_size[it->first]->sd() << ") Drp:" <<
+              drop_rate_by_size[it->first]->avg() << " Wt:" << wait_time_by_size[it->first]->avg()*1000000;
+      if(params.flow_type == CAPABILITY_FLOW)
+          std::cout << " DC:" <<  (capa_sent_by_size[it->first]->total() - first_hop_depart_by_size[it->first]->total())/capa_sent_by_size[it->first]->total();
+      std::cout << " DP:" << (first_hop_depart_by_size[it->first]->total() - last_hop_depart_by_size[it->first]->total())/first_hop_depart_by_size[it->first]->total();
+      std::cout << "    ";
   }
   std::cout << "\n";
 

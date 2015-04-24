@@ -23,7 +23,7 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     :FountainFlow(id, start_time, size, s, d)
 {
     this->finished_at_receiver = false;
-    this->capability_sent_count = 0;
+    this->capability_count = 0;
     this->redundancy_ctrl_timeout = -1;
     this->capability_goal = (int)(std::ceil(this->size_in_pkt * 1.00));
     this->remaining_pkts_at_sender = this->size_in_pkt;
@@ -32,6 +32,7 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     this->rts_received = false;
     this->latest_cap_sent_time = start_time;
     this->latest_data_pkt_send_time = start_time;
+    this->capability_packet_sent_count = 0;
 }
 
 
@@ -79,8 +80,8 @@ void CapabilityFlow::receive(Packet *p)
         total_queuing_time += p->total_queuing_delay;
         if(p->capability_seq_num_in_data > largest_cap_seq_received)
             largest_cap_seq_received = p->capability_seq_num_in_data;
-        if(debug_flow(this->id))
-            std::cout << get_current_time() << " flow " << this->id << " received pkt " << received_count << "\n";
+//        if(debug_flow(this->id))
+//            std::cout << get_current_time() << " flow " << this->id << " received pkt " << received_count << "\n";
         if (received_count >= goal) {
             this->finished_at_receiver = true;
             send_ack();
@@ -113,7 +114,7 @@ void CapabilityFlow::receive(Packet *p)
             std::cout << get_current_time() << " received RTS for flow " << p->flow->id << "\n";
 
         this->rts_received = true;
-        set_capability_sent_count();
+        set_capability_count();
         ((CapabilityHost*)(this->dst))->hold_on += this->init_capa_size();
         ((CapabilityHost*)(this->dst))->active_receiving_flows.push(this);
 
@@ -159,10 +160,10 @@ void CapabilityFlow::assign_init_capability(){
 }
 
 
-void CapabilityFlow::set_capability_sent_count(){
+void CapabilityFlow::set_capability_count(){
     int init_capa = this->init_capa_size();
-    this->capability_sent_count = init_capa;
-    if(this->capability_sent_count == this->capability_goal){
+    this->capability_count = init_capa;
+    if(this->capability_count == this->capability_goal){
         this->redundancy_ctrl_timeout = get_current_time() + init_capa * 0.0000012 * 2;
     }
 }
@@ -170,8 +171,11 @@ void CapabilityFlow::set_capability_sent_count(){
 
 
 void CapabilityFlow::send_capability_pkt(){
-    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, CAPABILITY_TIMEOUT, this->remaining_pkts(), this->capability_sent_count);
-    this->capability_sent_count++;
+    if(debug_flow(this->id))
+        std::cout << get_current_time() << " flow " << this->id << " send capa " << this->capability_count << "\n";
+    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, CAPABILITY_TIMEOUT, this->remaining_pkts(), this->capability_count);
+    this->capability_count++;
+    this->capability_packet_sent_count++;
     this->latest_cap_sent_time = get_current_time();
     add_to_event_queue(new PacketQueuingEvent(get_current_time(), cp, dst->queue));
 }
@@ -224,18 +228,18 @@ int CapabilityFlow::remaining_pkts(){
 }
 
 int CapabilityFlow::capability_gap(){
-    assert(this->capability_sent_count - this->largest_cap_seq_received >= 0);
-    return this->capability_sent_count - this->largest_cap_seq_received;
+    assert(this->capability_count - this->largest_cap_seq_received >= 0);
+    return this->capability_count - this->largest_cap_seq_received;
 }
 
 void CapabilityFlow::relax_capability_gap()
 {
-    assert(this->capability_sent_count - this->largest_cap_seq_received >= 0);
-    this->largest_cap_seq_received = this->capability_sent_count - CAPABILITY_WINDOW;
+    assert(this->capability_count - this->largest_cap_seq_received >= 0);
+    this->largest_cap_seq_received = this->capability_count - CAPABILITY_WINDOW;
 }
 
 int CapabilityFlow::init_capa_size(){
-    return std::min(this->size_in_pkt, CAPABILITY_INITIAL);
+    return this->size_in_pkt <= CAPABILITY_INITIAL?this->size_in_pkt:0;
 }
 
 

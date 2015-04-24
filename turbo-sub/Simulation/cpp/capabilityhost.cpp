@@ -47,6 +47,8 @@ CapabilityHost::CapabilityHost(uint32_t id, double rate, uint32_t queue_type)
 {
     this->capa_proc_evt = NULL;
     this->hold_on = 0;
+    this->total_capa_schd_evt_count = 0;
+    this->could_better_schd_count = 0;
 }
 
 void CapabilityHost::start_capability_flow(CapabilityFlow* f){
@@ -132,6 +134,10 @@ void CapabilityHost::send(){
 
 }
 
+bool CapabilityHost::check_better_schedule(CapabilityFlow* f)
+{
+    return ((CapabilityHost*)f->src)->active_sending_flows.top() == f;
+}
 
 void CapabilityHost::send_capability(){
     //if(debug_host(this->id))
@@ -139,6 +145,8 @@ void CapabilityHost::send_capability(){
     assert(capa_proc_evt == NULL);
 
     bool capability_sent = false;
+    bool could_schd_better = false;
+    this->total_capa_schd_evt_count++;
     std::queue<CapabilityFlow*> flows_tried;
     double closet_timeout = 999999;
 
@@ -151,8 +159,8 @@ void CapabilityHost::send_capability(){
     {
         CapabilityFlow* f = this->active_receiving_flows.top();
         this->active_receiving_flows.pop();
-        if(debug_flow(f->id))
-            std::cout << get_current_time() << " pop out flow " << f->id << "\n";
+        //if(debug_flow(f->id))
+        //    std::cout << get_current_time() << " pop out flow " << f->id << "\n";
 
 
         if(f->finished_at_receiver)
@@ -163,6 +171,8 @@ void CapabilityHost::send_capability(){
 
         //not yet timed out, shouldn't send
         if(f->redundancy_ctrl_timeout > get_current_time()){
+            if(check_better_schedule(f))
+                could_schd_better = true;
             if(f->redundancy_ctrl_timeout < closet_timeout)
             {
                 closet_timeout = f->redundancy_ctrl_timeout;
@@ -197,7 +207,7 @@ void CapabilityHost::send_capability(){
                 f->send_capability_pkt();
                 capability_sent = true;
 
-                if(f->capability_sent_count == f->capability_goal){
+                if(f->capability_count == f->capability_goal){
                     f->redundancy_ctrl_timeout = get_current_time() + CAPABILITY_RESEND_TIMEOUT;
                 }
 
@@ -228,4 +238,7 @@ void CapabilityHost::send_capability(){
     else{
         //do nothing, no unfinished flow
     }
+
+    if(could_schd_better)
+        this->could_better_schd_count++;
 }

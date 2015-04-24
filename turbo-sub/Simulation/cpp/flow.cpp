@@ -49,6 +49,8 @@ Flow::Flow(uint32_t id, double start_time, uint32_t size,
   this->ack_pkt_drop = 0;
   this->flow_priority = 0;
   this->first_byte_send_time = -1;
+  this->first_hop_departure = 0;
+  this->last_hop_departure = 0;
 }
 
 Flow::~Flow() {

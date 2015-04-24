@@ -94,8 +94,8 @@ void MagicHost::schedule() {
                 f->schedule_time = get_current_time();
                 f->total_waiting_time += get_current_time() - f->last_pkt_sent_at;
                 assert(((MagicHost*)(f->src))->flow_sending == NULL);
-                if(debug_flow(f->id))
-                    std::cout << get_current_time() << "!!!!!!!!! host:" << f->src->id << " flow_sending setting to f " << f->id << "\n";
+                //if(debug_flow(f->id))
+                //    std::cout << get_current_time() << "!!!!!!!!! host:" << f->src->id << " flow_sending setting to f " << f->id << "\n";
 
                 ((MagicHost*)(f->src))->flow_sending = f;
                 int pkt_to_schd = std::max((unsigned)1, std::min((unsigned)params.reauth_limit, f->remaining_pkt()));
@@ -192,6 +192,8 @@ void MagicHost::send() {
         //queue free, try send and schedule another HostProcessingEvent
         if(this->flow_sending)
         {
+            if(debug_flow(this->flow_sending->id))
+                std::cout << get_current_time() << " flow " << this->flow_sending->id << " send pkt " << this->flow_sending->total_pkt_sent << "\n";
             this->flow_sending->send_pending_data();
             this->is_host_proc_event_a_timeout = false;
         }

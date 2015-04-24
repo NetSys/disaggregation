@@ -80,6 +80,8 @@ void Queue::drop(Packet *packet) {
         << " type:" << packet->type << " seq:" << packet->seq_no
         << " at queue id:" << this->id << " loc:" << this->location << "\n";
 
+
+
   delete packet;
 }
 
@@ -208,8 +210,14 @@ Packet * PFabricQueue::deque() {
 
     //std::cout << get_current_time() <<  " queue.cpp:200 deque pkt ptr:" << p << " id:" << p->unique_id << "qid:" << this->unique_id << "\n" << std::flush;
     p->total_queuing_delay += get_current_time() - p->last_enque_time;
-    if(p->type ==  NORMAL_PACKET && p->flow->first_byte_send_time < 0)
-        p->flow->first_byte_send_time = get_current_time();
+    if(p->type ==  NORMAL_PACKET){
+        if(p->flow->first_byte_send_time < 0)
+            p->flow->first_byte_send_time = get_current_time();
+        if(this->location == 0)
+            p->flow->first_hop_departure++;
+        if(this->location == 3)
+            p->flow->last_hop_departure++;
+    }
     return p;
 
   } else {

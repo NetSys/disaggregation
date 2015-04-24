@@ -32,14 +32,15 @@ public:
     double top_capability_timeout();
     int remaining_pkts();
     void assign_init_capability();
-    void set_capability_sent_count();
+    void set_capability_count();
     int capability_gap();
     void relax_capability_gap();
     int init_capa_size();
 
     std::priority_queue<Capability*, std::vector<Capability*>, CapabilityComparator> capabilities;
     bool finished_at_receiver;
-    int capability_sent_count;
+    int capability_count;
+    int capability_packet_sent_count;
     double redundancy_ctrl_timeout;
     int capability_goal;
     int remaining_pkts_at_sender;

@@ -40,7 +40,7 @@ struct DCExpParams {
   int burst_at_beginning;
 };
 
-#define CAPABILITY_TIMEOUT 0.0000018
+#define CAPABILITY_TIMEOUT 0.0000024
 #define CAPABILITY_RESEND_TIMEOUT 0.000010
 #define CAPABILITY_INITIAL 8
 #define CAPABILITY_WINDOW 10

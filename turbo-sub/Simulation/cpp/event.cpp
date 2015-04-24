@@ -165,11 +165,13 @@ void FlowFinishedEvent::process_event() {
           << flow->data_pkt_drop << "/" << flow->ack_pkt_drop << "/" << flow->pkt_drop << " ";
         if(params.flow_type == FOUNTAIN_FLOW_PIPELINE_SCHEDULING_HOST)
             std::cout << ((FountainFlowWithPipelineSchedulingHost*)flow)->first_send_time - flow->start_time << " ";
-        if(params.flow_type == CAPABILITY_FLOW){
-            std::cout << ((CapabilityFlow*)flow)->capability_sent_count << " ";
+        if(params.flow_type == CAPABILITY_FLOW)
+        {
+            std::cout << ((CapabilityFlow*)flow)->capability_count << " ";
         }
         std::cout << 1000000 * (flow->first_byte_send_time - flow->start_time) << " ";
         std::cout << std::endl;
+        std::cout << std::setprecision(9) << std::fixed ;
     }
 }
 

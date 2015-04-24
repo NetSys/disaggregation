@@ -44,10 +44,10 @@ schemes = {
 }
 nflow = [100]
 load = [0.6, 0.8]
-#fsize = ["00short", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
-fsize = ["aditya", "dctcp", "datamining"]
+fsize = ["00short", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
+#fsize = ["aditya", "dctcp", "datamining"]
 skew =  [0.0]
-smooth = 1
+smooth = 0
 
 for sh in schemes:
 	for l in load:
