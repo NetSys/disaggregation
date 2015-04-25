@@ -101,6 +101,7 @@ void CapabilityHost::send(){
     }
     else
     {
+        bool pkt_sent = false;
         std::queue<CapabilityFlow*> flows_tried;
         while(!this->active_sending_flows.empty()){
             if(this->active_sending_flows.top()->finished){
@@ -114,6 +115,7 @@ void CapabilityHost::send(){
             if(top_flow->has_capability())
             {
                 top_flow->send_pending_data();
+                pkt_sent = true;
                 break;
             }
             else{
@@ -122,6 +124,9 @@ void CapabilityHost::send(){
             }
 
         }
+
+        //if(!pkt_sent && flows_tried.size() > 0)
+        //    flows_tried.front()->send_pending_data_low_prio();
 
         while(!flows_tried.empty())
         {

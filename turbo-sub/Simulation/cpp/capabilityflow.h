@@ -23,7 +23,8 @@ public:
     virtual void start_flow();
     virtual void send_pending_data();
     virtual void receive(Packet *p);
-    Packet* send(uint32_t seq, int capa_seq);
+    void send_pending_data_low_prio();
+    Packet* send(uint32_t seq, int capa_seq, int priority);
     void send_capability_pkt();
     void send_rts_pkt();
     bool has_capability();

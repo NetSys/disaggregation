@@ -40,7 +40,7 @@ experiments = {}
 
 schemes = {
 	"pfabric" : [2, 1],
-	"capability-prio" : [112, 12],
+	"capability-prio-turbo" : [112, 12],
 }
 nflow = [100]
 load = [0.6, 0.8]

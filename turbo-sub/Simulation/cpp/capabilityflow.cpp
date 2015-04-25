@@ -46,7 +46,8 @@ void CapabilityFlow::start_flow()
 void CapabilityFlow::send_pending_data()
 {
     int capa_seq = this->use_capability();
-    Packet *p = this->send(next_seq_no, capa_seq);
+
+    Packet *p = this->send(next_seq_no, capa_seq, this->size_in_pkt > CAPABILITY_INITIAL?2:1);
     next_seq_no += mss;
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " send pkt " << this->total_pkt_sent << "\n";
@@ -57,6 +58,20 @@ void CapabilityFlow::send_pending_data()
     add_to_event_queue(((SchedulingHost*) src)->host_proc_event);
 }
 
+
+void CapabilityFlow::send_pending_data_low_prio()
+{
+
+    Packet *p = this->send(this->next_seq_no, -1, 9);
+    next_seq_no += mss;
+    if(debug_flow(this->id))
+        std::cout << get_current_time() << " flow " << this->id << " send pkt " << this->total_pkt_sent << "\n";
+
+    double td = src->queue->get_transmission_delay(p->size);
+    assert(((SchedulingHost*) src)->host_proc_event == NULL);
+    ((SchedulingHost*) src)->host_proc_event = new HostProcessingEvent(get_current_time() + td + INFINITESIMAL_TIME, (SchedulingHost*) src);
+    add_to_event_queue(((SchedulingHost*) src)->host_proc_event);
+}
 
 
 void CapabilityFlow::receive(Packet *p)
@@ -134,12 +149,9 @@ void CapabilityFlow::receive(Packet *p)
 }
 
 
-Packet* CapabilityFlow::send(uint32_t seq, int capa_seq)
+Packet* CapabilityFlow::send(uint32_t seq, int capa_seq, int priority)
 {
-    uint32_t priority = 1;
     this->latest_data_pkt_send_time = get_current_time();
-    if(this->size_in_pkt > CAPABILITY_INITIAL)
-        priority = 2;
     Packet *p = new Packet(get_current_time(), this, seq, priority, mss + hdr_size, src, dst);
     p->capability_seq_num_in_data = capa_seq;
     total_pkt_sent++;
