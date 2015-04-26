@@ -46,6 +46,8 @@ struct DCExpParams {
 #define CAPABILITY_WINDOW 10
 #define CAPABILITY_WINDOW_TIMEOUT 0.000010
 
+#define CAPABILITY_MEASURE_WASTE false
+
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 
 /* General main function */

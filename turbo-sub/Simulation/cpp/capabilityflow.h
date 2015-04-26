@@ -9,6 +9,7 @@ struct Capability //for extendability
 {
     double timeout;
     int seq_num;
+    bool has_idle_sibling_sender;
 };
 
 class CapabilityComparator{
@@ -37,11 +38,13 @@ public:
     int capability_gap();
     void relax_capability_gap();
     int init_capa_size();
+    bool has_sibling_idle_source();
 
     std::priority_queue<Capability*, std::vector<Capability*>, CapabilityComparator> capabilities;
     bool finished_at_receiver;
     int capability_count;
     int capability_packet_sent_count;
+    int capability_waste_count;
     double redundancy_ctrl_timeout;
     int capability_goal;
     int remaining_pkts_at_sender;

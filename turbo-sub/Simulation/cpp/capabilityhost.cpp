@@ -6,6 +6,7 @@
 #include "packet.h"
 #include "debug.h"
 #include "params.h"
+#include <stdlib.h>
 
 #include "capabilityflow.h"
 #include "capabilityhost.h"
@@ -125,8 +126,16 @@ void CapabilityHost::send(){
 
         }
 
-        //if(!pkt_sent && flows_tried.size() > 0)
-        //    flows_tried.front()->send_pending_data_low_prio();
+//        if(!pkt_sent && flows_tried.size() > 0){
+//            int f_index = rand()%flows_tried.size();
+//            for(int i = 0; i <= f_index;i++){
+//                if(i == f_index)
+//                    flows_tried.front()->send_pending_data_low_prio();
+//                CapabilityFlow* cf = flows_tried.front();
+//                flows_tried.pop();
+//                flows_tried.push(cf);
+//            }
+//        }
 
         while(!flows_tried.empty())
         {
@@ -142,6 +151,28 @@ void CapabilityHost::send(){
 bool CapabilityHost::check_better_schedule(CapabilityFlow* f)
 {
     return ((CapabilityHost*)f->src)->active_sending_flows.top() == f;
+}
+
+bool CapabilityHost::is_sender_idle(){
+    bool idle = true;
+    std::queue<CapabilityFlow*> flows_tried;
+    while(!this->active_sending_flows.empty())
+    {
+        CapabilityFlow* f = this->active_sending_flows.top();
+        this->active_sending_flows.pop();
+        flows_tried.push(f);
+        if(f->has_capability()){
+            idle = false;
+            break;
+        }
+    }
+    while(!flows_tried.empty())
+    {
+        this->active_sending_flows.push(flows_tried.front());
+        flows_tried.pop();
+    }
+
+    return idle;
 }
 
 void CapabilityHost::send_capability(){

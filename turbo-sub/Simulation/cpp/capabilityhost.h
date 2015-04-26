@@ -33,6 +33,7 @@ public:
     void send_capability();
     void schedule_capa_proc_evt(double time, bool is_timeout);
     bool check_better_schedule(CapabilityFlow* f);
+    bool is_sender_idle();
     std::priority_queue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparatorAtReceiver> active_receiving_flows;
     CapabilityProcessingEvent *capa_proc_evt;
     int hold_on;

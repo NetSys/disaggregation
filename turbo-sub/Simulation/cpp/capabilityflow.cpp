@@ -33,6 +33,7 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     this->latest_cap_sent_time = start_time;
     this->latest_data_pkt_send_time = start_time;
     this->capability_packet_sent_count = 0;
+    this->capability_waste_count = 0;
 }
 
 
@@ -113,6 +114,13 @@ void CapabilityFlow::receive(Packet *p)
     else if(p->type == CAPABILITY_PACKET)
     {
         Capability* c = new Capability();
+        if(CAPABILITY_MEASURE_WASTE)
+        {
+            if(this->has_sibling_idle_source())
+                c->has_idle_sibling_sender = true;
+            else
+                c->has_idle_sibling_sender = false;
+        }
         c->timeout = get_current_time() + ((CapabilityPkt*)p)->ttl;
         c->seq_num = ((CapabilityPkt*)p)->cap_seq_num;
         this->capabilities.push(c);
@@ -148,6 +156,33 @@ void CapabilityFlow::receive(Packet *p)
     delete p;
 }
 
+bool CapabilityFlow::has_sibling_idle_source()
+{
+    bool has_idle = false;
+    CapabilityHost* dst = (CapabilityHost*)this->dst;
+    std::queue<CapabilityFlow*> flows_tried;
+    while(!dst->active_receiving_flows.empty())
+    {
+        CapabilityFlow* f = dst->active_receiving_flows.top();
+        dst->active_receiving_flows.pop();
+        flows_tried.push(f);
+        if(f != this && f->redundancy_ctrl_timeout <= get_current_time()
+                && ((CapabilityHost*)(f->src))->is_sender_idle())
+        {
+            has_idle = true;
+            break;
+        }
+
+    }
+
+    while(!flows_tried.empty())
+    {
+        dst->active_receiving_flows.push(flows_tried.front());
+        flows_tried.pop();
+    }
+
+    return has_idle;
+}
 
 Packet* CapabilityFlow::send(uint32_t seq, int capa_seq, int priority)
 {
@@ -202,6 +237,10 @@ bool CapabilityFlow::has_capability(){
         //expired capability
         if(this->capabilities.top()->timeout < get_current_time())
         {
+            if(CAPABILITY_MEASURE_WASTE){
+                this->capability_waste_count += this->capabilities.top()->has_idle_sibling_sender?1:0;
+            }
+
             delete this->capabilities.top();
             this->capabilities.pop();
         }

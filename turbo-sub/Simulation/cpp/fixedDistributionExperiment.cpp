@@ -287,7 +287,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   Stats slowdown, inflation, fct, oracle_fct, first_send_time;
   Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop;
   std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size, capa_sent_by_size,
-      fct_by_size, drop_rate_by_size, wait_time_by_size, first_hop_depart_by_size, last_hop_depart_by_size;
+      fct_by_size, drop_rate_by_size, wait_time_by_size, first_hop_depart_by_size, last_hop_depart_by_size,
+      capa_waste_by_size;
 
   std::cout << std::setprecision(4) ;
 
@@ -308,6 +309,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
         capa_sent_by_size[f->size_in_pkt] = new Stats();
         first_hop_depart_by_size[f->size_in_pkt] = new Stats();
         last_hop_depart_by_size[f->size_in_pkt] = new Stats();
+        capa_waste_by_size[f->size_in_pkt] = new Stats();
     }
     slowdown_by_size[f->size_in_pkt]->input_data(slow);
     queuing_delay_by_size[f->size_in_pkt]->input_data(f->get_avg_queuing_delay_in_us());
@@ -316,8 +318,10 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     wait_time_by_size[f->size_in_pkt]->input_data(f->first_byte_send_time - f->start_time);
     first_hop_depart_by_size[f->size_in_pkt]->input_data(f->first_hop_departure);
     last_hop_depart_by_size[f->size_in_pkt]->input_data(f->last_hop_departure);
-    if(params.flow_type == CAPABILITY_FLOW)
+    if(params.flow_type == CAPABILITY_FLOW){
         capa_sent_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_count);
+        capa_waste_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_waste_count);
+    }
 
     slowdown += slow;
     inflation += (double)f->total_pkt_sent / (f->size/f->mss);
@@ -346,6 +350,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
       if(params.flow_type == CAPABILITY_FLOW)
           std::cout << " DC:" <<  (capa_sent_by_size[it->first]->total() - first_hop_depart_by_size[it->first]->total())/capa_sent_by_size[it->first]->total();
       std::cout << " DP:" << (first_hop_depart_by_size[it->first]->total() - last_hop_depart_by_size[it->first]->total())/first_hop_depart_by_size[it->first]->total();
+      std::cout << " WST:" << capa_waste_by_size[it->first]->total()/capa_sent_by_size[it->first]->total();
       std::cout << "    ";
   }
   std::cout << "\n";
