@@ -266,7 +266,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     flow_arrivals.push_back(new FlowArrivalEvent(f->start_time, f));
   }
 
-  //add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
+  add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
 
   std::cout << "Running " << num_flows << " Flows\nCDF_File " <<
     params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
@@ -318,7 +318,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     wait_time_by_size[f->size_in_pkt]->input_data(f->first_byte_send_time - f->start_time);
     first_hop_depart_by_size[f->size_in_pkt]->input_data(f->first_hop_departure);
     last_hop_depart_by_size[f->size_in_pkt]->input_data(f->last_hop_departure);
-    if(params.flow_type == CAPABILITY_FLOW){
+    if(params.flow_type == CAPABILITY_FLOW)
+    {
         capa_sent_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_count);
         capa_waste_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_waste_count);
     }

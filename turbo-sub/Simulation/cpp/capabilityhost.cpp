@@ -19,6 +19,7 @@ extern DCExpParams params;
 
 bool CapabilityFlowComparator::operator() (CapabilityFlow* a, CapabilityFlow* b){
     //return a->remaining_pkts_at_sender > b->remaining_pkts_at_sender;
+
     if(a->remaining_pkts_at_sender > b->remaining_pkts_at_sender)
         return true;
     else if(a->remaining_pkts_at_sender == b->remaining_pkts_at_sender)
@@ -32,13 +33,19 @@ bool CapabilityFlowComparator::operator() (CapabilityFlow* a, CapabilityFlow* b)
 bool CapabilityFlowComparatorAtReceiver::operator() (CapabilityFlow* a, CapabilityFlow* b){
     //return a->size_in_pkt > b->size_in_pkt;
 
-    if(a->remaining_pkts() > b->remaining_pkts())
+    if(a->notified_num_flow_at_sender > b->notified_num_flow_at_sender)
         return true;
-    else if (a->remaining_pkts() == b->remaining_pkts())
-        return a->start_time > b->start_time; //TODO: this is cheating. but not a big problem
+    else if(a->notified_num_flow_at_sender == b->notified_num_flow_at_sender)
+    {
+        if(a->remaining_pkts() > b->remaining_pkts())
+            return true;
+        else if (a->remaining_pkts() == b->remaining_pkts())
+            return a->start_time > b->start_time; //TODO: this is cheating. but not a big problem
+        else
+            return false;
+    }
     else
         return false;
-
     //return a->latest_cap_sent_time > b->latest_cap_sent_time;
     //return a->start_time > b->start_time;
 }
@@ -50,6 +57,7 @@ CapabilityHost::CapabilityHost(uint32_t id, double rate, uint32_t queue_type)
     this->hold_on = 0;
     this->total_capa_schd_evt_count = 0;
     this->could_better_schd_count = 0;
+    this->sender_notify_evt = NULL;
 }
 
 void CapabilityHost::start_capability_flow(CapabilityFlow* f){
@@ -62,6 +70,8 @@ void CapabilityHost::start_capability_flow(CapabilityFlow* f){
     if(f->has_capability() && ((CapabilityHost*)(f->src))->host_proc_event == NULL){
         ((CapabilityHost*)(f->src))->schedule_host_proc_evt();
     }
+    if(CAPABILITY_NOTIFY_BLOCKING && this->sender_notify_evt == NULL)
+        this->notify_flow_status();
 }
 
 void CapabilityHost::schedule_host_proc_evt(){
@@ -88,6 +98,13 @@ void CapabilityHost::schedule_capa_proc_evt(double time, bool is_timeout)
     assert(this->capa_proc_evt == NULL);
     this->capa_proc_evt = new CapabilityProcessingEvent(get_current_time() + time + INFINITESIMAL_TIME, this, is_timeout);
     add_to_event_queue(this->capa_proc_evt);
+}
+
+void CapabilityHost::schedule_sender_notify_evt()
+{
+    assert(this->sender_notify_evt == NULL);
+    this->sender_notify_evt = new SenderNotifyEvent(get_current_time() + 0.000020 + INFINITESIMAL_TIME, this);
+    add_to_event_queue(this->sender_notify_evt);
 }
 
 
@@ -126,16 +143,17 @@ void CapabilityHost::send(){
 
         }
 
-//        if(!pkt_sent && flows_tried.size() > 0){
-//            int f_index = rand()%flows_tried.size();
-//            for(int i = 0; i <= f_index;i++){
-//                if(i == f_index)
-//                    flows_tried.front()->send_pending_data_low_prio();
-//                CapabilityFlow* cf = flows_tried.front();
-//                flows_tried.pop();
-//                flows_tried.push(cf);
-//            }
-//        }
+//        //code for 4th priority level
+        if(CAPABILITY_FOURTH_LEVEL && !pkt_sent && flows_tried.size() > 0){
+            int f_index = rand()%flows_tried.size();
+            for(int i = 0; i <= f_index;i++){
+                if(i == f_index)
+                    flows_tried.front()->send_pending_data_low_prio();
+                CapabilityFlow* cf = flows_tried.front();
+                flows_tried.pop();
+                flows_tried.push(cf);
+            }
+        }
 
         while(!flows_tried.empty())
         {
@@ -146,6 +164,33 @@ void CapabilityHost::send(){
 
     }
 
+}
+
+void CapabilityHost::notify_flow_status()
+{
+    std::queue<CapabilityFlow*> flows_tried;
+    int num_large_flow = 0;
+
+    while(!this->active_sending_flows.empty())
+    {
+        CapabilityFlow* f = this->active_sending_flows.top();
+        this->active_sending_flows.pop();
+        if(!f->finished){
+            flows_tried.push(f);
+            if(f->size_in_pkt > CAPABILITY_INITIAL)
+                num_large_flow++;
+        }
+    }
+
+    while(!flows_tried.empty()){
+        this->active_sending_flows.push(flows_tried.front());
+        if(flows_tried.front()->size_in_pkt > CAPABILITY_INITIAL)
+            flows_tried.front()->send_notify_pkt(num_large_flow>2?2:1);
+        flows_tried.pop();
+    }
+
+    if(!this->active_sending_flows.empty())
+        this->schedule_sender_notify_evt();
 }
 
 bool CapabilityHost::check_better_schedule(CapabilityFlow* f)

@@ -15,6 +15,7 @@
 #define OFFER_PACKET 5
 #define DECISION_PACKET 6
 #define CAPABILITY_PACKET 7
+#define STATUS_PACKET 8
 
 class Packet {
 
@@ -102,6 +103,13 @@ public:
     double ttl;
     int remaining_sz;
     int cap_seq_num;
+};
+
+class StatusPkt : public Packet{
+public:
+    StatusPkt(Flow *flow, Host *src, Host *dst, int num_flows_at_sender);
+    double ttl;
+    bool num_flows_at_sender;
 };
 
 #endif

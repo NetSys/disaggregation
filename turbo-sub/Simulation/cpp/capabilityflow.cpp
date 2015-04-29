@@ -34,6 +34,7 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     this->latest_data_pkt_send_time = start_time;
     this->capability_packet_sent_count = 0;
     this->capability_waste_count = 0;
+    this->notified_num_flow_at_sender = 1;
 }
 
 
@@ -153,6 +154,14 @@ void CapabilityFlow::receive(Packet *p)
             ((CapabilityHost*)(this->dst))->schedule_capa_proc_evt(0, false);
         }
     }
+    else if(p->type == STATUS_PACKET)
+    {
+        if(CAPABILITY_NOTIFY_BLOCKING){
+            StatusPkt* s = (StatusPkt*) p;
+            this->notified_num_flow_at_sender = s->num_flows_at_sender;
+        }
+
+    }
     delete p;
 }
 
@@ -225,6 +234,13 @@ void CapabilityFlow::send_capability_pkt(){
     this->capability_packet_sent_count++;
     this->latest_cap_sent_time = get_current_time();
     add_to_event_queue(new PacketQueuingEvent(get_current_time(), cp, dst->queue));
+}
+
+void CapabilityFlow::send_notify_pkt(int num_flows_at_sender){
+    if(debug_flow(this->id))
+        std::cout << get_current_time() << " flow " << this->id << " send notify " << num_flows_at_sender << "\n";
+    StatusPkt* cp = new StatusPkt(this, this->src, this->dst, num_flows_at_sender);
+    add_to_event_queue(new PacketQueuingEvent(get_current_time(), cp, src->queue));
 }
 
 void CapabilityFlow::send_rts_pkt(){

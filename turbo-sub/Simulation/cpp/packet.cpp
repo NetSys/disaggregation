@@ -87,3 +87,8 @@ CapabilityPkt::CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int r
   this->remaining_sz = remaining;
   this->cap_seq_num = cap_seq_num;
 }
+
+StatusPkt::StatusPkt(Flow *flow, Host *src, Host *dst, int num_flows_at_sender) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
+    this->type = STATUS_PACKET;
+    this->num_flows_at_sender = num_flows_at_sender;
+}

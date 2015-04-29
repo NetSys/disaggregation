@@ -39,11 +39,11 @@ def get_mean_flow_size(cdf_file):
 experiments = {}
 
 schemes = {
-	"pfabric" : [2, 1],
+#	"pfabric" : [2, 1],
 	"capability-prio-turbo" : [112, 12],
 }
 nflow = [100]
-load = [0.6, 0.8]
+load = [0.6]
 fsize = ["00short", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
 #fsize = ["aditya", "dctcp", "datamining"]
 skew =  [0.0]
