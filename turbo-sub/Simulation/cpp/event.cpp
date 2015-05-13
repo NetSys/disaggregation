@@ -387,7 +387,7 @@ void LoggingEvent::process_event() {
     << " StartedFlows " << started_flows << "\n";
 
   if (!finished_simulation && ttl > get_current_time()) {
-    add_to_event_queue(new LoggingEvent(current_time + 0.001, ttl));
+    add_to_event_queue(new LoggingEvent(current_time + 0.01, ttl));
   }
 }
 
@@ -443,4 +443,16 @@ void MagicHostScheduleEvent::process_event() {
     this->host->try_send();
 }
 
+
+SenderNotifyEvent::SenderNotifyEvent(double time, CapabilityHost* h) : Event(SENDER_NOTIFY, time) {
+    this->host = h;
+}
+
+SenderNotifyEvent::~SenderNotifyEvent() {
+}
+
+void SenderNotifyEvent::process_event() {
+    this->host->sender_notify_evt = NULL;
+    this->host->notify_flow_status();
+}
 

@@ -26,9 +26,16 @@ host_type: {4}
 traffic_imbalance: {5}
 load: {6}
 reauth_limit: 3
+magic_trans_slack: 1.1
+magic_delay_scheduling: 1
 use_flow_trace: 0
 smooth_cdf: {7}
-burst_at_beginning: 0
+burst_at_beginning: {8}
+capability_timeout: 0.0000024
+capability_resend_timeout: 0.000010
+capability_initial: 8
+capability_window: 9
+capability_window_timeout: 0.000010
 '''
 
 def get_mean_flow_size(cdf_file):
@@ -39,15 +46,19 @@ def get_mean_flow_size(cdf_file):
 experiments = {}
 
 schemes = {
-	"pfabric" : [2, 1],
-	"capability-prio-turbo" : [112, 12],
+#	"pfabric" : [2, 1],
+#	"capability-prio-turbo" : [112, 12],
+	"magic" : [113, 13]
 }
-nflow = [100]
-load = [0.6, 0.8]
+
+nflow = [200]
+load = [0.6, 0.7, 0.8]
+#load = ["burst"]
 fsize = ["00short", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
 #fsize = ["aditya", "dctcp", "datamining"]
-skew =  [0.0]
+skew =  [0.0, 1.0, 2.0]
 smooth = 0
+
 
 for sh in schemes:
 	for l in load:
@@ -55,7 +66,7 @@ for sh in schemes:
 	        for s in skew:
 	        	for nf in nflow:
 		            key = sh + '_' + f + '_load' + str(l) + '_skew' + str(s) + '_' + str(nf) + 'k'
-		            value = [schemes[sh][0], nf * 1000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), schemes[sh][1], s, l, smooth]
+		            value = [schemes[sh][0], nf * 1000, "../CDF_" + f + ".txt", get_mean_flow_size("../CDF_" + f + ".txt"), schemes[sh][1], s, 0 if l == "burst" else l, smooth, 1 if l == "burst" else 0]
 		            experiments[key] = value
     
 

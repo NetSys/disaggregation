@@ -2,7 +2,7 @@
 #define CAPABILITY_FLOW_H
 
 #include "fountainflow.h"
-
+#include "custompriorityqueue.h"
 
 
 struct Capability //for extendability
@@ -27,6 +27,7 @@ public:
     void send_pending_data_low_prio();
     Packet* send(uint32_t seq, int capa_seq, int priority);
     void send_capability_pkt();
+    void send_notify_pkt(int);
     void send_rts_pkt();
     bool has_capability();
     int use_capability();
@@ -52,6 +53,7 @@ public:
     double latest_cap_sent_time;
     bool rts_received;
     double latest_data_pkt_send_time;
+    int notified_num_flow_at_sender;
 };
 
 

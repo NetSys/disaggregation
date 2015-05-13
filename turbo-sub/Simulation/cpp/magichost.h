@@ -29,6 +29,7 @@ public:
     void try_send();
     void send();
     Flow* flow_sending;
+    MagicFlow* flow_receiving;
     //Flow* flow_receiving;
     double recv_busy_until;
     bool is_host_proc_event_a_timeout;

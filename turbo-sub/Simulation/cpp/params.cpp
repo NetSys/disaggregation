@@ -1,42 +1,126 @@
 #include "params.h"
 
+#include <assert.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 DCExpParams params;
 
 /* Read parameters from a config file */
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
     std::ifstream input(conf_filename);
+    std::string line;
+    std::string key;
+    while (std::getline(input, line)) {
+        std::istringstream lineStream(line);
+        if (line.empty()) {
+            continue;
+        }
 
-    std::string temp;
-    input >> temp; input >> params.initial_cwnd;
-    input >> temp; input >> params.max_cwnd;
-    input >> temp; input >> params.retx_timeout_value;
-    input >> temp; input >> params.queue_size;
-    input >> temp; input >> params.propagation_delay;
-    input >> temp; input >> params.bandwidth;
-    input >> temp; input >> params.queue_type;
-    input >> temp; input >> params.flow_type;
 
-    input >> temp;
-    if (exp_type == DC_EXP_CONTINUOUS_FLOWMODEL) {
-        input >> params.end_time;
+        lineStream >> key;
+        assert(key[key.length()-1] == ':');
+        key = key.substr(0, key.length()-1);
+        if (key == "init_cwnd") {
+            lineStream >> params.initial_cwnd;
+        }
+        else if (key == "max_cwnd") {
+            lineStream >> params.max_cwnd;
+        }
+        else if (key == "retx_timeout") {
+            lineStream >> params.retx_timeout_value;
+        }
+        else if (key == "queue_size") {
+            lineStream >> params.queue_size;
+        }
+        else if (key == "propagation_delay") {
+            lineStream >> params.propagation_delay;
+        }
+        else if (key == "bandwidth") {
+            lineStream >> params.bandwidth;
+        }
+        else if (key == "queue_type") {
+            lineStream >> params.queue_type;
+        }
+        else if (key == "flow_type") {
+            lineStream >> params.flow_type;
+        }
+        else if (key == "num_flow") {
+            lineStream >> params.num_flows_to_run;
+        }
+        else if (key == "flow_trace") {
+            lineStream >> params.cdf_or_flow_trace;
+        }
+        else if (key == "cut_through") {
+            lineStream >> params.cut_through;
+        }
+        else if (key == "mean_flow_size") {
+            lineStream >> params.mean_flow_size;
+        }
+        else if (key == "load_balancing") {
+            lineStream >> params.load_balancing;
+        }
+        else if (key == "preemptive_queue") {
+            lineStream >> params.preemptive_queue;
+        }
+        else if (key == "big_switch") {
+            lineStream >> params.big_switch;
+        }
+        else if (key == "host_type") {
+            lineStream >> params.host_type;
+        }
+        else if (key == "imbalance") {
+            lineStream >> params.traffic_imbalance;
+        }
+        else if (key == "load") {
+            lineStream >> params.load;
+        }
+        else if (key == "traffic_imbalance") {
+            lineStream >> params.traffic_imbalance;
+        }
+        else if (key == "reauth_limit") {
+            lineStream >> params.reauth_limit;
+        }
+        else if (key == "magic_trans_slack") {
+            lineStream >> params.magic_trans_slack;
+        }
+        else if (key == "magic_delay_scheduling") {
+            lineStream >> params.magic_delay_scheduling;
+        }
+        else if (key == "capability_timeout") {
+            lineStream >> params.capability_timeout;
+        }
+        else if (key == "use_flow_trace") {
+            lineStream >> params.use_flow_trace;
+        }
+        else if (key == "smooth_cdf") {
+            lineStream >> params.smooth_cdf;
+        }
+        else if (key == "burst_at_beginning") {
+            lineStream >> params.burst_at_beginning;
+        }
+        else if (key == "capability_resend_timeout") {
+            lineStream >> params.capability_resend_timeout;
+        }
+        else if (key == "capability_initial") {
+            lineStream >> params.capability_initial;
+        }
+        else if (key == "capability_window") {
+            lineStream >> params.capability_window;
+        }
+        else if (key == "capability_window_timeout") {
+            lineStream >> params.capability_window_timeout;
+        }
+        else {
+            std::cout << "Unknown conf param: " << key << " in file: " << conf_filename << "\n";
+            assert(false);
+        }
+
+        params.param_str.append(line);
+        params.param_str.append(", ");
     }
-    else {
-        input >> params.num_flows_to_run;
-    }
 
-    input >> temp; input >> params.cdf_or_flow_trace;
-    input >> temp; input >> params.cut_through;
-    input >> temp; input >> params.mean_flow_size;
-    input >> temp; input >> params.load_balancing;
-    input >> temp; input >> params.preemptive_queue;
-    input >> temp; input >> params.big_switch;
-    input >> temp; input >> params.host_type;
-    input >> temp; input >> params.traffic_imbalance;
-    input >> temp; input >> params.load;
-    input >> temp; input >> params.reauth_limit;
-    input >> temp; input >> params.use_flow_trace;
-    input >> temp; input >> params.smooth_cdf;
-    input >> temp; input >> params.burst_at_beginning;
     params.hdr_size = 40;
     params.mss = 1460;
 }

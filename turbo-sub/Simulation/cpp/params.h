@@ -5,6 +5,7 @@
 #include <fstream>
 
 struct DCExpParams {
+  std::string param_str;
 
   int initial_cwnd;
   int max_cwnd;
@@ -34,19 +35,28 @@ struct DCExpParams {
   int host_type;
   double traffic_imbalance;
   double load;
+
   double reauth_limit;
+
+  double magic_trans_slack;
+  int magic_delay_scheduling;
+
   int use_flow_trace;
   int smooth_cdf;
   int burst_at_beginning;
+  double capability_timeout;
+  double capability_resend_timeout;
+  int capability_initial;
+  int capability_window;
+  double capability_window_timeout;
+
+
 };
 
-#define CAPABILITY_TIMEOUT 0.0000024
-#define CAPABILITY_RESEND_TIMEOUT 0.000010
-#define CAPABILITY_INITIAL 8
-#define CAPABILITY_WINDOW 10
-#define CAPABILITY_WINDOW_TIMEOUT 0.000010
 
 #define CAPABILITY_MEASURE_WASTE false
+#define CAPABILITY_FOURTH_LEVEL false
+#define CAPABILITY_NOTIFY_BLOCKING false
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 

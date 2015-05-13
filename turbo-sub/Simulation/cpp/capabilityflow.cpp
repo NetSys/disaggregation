@@ -34,6 +34,7 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     this->latest_data_pkt_send_time = start_time;
     this->capability_packet_sent_count = 0;
     this->capability_waste_count = 0;
+    this->notified_num_flow_at_sender = 1;
 }
 
 
@@ -48,7 +49,7 @@ void CapabilityFlow::send_pending_data()
 {
     int capa_seq = this->use_capability();
 
-    Packet *p = this->send(next_seq_no, capa_seq, this->size_in_pkt > CAPABILITY_INITIAL?2:1);
+    Packet *p = this->send(next_seq_no, capa_seq, this->size_in_pkt > params.capability_initial?2:1);
     next_seq_no += mss;
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " send pkt " << this->total_pkt_sent << "\n";
@@ -153,6 +154,14 @@ void CapabilityFlow::receive(Packet *p)
             ((CapabilityHost*)(this->dst))->schedule_capa_proc_evt(0, false);
         }
     }
+    else if(p->type == STATUS_PACKET)
+    {
+        if(CAPABILITY_NOTIFY_BLOCKING){
+            StatusPkt* s = (StatusPkt*) p;
+            this->notified_num_flow_at_sender = s->num_flows_at_sender;
+        }
+
+    }
     delete p;
 }
 
@@ -200,7 +209,7 @@ void CapabilityFlow::assign_init_capability(){
     int init_capa = this->init_capa_size();
     for(int i = 0; i < init_capa; i++){
         Capability* c = new Capability();
-        c->timeout = get_current_time() + init_capa * 0.0000012 + CAPABILITY_TIMEOUT;
+        c->timeout = get_current_time() + init_capa * 0.0000012 + params.capability_timeout;
         c->seq_num = i;
         this->capabilities.push(c);
     }
@@ -220,11 +229,18 @@ void CapabilityFlow::set_capability_count(){
 void CapabilityFlow::send_capability_pkt(){
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " send capa " << this->capability_count << "\n";
-    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, CAPABILITY_TIMEOUT, this->remaining_pkts(), this->capability_count);
+    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, params.capability_timeout, this->remaining_pkts(), this->capability_count);
     this->capability_count++;
     this->capability_packet_sent_count++;
     this->latest_cap_sent_time = get_current_time();
     add_to_event_queue(new PacketQueuingEvent(get_current_time(), cp, dst->queue));
+}
+
+void CapabilityFlow::send_notify_pkt(int num_flows_at_sender){
+    if(debug_flow(this->id))
+        std::cout << get_current_time() << " flow " << this->id << " send notify " << num_flows_at_sender << "\n";
+    StatusPkt* cp = new StatusPkt(this, this->src, this->dst, num_flows_at_sender);
+    add_to_event_queue(new PacketQueuingEvent(get_current_time(), cp, src->queue));
 }
 
 void CapabilityFlow::send_rts_pkt(){
@@ -286,11 +302,11 @@ int CapabilityFlow::capability_gap(){
 void CapabilityFlow::relax_capability_gap()
 {
     assert(this->capability_count - this->largest_cap_seq_received >= 0);
-    this->largest_cap_seq_received = this->capability_count - CAPABILITY_WINDOW;
+    this->largest_cap_seq_received = this->capability_count - params.capability_window;
 }
 
 int CapabilityFlow::init_capa_size(){
-    return this->size_in_pkt <= CAPABILITY_INITIAL?this->size_in_pkt:0;
+    return this->size_in_pkt <= params.capability_initial?this->size_in_pkt:0;
 }
 
 

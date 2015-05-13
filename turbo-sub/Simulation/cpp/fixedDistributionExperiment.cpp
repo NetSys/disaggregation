@@ -77,7 +77,7 @@ Topology *topo) {
 
   ExponentialRandomVariable *nv_intarr;
   if(params.burst_at_beginning)
-      nv_intarr = new ExponentialRandomVariable(0.000000001);
+      nv_intarr = new ExponentialRandomVariable(0.0000001);
   else
       nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_host);
 
@@ -266,7 +266,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     flow_arrivals.push_back(new FlowArrivalEvent(f->start_time, f));
   }
 
-  //add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
+  add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
 
   std::cout << "Running " << num_flows << " Flows\nCDF_File " <<
     params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<
@@ -284,11 +284,12 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   write_flows_to_file(flows_sorted, "flow.tmp");
 
-  Stats slowdown, inflation, fct, oracle_fct, first_send_time;
+  Stats slowdown, inflation, fct, oracle_fct, first_send_time, slowdown_0_100, slowdown_100_inf;
   Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop;
   std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size, capa_sent_by_size,
       fct_by_size, drop_rate_by_size, wait_time_by_size, first_hop_depart_by_size, last_hop_depart_by_size,
       capa_waste_by_size;
+
 
   std::cout << std::setprecision(4) ;
 
@@ -318,12 +319,17 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     wait_time_by_size[f->size_in_pkt]->input_data(f->first_byte_send_time - f->start_time);
     first_hop_depart_by_size[f->size_in_pkt]->input_data(f->first_hop_departure);
     last_hop_depart_by_size[f->size_in_pkt]->input_data(f->last_hop_departure);
-    if(params.flow_type == CAPABILITY_FLOW){
+    if(params.flow_type == CAPABILITY_FLOW)
+    {
         capa_sent_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_count);
         capa_waste_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_waste_count);
     }
 
     slowdown += slow;
+    if(f->size < 100 * 1024)
+        slowdown_0_100 += slow;
+    else
+        slowdown_100_inf += slow;
     inflation += (double)f->total_pkt_sent / (f->size/f->mss);
     fct += (1000000.0 * f->flow_completion_time);
     oracle_fct += topology->get_oracle_fct(f);
@@ -353,6 +359,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
       std::cout << " WST:" << capa_waste_by_size[it->first]->total()/capa_sent_by_size[it->first]->total();
       std::cout << "    ";
   }
+  std::cout << " [0,100k]: " << slowdown_0_100.avg() << " [100k, inf]: " << slowdown_100_inf.avg();
   std::cout << "\n";
 
   printQueueStatistics(topology);
@@ -360,6 +367,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   //debug_flow_stats(flows_to_schedule);
 
+  std::cout << params.param_str << "\n";
 }
 
 

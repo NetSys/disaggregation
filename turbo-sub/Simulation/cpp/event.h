@@ -33,6 +33,7 @@
 #define HOST_PROCESSING 10
 #define CAPABILITY_PROCESSING 11
 #define MAGIC_HOST_SCHEDULE 12
+#define SENDER_NOTIFY 13
 
 class CapabilityHost;
 class CapabilityFlow;
@@ -71,7 +72,7 @@ public:
 struct EventComparator
 {
     bool operator() (Event *a, Event *b) {
-      if (fabs(a->time - b->time) < 1e-12) {
+      if (fabs(a->time - b->time) < 1e-15) {
         return a->type > b->type;
       } else {
         return a->time > b->time;
@@ -201,9 +202,17 @@ public:
 class MagicHostScheduleEvent : public Event {
 public:
     MagicHostScheduleEvent(double time, MagicHost *host);
-  ~MagicHostScheduleEvent();
-  void process_event();
-  MagicHost *host;
+    ~MagicHostScheduleEvent();
+    void process_event();
+    MagicHost *host;
+};
+
+class SenderNotifyEvent : public Event {
+public:
+    SenderNotifyEvent(double time, CapabilityHost *host);
+    ~SenderNotifyEvent();
+    void process_event();
+    CapabilityHost *host;
 };
 
 #endif /* defined(EVENT_H) */

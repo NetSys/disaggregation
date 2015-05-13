@@ -47,6 +47,7 @@ public:
     void receiver_offer_lock(FountainFlowWithPipelineSchedulingHost* f);
     void receiver_offer_unlock();
 
+
     FountainFlowWithPipelineSchedulingHost* current_sending_flow;
     FountainFlowWithPipelineSchedulingHost* next_sending_flow;
     int sender_schedule_state; // 0: nothing is sent, 1: RTS sent,
