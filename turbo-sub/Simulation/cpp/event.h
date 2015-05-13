@@ -72,7 +72,7 @@ public:
 struct EventComparator
 {
     bool operator() (Event *a, Event *b) {
-      if (fabs(a->time - b->time) < 1e-12) {
+      if (fabs(a->time - b->time) < 1e-15) {
         return a->type > b->type;
       } else {
         return a->time > b->time;

@@ -49,7 +49,7 @@ void CapabilityFlow::send_pending_data()
 {
     int capa_seq = this->use_capability();
 
-    Packet *p = this->send(next_seq_no, capa_seq, this->size_in_pkt > CAPABILITY_INITIAL?2:1);
+    Packet *p = this->send(next_seq_no, capa_seq, this->size_in_pkt > params.capability_initial?2:1);
     next_seq_no += mss;
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " send pkt " << this->total_pkt_sent << "\n";
@@ -209,7 +209,7 @@ void CapabilityFlow::assign_init_capability(){
     int init_capa = this->init_capa_size();
     for(int i = 0; i < init_capa; i++){
         Capability* c = new Capability();
-        c->timeout = get_current_time() + init_capa * 0.0000012 + CAPABILITY_TIMEOUT;
+        c->timeout = get_current_time() + init_capa * 0.0000012 + params.capability_timeout;
         c->seq_num = i;
         this->capabilities.push(c);
     }
@@ -229,7 +229,7 @@ void CapabilityFlow::set_capability_count(){
 void CapabilityFlow::send_capability_pkt(){
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " send capa " << this->capability_count << "\n";
-    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, CAPABILITY_TIMEOUT, this->remaining_pkts(), this->capability_count);
+    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, params.capability_timeout, this->remaining_pkts(), this->capability_count);
     this->capability_count++;
     this->capability_packet_sent_count++;
     this->latest_cap_sent_time = get_current_time();
@@ -302,11 +302,11 @@ int CapabilityFlow::capability_gap(){
 void CapabilityFlow::relax_capability_gap()
 {
     assert(this->capability_count - this->largest_cap_seq_received >= 0);
-    this->largest_cap_seq_received = this->capability_count - CAPABILITY_WINDOW;
+    this->largest_cap_seq_received = this->capability_count - params.capability_window;
 }
 
 int CapabilityFlow::init_capa_size(){
-    return this->size_in_pkt <= CAPABILITY_INITIAL?this->size_in_pkt:0;
+    return this->size_in_pkt <= params.capability_initial?this->size_in_pkt:0;
 }
 
 

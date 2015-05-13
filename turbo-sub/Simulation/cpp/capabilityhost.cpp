@@ -145,14 +145,17 @@ void CapabilityHost::send(){
 
 //        //code for 4th priority level
         if(CAPABILITY_FOURTH_LEVEL && !pkt_sent && flows_tried.size() > 0){
-            int f_index = rand()%flows_tried.size();
-            for(int i = 0; i <= f_index;i++){
-                if(i == f_index)
-                    flows_tried.front()->send_pending_data_low_prio();
-                CapabilityFlow* cf = flows_tried.front();
-                flows_tried.pop();
-                flows_tried.push(cf);
+            std::vector<CapabilityFlow*> candidate;
+            for(int i = 0; i < flows_tried.size(); i++){
+                if(flows_tried.front()->size_in_pkt > params.capability_initial)
+                    candidate.push_back(flows_tried.front());
             }
+
+            if(candidate.size()){
+                int f_index = rand()%candidate.size();
+                candidate[f_index]->send_pending_data_low_prio();
+            }
+
         }
 
         while(!flows_tried.empty())
@@ -177,14 +180,14 @@ void CapabilityHost::notify_flow_status()
         this->active_sending_flows.pop();
         if(!f->finished){
             flows_tried.push(f);
-            if(f->size_in_pkt > CAPABILITY_INITIAL)
+            if(f->size_in_pkt > params.capability_initial)
                 num_large_flow++;
         }
     }
 
     while(!flows_tried.empty()){
         this->active_sending_flows.push(flows_tried.front());
-        if(flows_tried.front()->size_in_pkt > CAPABILITY_INITIAL)
+        if(flows_tried.front()->size_in_pkt > params.capability_initial)
             flows_tried.front()->send_notify_pkt(num_large_flow>2?2:1);
         flows_tried.pop();
     }
@@ -269,27 +272,27 @@ void CapabilityHost::send_capability(){
                 f->capability_goal += f->remaining_pkts();
             }
 
-            if(f->capability_gap() > CAPABILITY_WINDOW)
+            if(f->capability_gap() > params.capability_window)
             {
-                if(get_current_time() >= f->latest_cap_sent_time + CAPABILITY_WINDOW_TIMEOUT)
+                if(get_current_time() >= f->latest_cap_sent_time + params.capability_window_timeout)
                     f->relax_capability_gap();
                 else{
-                    if(f->latest_cap_sent_time + CAPABILITY_WINDOW_TIMEOUT < closet_timeout)
+                    if(f->latest_cap_sent_time + params.capability_window_timeout < closet_timeout)
                     {
-                        closet_timeout = f->latest_cap_sent_time + CAPABILITY_WINDOW_TIMEOUT;
+                        closet_timeout = f->latest_cap_sent_time + params.capability_window_timeout;
                     }
                 }
 
             }
 
 
-            if(f->capability_gap() <= CAPABILITY_WINDOW)
+            if(f->capability_gap() <= params.capability_window)
             {
                 f->send_capability_pkt();
                 capability_sent = true;
 
                 if(f->capability_count == f->capability_goal){
-                    f->redundancy_ctrl_timeout = get_current_time() + CAPABILITY_RESEND_TIMEOUT;
+                    f->redundancy_ctrl_timeout = get_current_time() + params.capability_resend_timeout;
                 }
 
                 break;

@@ -24,6 +24,8 @@ double MagicFlow::get_propa_time(){
 
 Packet* MagicFlow::send(uint32_t seq) {
     uint32_t priority = 1;
+    if(this->size_in_pkt > 8)
+        priority = 2;
     //priority = this->remaining_pkt();
     Packet *p = new Packet(get_current_time(), this, seq, priority, mss + hdr_size, src, dst);
     total_pkt_sent++;
@@ -71,6 +73,7 @@ void MagicFlow::receive(Packet *p) {
         //((QuickSchedulingHost*)(this->src))->schedule();
         add_to_event_queue(new FlowFinishedEvent(get_current_time(), this));
     }
+    delete p;
 }
 
 double MagicFlow::estimated_finish_time()

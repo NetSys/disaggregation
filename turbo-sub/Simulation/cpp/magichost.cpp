@@ -62,8 +62,7 @@ void MagicHost::start(Flow* f) {
 
 }
 
-#define TRANS_SLACK 1.1
-#define DELAY_SCHEDULING true
+
 void MagicHost::schedule() {
 
     if(debug_host(this->id))
@@ -88,7 +87,9 @@ void MagicHost::schedule() {
                     min_finish_time = f->ack_timeout;
                 flows_tried.push(f);
             }
-            else if(((MagicHost*)(f->dst))->recv_busy_until <= get_current_time() + f->get_propa_time() * TRANS_SLACK){
+            else if(((MagicHost*)(f->dst))->recv_busy_until <= get_current_time() + f->get_propa_time() * params.magic_trans_slack
+                    || f->size_in_pkt < ((MagicHost*)(f->dst))->flow_receiving->size_in_pkt
+            ){
                 //schedule the current flow
                 f->virtual_rts_send_count++;
                 f->schedule_time = get_current_time();
@@ -98,6 +99,7 @@ void MagicHost::schedule() {
                 //    std::cout << get_current_time() << "!!!!!!!!! host:" << f->src->id << " flow_sending setting to f " << f->id << "\n";
 
                 ((MagicHost*)(f->src))->flow_sending = f;
+                ((MagicHost*)(f->dst))->flow_receiving = f;
                 int pkt_to_schd = std::max((unsigned)1, std::min((unsigned)params.reauth_limit, f->remaining_pkt()));
                 f->remaining_pkt_this_round = pkt_to_schd;
                 ((MagicHost*)(f->dst))->recv_busy_until = get_current_time() + f->get_propa_time() + 0.0000012 * pkt_to_schd;
@@ -108,14 +110,14 @@ void MagicHost::schedule() {
             {
                 f->virtual_rts_send_count++;
                 if(((MagicHost*)(f->dst))->recv_busy_until < min_finish_time ){
-                    assert(((MagicHost*)(f->dst))->recv_busy_until - f->get_propa_time() * TRANS_SLACK > get_current_time());
-                    min_finish_time = ((MagicHost*)(f->dst))->recv_busy_until - f->get_propa_time()  * TRANS_SLACK;
+                    assert(((MagicHost*)(f->dst))->recv_busy_until - f->get_propa_time() * params.magic_trans_slack > get_current_time());
+                    min_finish_time = ((MagicHost*)(f->dst))->recv_busy_until - f->get_propa_time()  * params.magic_trans_slack;
                 }
 
                 flows_tried.push(f);
 
-                if(DELAY_SCHEDULING){
-                    double slack = ((MagicHost*)(f->dst))->recv_busy_until - (get_current_time() + f->get_propa_time() * TRANS_SLACK);
+                if(params.magic_delay_scheduling){
+                    double slack = ((MagicHost*)(f->dst))->recv_busy_until - (get_current_time() + f->get_propa_time() * params.magic_trans_slack);
                     if(f->size_in_pkt < 10 && slack < params.reauth_limit * 0.0000012 * 0.9){
                         has_short_flow_to_delay = true;
                     }
