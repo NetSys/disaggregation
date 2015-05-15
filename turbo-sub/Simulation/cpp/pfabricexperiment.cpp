@@ -106,17 +106,17 @@ void printQueueStatistics(Topology *topo) {
 
     uint64_t dropAt[4];
     uint64_t total_drop = 0;
-    for (uint i = 0; i < 4; i++) {
+    for (auto i = 0; i < 4; i++) {
         dropAt[i] = 0;
     }
 
-    for (uint i = 0; i < topo->hosts.size(); i++) {
+    for (auto i = 0; i < topo->hosts.size(); i++) {
         int location = topo->hosts[i]->queue->location;
         dropAt[location] += topo->hosts[i]->queue->pkt_drop;
     }
 
-    for (uint i = 0; i < topo->switches.size(); i++) {
-        fori (uint j = 0; j < topo->switches[i]->queues.size(); j++) {
+    for (auto i = 0; i < topo->switches.size(); i++) {
+        for (auto j = 0; j < topo->switches[i]->queues.size(); j++) {
             int location = topo->switches[i]->queues[j]->location;
             dropAt[location] += topo->switches[i]->queues[j]->pkt_drop;
         }
@@ -139,9 +139,6 @@ void printQueueStatistics(Topology *topo) {
     for (auto tor = (topo->switches).begin(); tor != (topo->switches).end(); tor++) {
         for (auto q = ((*tor)->queues).begin(); q != ((*tor)->queues).end(); q++) {
             if ((*q)->rate == params.bandwidth) totalSentToHosts += (*q)->b_departures;
-            drop_ss += (*q)->dropss;
-            drop_sl += (*q)->dropsl;
-            drop_ll += (*q)->dropll;
         }
     }
 
