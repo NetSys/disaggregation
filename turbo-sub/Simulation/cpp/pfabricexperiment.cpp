@@ -102,82 +102,63 @@ void generate_flows_to_schedule(std::string filename, uint32_t num_flows,
 
 
 void printQueueStatistics(Topology *topo) {
-  double totalSentFromHosts = 0;
-  
-  uint64_t drop_ss = 0; uint64_t drop_sl = 0; uint64_t drop_ll = 0;
-  
+    double totalSentFromHosts = 0;
 
-
-
-
-  uint64_t dropAt[4];
-  uint64_t total_drop = 0;
-  for(uint i = 0; i < 4; i++)
-    dropAt[i] = 0;
-
-  for(uint i = 0; i < topo->hosts.size(); i++){
-    int location = topo->hosts[i]->queue->location;
-    dropAt[location] += topo->hosts[i]->queue->pkt_drop;
-  }
-
-  for(uint i = 0; i < topo->switches.size(); i++){
-    for(uint j = 0; j < topo->switches[i]->queues.size(); j++){
-      int location = topo->switches[i]->queues[j]->location;
-      dropAt[location] += topo->switches[i]->queues[j]->pkt_drop;
+    uint64_t dropAt[4];
+    uint64_t total_drop = 0;
+    for (uint i = 0; i < 4; i++) {
+        dropAt[i] = 0;
     }
-  }
 
-
-  for(int i = 0; i < 4; i++)
-    total_drop += dropAt[i];
-  for(int i = 0; i < 4; i++){
-    std::cout << "Hop:" << i << " Drp:" << dropAt[i] << "("  << (int)((double)dropAt[i]/total_drop * 100) << "%) ";
-  }
-
-  for (std::vector<Host*>::iterator h = (topo->hosts).begin(); h != (topo->hosts).end(); h++) {
-    totalSentFromHosts += (*h)->queue->b_departures;
-  }
-
-  std::cout << " Overall:" << std::setprecision(2) <<(double)total_drop*1460/totalSentFromHosts;
-  std::cout << "\n";
-
-
-
-
-
-
-
-
-  double totalSentToHosts = 0;
-  for (std::vector<Switch*>::iterator tor = (topo->switches).begin(); tor != (topo->switches).end(); tor++) {
-    for (std::vector<Queue*>::iterator q = ((*tor)->queues).begin(); q != ((*tor)->queues).end(); q++) {
-      if ((*q)->rate == params.bandwidth)
-        totalSentToHosts += (*q)->b_departures;
-      drop_ss += (*q)->dropss;
-      drop_sl += (*q)->dropsl;
-      drop_ll += (*q)->dropll;
+    for (uint i = 0; i < topo->hosts.size(); i++) {
+        int location = topo->hosts[i]->queue->location;
+        dropAt[location] += topo->hosts[i]->queue->pkt_drop;
     }
-  }
 
-  double dead_bytes = totalSentFromHosts - totalSentToHosts;
-  double total_bytes = 0;
-  for (std::deque<Flow*>::iterator f = flows_to_schedule.begin(); f != flows_to_schedule.end(); f++) {
-    total_bytes += (*f)->size;
-  }
+    for (uint i = 0; i < topo->switches.size(); i++) {
+        fori (uint j = 0; j < topo->switches[i]->queues.size(); j++) {
+            int location = topo->switches[i]->queues[j]->location;
+            dropAt[location] += topo->switches[i]->queues[j]->pkt_drop;
+        }
+    }
 
-  double simulation_time = current_time - start_time;
-  double utilization = (totalSentFromHosts * 8.0 / 144.0) / simulation_time;
-  double dst_utilization = (totalSentToHosts * 8.0 / 144.0) / simulation_time;
+    for (int i = 0; i < 4; i++) {
+        total_drop += dropAt[i];
+    }
+    for (int i = 0; i < 4; i++) {
+        std::cout << "Hop:" << i << " Drp:" << dropAt[i] << "("  << (int)((double)dropAt[i]/total_drop * 100) << "%) ";
+    }
 
-  std::cout << "DeadPackets " << 100.0 * (dead_bytes/total_bytes)
-    << "% DuplicatedPackets "
-    << 100.0 * duplicated_packets_received * 1460.0 / total_bytes
-    << "% Utilization " << utilization / 10000000000 * 100 << "% " << dst_utilization / 10000000000 * 100  << "%\n";
-  std::cout 
-      << "Drops (May not be correct) SS " << drop_ss
-      << " SL " << drop_sl 
-      << " LL " << drop_ll 
-      << std::endl;
+    for (auto h = (topo->hosts).begin(); h != (topo->hosts).end(); h++) {
+        totalSentFromHosts += (*h)->queue->b_departures;
+    }
+
+    std::cout << " Overall:" << std::setprecision(2) <<(double)total_drop*1460/totalSentFromHosts << "\n";
+
+    double totalSentToHosts = 0;
+    for (auto tor = (topo->switches).begin(); tor != (topo->switches).end(); tor++) {
+        for (auto q = ((*tor)->queues).begin(); q != ((*tor)->queues).end(); q++) {
+            if ((*q)->rate == params.bandwidth) totalSentToHosts += (*q)->b_departures;
+            drop_ss += (*q)->dropss;
+            drop_sl += (*q)->dropsl;
+            drop_ll += (*q)->dropll;
+        }
+    }
+
+    double dead_bytes = totalSentFromHosts - totalSentToHosts;
+    double total_bytes = 0;
+    for (auto f = flows_to_schedule.begin(); f != flows_to_schedule.end(); f++) {
+        total_bytes += (*f)->size;
+    }
+
+    double simulation_time = current_time - start_time;
+    double utilization = (totalSentFromHosts * 8.0 / 144.0) / simulation_time;
+    double dst_utilization = (totalSentToHosts * 8.0 / 144.0) / simulation_time;
+
+    std::cout 
+        << "DeadPackets " << 100.0 * (dead_bytes/total_bytes)
+        << "% DuplicatedPackets " << 100.0 * duplicated_packets_received * 1460.0 / total_bytes
+        << "% Utilization " << utilization / 10000000000 * 100 << "% " << dst_utilization / 10000000000 * 100  << "%\n";
 }
 
 
