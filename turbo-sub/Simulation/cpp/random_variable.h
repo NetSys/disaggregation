@@ -75,6 +75,13 @@ public:
   virtual double value();
 };
 
+class ConstantVariable : public EmpiricalRandomVariable {
+public:
+    double v;
+    ConstantVariable(double value);
+    double value();
+};
+
 class GaussianRandomVariable{
   public:
   double value();

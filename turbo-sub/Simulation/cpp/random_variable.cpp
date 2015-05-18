@@ -55,7 +55,8 @@ EmpiricalRandomVariable::EmpiricalRandomVariable(std::string filename, bool smoo
   maxCDF_ = 1;
   maxEntry_ = 32;
   table_ = new CDFentry[maxEntry_];
-  loadCDF(filename);
+  if(filename != "")
+      loadCDF(filename);
 }
 
 double EmpiricalRandomVariable::value() {
@@ -160,7 +161,15 @@ double CDFRandomVariable::value() {
 }
 
 
+ConstantVariable::ConstantVariable(double value) : EmpiricalRandomVariable("", false)
+{
+    this->v = value;
+}
 
+double ConstantVariable::value()
+{
+    return v;
+}
 
 GaussianRandomVariable::GaussianRandomVariable(double avg, double std) {
   this->avg = avg;

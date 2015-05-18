@@ -112,6 +112,18 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
         else if (key == "capability_window_timeout") {
             lineStream >> params.capability_window_timeout;
         }
+        else if (key == "ddc") {
+            lineStream >> params.ddc;
+        }
+        else if (key == "ddc_cpu_ratio") {
+            lineStream >> params.ddc_cpu_ratio;
+        }
+        else if (key == "ddc_mem_ratio") {
+            lineStream >> params.ddc_mem_ratio;
+        }
+        else if (key == "ddc_disk_ratio") {
+            lineStream >> params.ddc_disk_ratio;
+        }
         else {
             std::cout << "Unknown conf param: " << key << " in file: " << conf_filename << "\n";
             assert(false);

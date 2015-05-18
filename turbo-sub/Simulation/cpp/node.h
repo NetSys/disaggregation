@@ -12,6 +12,10 @@
 #define CORE_SWITCH 10
 #define AGG_SWITCH 11
 
+#define CPU 0
+#define MEM 1
+#define DISK 2
+
 class Packet;
 class Flow;
 
@@ -33,6 +37,7 @@ class Host : public Node {
 public:
   Host(uint32_t id, double rate, uint32_t queue_type);
   Queue *queue;
+  int host_type;
 };
 
 class Switch : public Node {

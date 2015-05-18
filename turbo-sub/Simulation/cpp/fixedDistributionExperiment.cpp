@@ -57,10 +57,7 @@ extern void run_scenario();
 
 void generate_flows_to_schedule_fd(std::string filename, uint32_t num_flows,
 Topology *topo) {
-  //double lambda = 4.0966649051007566;
-  //use an NAryRandomVariable for true uniform/bimodal/trimodal/etc
-  // EmpiricalRandomVariable *nv_bytes =
-  // new NAryRandomVariable(filename);
+
   EmpiricalRandomVariable *nv_bytes;
   if(params.smooth_cdf)
       nv_bytes = new EmpiricalRandomVariable(filename);
@@ -88,8 +85,8 @@ Topology *topo) {
         double first_flow_time = 1.0 + nv_intarr->value();
         add_to_event_queue(
         new FlowCreationForInitializationEvent(first_flow_time,
-        topo->hosts[i], topo->hosts[j],
-        nv_bytes, nv_intarr));
+                topo->hosts[i], topo->hosts[j],
+                nv_bytes, nv_intarr));
       }
     }
   }
@@ -105,7 +102,82 @@ Topology *topo) {
   current_time = 0;
 }
 
-void generate_flows_to_schedule_fd_with_traffic_pattern(std::string filename, uint32_t num_flows,
+
+int get_flow_size(Host* s, Host* d){
+
+    int matrix[3][3] =
+    {
+            {3*1460,    3*1460, 700*1460},
+            {3*1460,    0,      0},
+            {700*1460,  0,      0}
+    };
+
+    assert(s->host_type >= 0);
+    assert(d->host_type >= 0);
+    assert(s->host_type < 3);
+    assert(d->host_type < 3);
+
+    return matrix[s->host_type][d->host_type];
+}
+
+int get_num_src(Host* d){
+    if(d->host_type == CPU)
+        return 143;
+    else if(d->host_type == MEM)
+        return 144/3;
+    else if(d->host_type == DISK)
+        return 144/3;
+    else
+        assert(false);
+}
+
+
+void generate_flows_to_schedule_fd_ddc(std::string filename, uint32_t num_flows, Topology *topo) {
+
+
+
+    for (int i = 0; i < topo->hosts.size(); i++){
+        topo->hosts[i]->host_type = i%3;
+    }
+
+
+
+    for (uint32_t dst = 0; dst < topo->hosts.size(); dst++) {
+        for (uint32_t src = 0; src < topo->hosts.size(); src++) {
+            if (src != dst) {
+                int flow_size = get_flow_size(topo->hosts[src], topo->hosts[dst]);
+
+                if(flow_size > 0){
+
+
+                    double lambda_per_pair = params.bandwidth * params.load / (flow_size * 8.0 / 1460 * 1500) / (get_num_src(topo->hosts[dst]));
+                    //std::cout << src << " " << dst << " " << flow_size << " " <<lambda_per_pair << "\n";
+                    ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_pair);
+                    double first_flow_time = 1.0 + nv_intarr->value();
+                    EmpiricalRandomVariable *nv_bytes = new ConstantVariable(flow_size/1460);
+
+                    add_to_event_queue(
+                          new FlowCreationForInitializationEvent(first_flow_time, topo->hosts[src], topo->hosts[dst], nv_bytes, nv_intarr)
+                    );
+                }
+            }
+        }
+    }
+
+    while (event_queue.size() > 0) {
+    Event *ev = event_queue.top();
+    event_queue.pop();
+    current_time = ev->time;
+    if (flows_to_schedule.size() < num_flows) {
+        ev->process_event();
+    }
+        delete ev;
+    }
+    current_time = 0;
+}
+
+
+void generate_flows_to_schedule_fd_with_skew(std::string filename, uint32_t num_flows,
 Topology *topo) {
 
   EmpiricalRandomVariable *nv_bytes;
@@ -248,10 +320,12 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
       read_flows_to_schedule(params.cdf_or_flow_trace, num_flows, topology);
   }
   else{
-      if(params.traffic_imbalance < 0.01)
+      if(params.ddc)
+          generate_flows_to_schedule_fd_ddc(params.cdf_or_flow_trace, num_flows, topology);
+      else if(params.traffic_imbalance < 0.01)
           generate_flows_to_schedule_fd(params.cdf_or_flow_trace, num_flows, topology);
       else
-          generate_flows_to_schedule_fd_with_traffic_pattern(params.cdf_or_flow_trace, num_flows, topology);
+          generate_flows_to_schedule_fd_with_skew(params.cdf_or_flow_trace, num_flows, topology);
   }
   std::deque<Flow *> flows_sorted = flows_to_schedule;
   struct FlowComparator {

@@ -50,6 +50,11 @@ struct DCExpParams {
   int capability_window;
   double capability_window_timeout;
 
+  int ddc;
+  double ddc_cpu_ratio;
+  double ddc_mem_ratio;
+  double ddc_disk_ratio;
+
 
 };
 

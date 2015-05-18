@@ -307,6 +307,7 @@ FlowCreationForInitializationEvent::FlowCreationForInitializationEvent(
 
 FlowCreationForInitializationEvent::~FlowCreationForInitializationEvent() {
 }
+
 void FlowCreationForInitializationEvent::process_event() {
   uint32_t id = flows_to_schedule.size();
   uint32_t size = nv_bytes->value() * 1460;

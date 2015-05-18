@@ -116,7 +116,7 @@ void printQueueStatistics(Topology *topo) {
     }
 
     for (uint i = 0; i < topo->switches.size(); i++) {
-        fori (uint j = 0; j < topo->switches[i]->queues.size(); j++) {
+        for (uint j = 0; j < topo->switches[i]->queues.size(); j++) {
             int location = topo->switches[i]->queues[j]->location;
             dropAt[location] += topo->switches[i]->queues[j]->pkt_drop;
         }
@@ -136,6 +136,7 @@ void printQueueStatistics(Topology *topo) {
     std::cout << " Overall:" << std::setprecision(2) <<(double)total_drop*1460/totalSentFromHosts << "\n";
 
     double totalSentToHosts = 0;
+    int drop_ss = 0, drop_sl = 0, drop_ll = 0;
     for (auto tor = (topo->switches).begin(); tor != (topo->switches).end(); tor++) {
         for (auto q = ((*tor)->queues).begin(); q != ((*tor)->queues).end(); q++) {
             if ((*q)->rate == params.bandwidth) totalSentToHosts += (*q)->b_departures;

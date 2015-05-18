@@ -93,7 +93,7 @@ void run_scenario() {
 
     if(same_evt_count > 1000){
       std::cout << "Ended event dead loop. Type:" << last_evt_type << "\n";
-      //break;
+      break;
     }
   }
 }
