@@ -39,6 +39,7 @@ public:
     }
     void push(const _Tp& x)
     {
+        assert(x);
         v.push_back(x);
         best_index = -1;
     }

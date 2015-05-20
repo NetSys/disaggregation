@@ -120,7 +120,7 @@ int get_flow_size(Host* s, Host* d){
     return matrix[s->host_type][d->host_type];
 }
 
-int get_num_src(Host* d){
+int get_num_src_or_dst(Host* d){
     if(d->host_type == CPU)
         return 143;
     else if(d->host_type == MEM)
@@ -148,9 +148,22 @@ void generate_flows_to_schedule_fd_ddc(std::string filename, uint32_t num_flows,
                 int flow_size = get_flow_size(topo->hosts[src], topo->hosts[dst]);
 
                 if(flow_size > 0){
+                    int num_sd_pair;
+                    if(params.ddc_normalize == 0)
+                        num_sd_pair = get_num_src_or_dst(topo->hosts[src]);
+                    else if(params.ddc_normalize == 1)
+                        num_sd_pair = get_num_src_or_dst(topo->hosts[dst]);
+                    else if (params.ddc_normalize == 2)
+                        if(topo->hosts[src]->host_type == CPU)
+                            num_sd_pair = get_num_src_or_dst(topo->hosts[src]);
+                        else if(topo->hosts[dst]->host_type == CPU)
+                            num_sd_pair = get_num_src_or_dst(topo->hosts[dst]);
+                        else
+                            assert(false);
+                    else
+                        assert(false);
 
-
-                    double lambda_per_pair = params.bandwidth * params.load / (flow_size * 8.0 / 1460 * 1500) / (get_num_src(topo->hosts[dst]));
+                    double lambda_per_pair = params.bandwidth * params.load / (flow_size * 8.0 / 1460 * 1500) / num_sd_pair;
                     //std::cout << src << " " << dst << " " << flow_size << " " <<lambda_per_pair << "\n";
                     ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(1.0 / lambda_per_pair);
                     double first_flow_time = 1.0 + nv_intarr->value();
@@ -159,18 +172,19 @@ void generate_flows_to_schedule_fd_ddc(std::string filename, uint32_t num_flows,
                     add_to_event_queue(
                           new FlowCreationForInitializationEvent(first_flow_time, topo->hosts[src], topo->hosts[dst], nv_bytes, nv_intarr)
                     );
+
                 }
             }
         }
     }
 
     while (event_queue.size() > 0) {
-    Event *ev = event_queue.top();
-    event_queue.pop();
-    current_time = ev->time;
-    if (flows_to_schedule.size() < num_flows) {
-        ev->process_event();
-    }
+        Event *ev = event_queue.top();
+        event_queue.pop();
+        current_time = ev->time;
+        if (flows_to_schedule.size() < num_flows) {
+            ev->process_event();
+        }
         delete ev;
     }
     current_time = 0;

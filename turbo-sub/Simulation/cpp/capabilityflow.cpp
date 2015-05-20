@@ -209,7 +209,7 @@ void CapabilityFlow::assign_init_capability(){
     int init_capa = this->init_capa_size();
     for(int i = 0; i < init_capa; i++){
         Capability* c = new Capability();
-        c->timeout = get_current_time() + init_capa * 0.0000012 + params.capability_timeout;
+        c->timeout = get_current_time() + init_capa * params.get_full_pkt_tran_delay() + params.capability_timeout * params.get_full_pkt_tran_delay();
         c->seq_num = i;
         this->capabilities.push(c);
     }
@@ -229,7 +229,7 @@ void CapabilityFlow::set_capability_count(){
 void CapabilityFlow::send_capability_pkt(){
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " send capa " << this->capability_count << "\n";
-    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, params.capability_timeout, this->remaining_pkts(), this->capability_count);
+    CapabilityPkt* cp = new CapabilityPkt(this, this->dst, this->src, params.capability_timeout * params.get_full_pkt_tran_delay(), this->remaining_pkts(), this->capability_count);
     this->capability_count++;
     this->capability_packet_sent_count++;
     this->latest_cap_sent_time = get_current_time();

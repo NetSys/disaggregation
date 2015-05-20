@@ -31,15 +31,16 @@ magic_delay_scheduling: 1
 use_flow_trace: 0
 smooth_cdf: {7}
 burst_at_beginning: {8}
-capability_timeout: 0.0000024
-capability_resend_timeout: 0.000010
+capability_timeout: 2
+capability_resend_timeout: 9
 capability_initial: 8
 capability_window: 9
-capability_window_timeout: 0.000010
+capability_window_timeout: 9
 ddc: 1
 ddc_cpu_ratio: 0.33
 ddc_mem_ratio: 0.33
 ddc_disk_ratio: 0.34
+ddc_normalize: 2
 '''
 
 def get_mean_flow_size(cdf_file):

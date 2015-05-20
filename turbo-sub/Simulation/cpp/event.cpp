@@ -72,8 +72,10 @@ FlowArrivalEvent::FlowArrivalEvent(double time, Flow *flow)
   : Event(FLOW_ARRIVAL, time) {
   this->flow = flow;
 }
+
 FlowArrivalEvent::~FlowArrivalEvent() {
 }
+
 void FlowArrivalEvent::process_event() {
   //Flows start at line rate; so schedule a packet to be transmitted
   //First packet scheduled to be queued

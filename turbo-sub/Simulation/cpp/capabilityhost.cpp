@@ -103,7 +103,7 @@ void CapabilityHost::schedule_capa_proc_evt(double time, bool is_timeout)
 void CapabilityHost::schedule_sender_notify_evt()
 {
     assert(this->sender_notify_evt == NULL);
-    this->sender_notify_evt = new SenderNotifyEvent(get_current_time() + 0.000020 + INFINITESIMAL_TIME, this);
+    this->sender_notify_evt = new SenderNotifyEvent(get_current_time() + (params.get_full_pkt_tran_delay() * 20) + INFINITESIMAL_TIME, this);
     add_to_event_queue(this->sender_notify_evt);
 }
 
@@ -274,12 +274,12 @@ void CapabilityHost::send_capability(){
 
             if(f->capability_gap() > params.capability_window)
             {
-                if(get_current_time() >= f->latest_cap_sent_time + params.capability_window_timeout)
+                if(get_current_time() >= f->latest_cap_sent_time + params.capability_window_timeout * params.get_full_pkt_tran_delay())
                     f->relax_capability_gap();
                 else{
-                    if(f->latest_cap_sent_time + params.capability_window_timeout < closet_timeout)
+                    if(f->latest_cap_sent_time + params.capability_window_timeout * params.get_full_pkt_tran_delay() < closet_timeout)
                     {
-                        closet_timeout = f->latest_cap_sent_time + params.capability_window_timeout;
+                        closet_timeout = f->latest_cap_sent_time + params.capability_window_timeout* params.get_full_pkt_tran_delay();
                     }
                 }
 
@@ -292,7 +292,7 @@ void CapabilityHost::send_capability(){
                 capability_sent = true;
 
                 if(f->capability_count == f->capability_goal){
-                    f->redundancy_ctrl_timeout = get_current_time() + params.capability_resend_timeout;
+                    f->redundancy_ctrl_timeout = get_current_time() + params.capability_resend_timeout * params.get_full_pkt_tran_delay();
                 }
 
                 break;
@@ -312,7 +312,7 @@ void CapabilityHost::send_capability(){
 
     if(capability_sent)// pkt sent
     {
-        this->schedule_capa_proc_evt(0.000001232, false);
+        this->schedule_capa_proc_evt(params.get_full_pkt_tran_delay(1500 + 40), false);
     }
     else if(closet_timeout < 999999) //has unsend flow, but its within timeout
     {

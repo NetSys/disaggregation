@@ -332,7 +332,7 @@ void PipelineSchedulingHost::handle_offer_pkt(OfferPkt* offer_pkt, FountainFlowW
            {
                assert(this->next_sending_flow == NULL);
                this->next_sending_flow = (FountainFlowWithPipelineSchedulingHost*)offer_pkt->flow;
-               this->sender_busy_until = get_current_time() + 0.0000012 * this->next_sending_flow->remaining_schd_pkt;
+               this->sender_busy_until = get_current_time() + 1500*8/params.bandwidth * this->next_sending_flow->remaining_schd_pkt;
                if(debug_host(this->id))
                    std::cout << get_current_time() << " host " << this->id << " set next sending flow " <<
                        this->next_sending_flow->id << " curr_sending_flow:" << this->current_sending_flow->id << "\n";
@@ -341,7 +341,7 @@ void PipelineSchedulingHost::handle_offer_pkt(OfferPkt* offer_pkt, FountainFlowW
            {
                if(debug_host(this->id)) std::cout << get_current_time() << " host " << this->id << " set current sending flow to " << offer_pkt->flow->id << "\n";
                this->current_sending_flow = (FountainFlowWithPipelineSchedulingHost*)offer_pkt->flow;
-               this->sender_busy_until = get_current_time() + 0.0000012 * this->current_sending_flow->remaining_schd_pkt;
+               this->sender_busy_until = get_current_time() + 1500*8/params.bandwidth * this->current_sending_flow->remaining_schd_pkt;
                this->try_send();
            }
        }

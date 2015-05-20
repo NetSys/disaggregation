@@ -30,8 +30,8 @@ public:
     void schedule_host_proc_evt();
     void start_capability_flow(CapabilityFlow* f);
     void send();
-    //std::priority_queue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparator> active_sending_flows;
-    CustomPriorityQueue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparator> active_sending_flows;
+    std::priority_queue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparator> active_sending_flows;
+    //CustomPriorityQueue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparator> active_sending_flows;
 
     void send_capability();
     void schedule_capa_proc_evt(double time, bool is_timeout);
@@ -39,8 +39,8 @@ public:
     bool check_better_schedule(CapabilityFlow* f);
     bool is_sender_idle();
     void notify_flow_status();
-    //std::priority_queue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparatorAtReceiver> active_receiving_flows;
-    CustomPriorityQueue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparatorAtReceiver> active_receiving_flows;
+    std::priority_queue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparatorAtReceiver> active_receiving_flows;
+    //CustomPriorityQueue<CapabilityFlow*, std::vector<CapabilityFlow*>, CapabilityFlowComparatorAtReceiver> active_receiving_flows;
     CapabilityProcessingEvent *capa_proc_evt;
     SenderNotifyEvent* sender_notify_evt;
     int hold_on;

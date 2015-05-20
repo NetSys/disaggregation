@@ -4,7 +4,8 @@
 #include <string>
 #include <fstream>
 
-struct DCExpParams {
+class DCExpParams {
+public:
   std::string param_str;
 
   int initial_cwnd;
@@ -54,7 +55,12 @@ struct DCExpParams {
   double ddc_cpu_ratio;
   double ddc_mem_ratio;
   double ddc_disk_ratio;
+  int ddc_normalize; //0: sender send, 1: receiver side, 2: both
 
+  double get_full_pkt_tran_delay(int size_in_byte = 1500)
+  {
+      return size_in_byte * 8 / this->bandwidth;
+  }
 
 };
 
