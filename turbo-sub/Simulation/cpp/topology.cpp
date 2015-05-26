@@ -168,7 +168,7 @@ BigSwitchTopology::BigSwitchTopology(uint32_t num_hosts, double bandwidth, uint3
   }
 
   the_switch = new CoreSwitch(0, num_hosts, c1, queue_type);
-
+  this->switches.push_back(the_switch);
 
   //Connect host queues
   for (uint32_t i = 0; i < num_hosts; i++) {
