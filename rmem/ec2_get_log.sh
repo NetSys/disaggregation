@@ -20,6 +20,8 @@ then
   rm .disk_io.blktrace.1
 fi
 
+start_time=$(date +%s%N)
+echo ${start_time:0:${#start_time}-3} > .metadata
 blktrace -d /dev/xvda1 -o .disk_io &
 
 count=0

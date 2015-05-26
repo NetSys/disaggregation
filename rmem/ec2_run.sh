@@ -33,6 +33,7 @@ then
     scp root@$slave:/root/disaggregation/rmem/rmem_log.txt $result_dir/$count-mem-$slave
     scp root@$slave:/root/disaggregation/rmem/.disk_io.blktrace.0 $result_dir/$count-disk-$slave.blktrace.0
     scp root@$slave:/root/disaggregation/rmem/.disk_io.blktrace.1 $result_dir/$count-disk-$slave.blktrace.1
+    scp root@$slave:/root/disaggregation/rmem/.metadata $result_dir/$count-meta-$slave
     count=$((count+1))
   done
   echo "results in $result_dir"
