@@ -66,6 +66,7 @@ public:
 
 
 #define CAPABILITY_MEASURE_WASTE false
+#define CAPABILITY_THIRD_LEVEL false
 #define CAPABILITY_FOURTH_LEVEL false
 #define CAPABILITY_NOTIFY_BLOCKING false
 

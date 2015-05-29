@@ -49,7 +49,7 @@ void CapabilityFlow::send_pending_data()
 {
     int capa_seq = this->use_capability();
 
-    Packet *p = this->send(next_seq_no, capa_seq, this->size_in_pkt > params.capability_initial?2:1);
+    Packet *p = this->send(next_seq_no, capa_seq, CAPABILITY_THIRD_LEVEL && this->size_in_pkt > params.capability_initial?2:1);
     next_seq_no += mss;
     if(debug_flow(this->id))
         std::cout << get_current_time() << " flow " << this->id << " send pkt " << this->total_pkt_sent << "\n";
