@@ -234,10 +234,10 @@ void CapabilityHost::send_capability(){
     std::queue<CapabilityFlow*> flows_tried;
     double closet_timeout = 999999;
 
-//    if(this->hold_on > 0){
-//        hold_on--;
-//        capability_sent = true;
-//    }
+    if(CAPABILITY_HOLD && this->hold_on > 0){
+        hold_on--;
+        capability_sent = true;
+    }
 
     while(!this->active_receiving_flows.empty() && !capability_sent)
     {
