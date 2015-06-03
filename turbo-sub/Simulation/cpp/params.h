@@ -72,7 +72,7 @@ public:
 #define CAPABILITY_THIRD_LEVEL true
 #define CAPABILITY_FOURTH_LEVEL false
 #define CAPABILITY_NOTIFY_BLOCKING false
-#define CAPABILITY_HOLD true
+#define CAPABILITY_HOLD false
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 

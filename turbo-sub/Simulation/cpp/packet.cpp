@@ -81,11 +81,12 @@ CTS::CTS(Flow *flow, Host *src, Host *dst) : Packet(0, flow, 0, 0, params.hdr_si
   this->type = CTS_PACKET;
 }
 
-CapabilityPkt::CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining, int cap_seq_num) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
+CapabilityPkt::CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining, int cap_seq_num, int data_seq_num) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {
   this->type = CAPABILITY_PACKET;
   this->ttl = ttl;
   this->remaining_sz = remaining;
   this->cap_seq_num = cap_seq_num;
+  this->data_seq_num = data_seq_num;
 }
 
 StatusPkt::StatusPkt(Flow *flow, Host *src, Host *dst, int num_flows_at_sender) : Packet(0, flow, 0, 0, params.hdr_size, src, dst) {

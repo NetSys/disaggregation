@@ -38,6 +38,8 @@ public:
 	uint32_t type; // Normal or Ack packet
 	double total_queuing_delay;
 	double last_enque_time;
+
+	int capa_data_seq;
 };
 
 class PlainAck : public Packet {
@@ -99,10 +101,11 @@ public:
 
 class CapabilityPkt : public Packet{
 public:
-    CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining, int seq_num);
+    CapabilityPkt(Flow *flow, Host *src, Host *dst, double ttl, int remaining, int cap_seq_num, int data_seq_num);
     double ttl;
     int remaining_sz;
     int cap_seq_num;
+    int data_seq_num;
 };
 
 class StatusPkt : public Packet{

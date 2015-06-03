@@ -3,6 +3,7 @@
 
 #include "fountainflow.h"
 #include "custompriorityqueue.h"
+#include <map>
 
 
 struct Capability //for extendability
@@ -10,6 +11,7 @@ struct Capability //for extendability
     double timeout;
     int seq_num;
     bool has_idle_sibling_sender;
+    int data_seq_num;
 };
 
 class CapabilityComparator{
@@ -25,7 +27,7 @@ public:
     virtual void send_pending_data();
     virtual void receive(Packet *p);
     void send_pending_data_low_prio();
-    Packet* send(uint32_t seq, int capa_seq, int priority);
+    Packet* send(uint32_t seq, int capa_seq, int data_seq, int priority);
     void send_capability_pkt();
     void send_notify_pkt(int);
     void send_rts_pkt();
@@ -40,8 +42,12 @@ public:
     void relax_capability_gap();
     int init_capa_size();
     bool has_sibling_idle_source();
+    int get_next_capa_seq_num();
 
     std::priority_queue<Capability*, std::vector<Capability*>, CapabilityComparator> capabilities;
+    std::map<int, int> packets_received;
+    int last_capa_data_seq_num_sent;
+    int received_until;
     bool finished_at_receiver;
     int capability_count;
     int capability_packet_sent_count;
