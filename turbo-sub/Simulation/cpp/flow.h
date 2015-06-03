@@ -76,6 +76,7 @@ public:
   double first_byte_send_time;
 
   uint32_t flow_priority;
+  double deadline;
 };
 
 

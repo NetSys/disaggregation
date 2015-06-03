@@ -19,35 +19,46 @@ extern DCExpParams params;
 
 bool CapabilityFlowComparator::operator() (CapabilityFlow* a, CapabilityFlow* b){
     //return a->remaining_pkts_at_sender > b->remaining_pkts_at_sender;
-
-    if(a->remaining_pkts_at_sender > b->remaining_pkts_at_sender)
-        return true;
-    else if(a->remaining_pkts_at_sender == b->remaining_pkts_at_sender)
-        return a->start_time > b->start_time;
-    else
-        return false;
-    //return a->latest_data_pkt_send_time > b->latest_data_pkt_send_time;
-    //return a->start_time > b->start_time;
+    if(params.deadline && params.schedule_by_deadline)
+    {
+        return a->deadline > b->deadline;
+    }
+    else{
+        if(a->remaining_pkts_at_sender > b->remaining_pkts_at_sender)
+            return true;
+        else if(a->remaining_pkts_at_sender == b->remaining_pkts_at_sender)
+            return a->start_time > b->start_time;
+        else
+            return false;
+        //return a->latest_data_pkt_send_time > b->latest_data_pkt_send_time;
+        //return a->start_time > b->start_time;
+    }
 }
 
 bool CapabilityFlowComparatorAtReceiver::operator() (CapabilityFlow* a, CapabilityFlow* b){
     //return a->size_in_pkt > b->size_in_pkt;
-
-    if(a->notified_num_flow_at_sender > b->notified_num_flow_at_sender)
-        return true;
-    else if(a->notified_num_flow_at_sender == b->notified_num_flow_at_sender)
+    if(params.deadline && params.schedule_by_deadline)
     {
-        if(a->remaining_pkts() > b->remaining_pkts())
-            return true;
-        else if (a->remaining_pkts() == b->remaining_pkts())
-            return a->start_time > b->start_time; //TODO: this is cheating. but not a big problem
-        else
-            return false;
+        return a->deadline > b->deadline;
     }
     else
-        return false;
-    //return a->latest_cap_sent_time > b->latest_cap_sent_time;
-    //return a->start_time > b->start_time;
+    {
+        if(a->notified_num_flow_at_sender > b->notified_num_flow_at_sender)
+            return true;
+        else if(a->notified_num_flow_at_sender == b->notified_num_flow_at_sender)
+        {
+            if(a->remaining_pkts() > b->remaining_pkts())
+                return true;
+            else if (a->remaining_pkts() == b->remaining_pkts())
+                return a->start_time > b->start_time; //TODO: this is cheating. but not a big problem
+            else
+                return false;
+        }
+        else
+            return false;
+        //return a->latest_cap_sent_time > b->latest_cap_sent_time;
+        //return a->start_time > b->start_time;
+    }
 }
 
 CapabilityHost::CapabilityHost(uint32_t id, double rate, uint32_t queue_type)

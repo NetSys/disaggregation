@@ -56,6 +56,9 @@ public:
   double ddc_mem_ratio;
   double ddc_disk_ratio;
   int ddc_normalize; //0: sender send, 1: receiver side, 2: both
+  int deadline;
+  int schedule_by_deadline;
+  double avg_deadline;
 
   double get_full_pkt_tran_delay(int size_in_byte = 1500)
   {
@@ -66,7 +69,7 @@ public:
 
 
 #define CAPABILITY_MEASURE_WASTE false
-#define CAPABILITY_THIRD_LEVEL false
+#define CAPABILITY_THIRD_LEVEL true
 #define CAPABILITY_FOURTH_LEVEL false
 #define CAPABILITY_NOTIFY_BLOCKING false
 #define CAPABILITY_HOLD true

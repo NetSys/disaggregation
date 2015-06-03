@@ -227,7 +227,13 @@ void Flow::cancel_retx_event() {
 
 
 uint32_t Flow::get_priority(uint32_t seq) {
-  return (size - last_unacked_seq - scoreboard_sack_bytes);
+    if(params.deadline && params.schedule_by_deadline)
+    {
+        return (int)(this->deadline * 1000000);
+    }
+    else{
+        return (size - last_unacked_seq - scoreboard_sack_bytes);
+    }
 }
 
 

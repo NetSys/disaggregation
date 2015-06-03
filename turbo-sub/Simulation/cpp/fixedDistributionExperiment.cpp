@@ -300,6 +300,18 @@ void debug_flow_stats(std::deque<Flow *> flows){
 }
 
 
+void assign_flow_deadline(std::deque<Flow *> flows)
+{
+    ExponentialRandomVariable *nv_intarr = new ExponentialRandomVariable(params.avg_deadline);
+    for(uint i = 0; i < flows.size(); i++)
+    {
+        Flow* f = flows[i];
+        double rv = nv_intarr->value();
+        f->deadline = f->start_time + std::max(topology->get_oracle_fct(f)/1000000.0 * 1.25, rv);
+        //std::cout << f->start_time << " " << f->deadline << " " << topology->get_oracle_fct(f)/1000000 << " " << rv << "\n";
+    }
+}
+
 //same as run_pFabric_experiment except with this generate_flows.
 void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) {
   if (argc < 3) {
@@ -341,6 +353,8 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
       else
           generate_flows_to_schedule_fd_with_skew(params.cdf_or_flow_trace, num_flows, topology);
   }
+  if(params.deadline)
+      assign_flow_deadline(flows_to_schedule);
   std::deque<Flow *> flows_sorted = flows_to_schedule;
   struct FlowComparator {
     bool operator() (Flow *a, Flow *b) {
@@ -373,7 +387,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   write_flows_to_file(flows_sorted, "flow.tmp");
 
   Stats slowdown, inflation, fct, oracle_fct, first_send_time, slowdown_0_100, slowdown_100_inf;
-  Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop;
+  Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop, deadline;
   std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size, capa_sent_by_size,
       fct_by_size, drop_rate_by_size, wait_time_by_size, first_hop_depart_by_size, last_hop_depart_by_size,
       capa_waste_by_size;
@@ -389,6 +403,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
             f->next_seq_no << " recv:" << f->received_bytes  << " src:" << f->src->id << " dst:" << f->dst->id << "\n";
 
     double slow = 1000000.0 * f->flow_completion_time / topology->get_oracle_fct(f);
+    int meet_deadline = f->deadline > f->finish_time?1:0;
     if(slowdown_by_size.find(f->size_in_pkt) == slowdown_by_size.end()){
         slowdown_by_size[f->size_in_pkt] = new Stats();
         queuing_delay_by_size[f->size_in_pkt] = new Stats();
@@ -413,6 +428,9 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
         capa_waste_by_size[f->size_in_pkt]->input_data(((CapabilityFlow*)f)->capability_waste_count);
     }
 
+    if(params.deadline)
+        deadline += meet_deadline;
+
     slowdown += slow;
     if(f->size < 100 * 1024)
         slowdown_0_100 += slow;
@@ -433,7 +451,11 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
   double stability = ((double)num_outstanding_packets_at_100 - (double)num_outstanding_packets_at_50)/(arrival_packets_at_100 - arrival_packets_at_50);
 
   std::cout << "AverageFCT " << fct.avg() << " MeanSlowdown " << slowdown.avg() << " MeanInflation " << inflation.avg() <<
-          " NFCT " << fct.total()/oracle_fct.total() << " Stability " << stability << "\n";
+          " NFCT " << fct.total()/oracle_fct.total() << " Stability " << stability;
+  if(params.deadline)
+      std::cout << " DL:" << deadline.avg();
+
+  std::cout << "\n";
 
   int i = 0;
   for(auto it = slowdown_by_size.begin(); it != slowdown_by_size.end() && i < 6; ++it, ++i){

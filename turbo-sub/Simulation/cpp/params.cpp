@@ -127,6 +127,15 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
         else if (key == "ddc_normalize") {
             lineStream >> params.ddc_normalize;
         }
+        else if (key == "deadline") {
+            lineStream >> params.deadline;
+        }
+        else if (key == "schedule_by_deadline") {
+            lineStream >> params.schedule_by_deadline;
+        }
+        else if (key == "avg_deadline") {
+            lineStream >> params.avg_deadline;
+        }
         else {
             std::cout << "Unknown conf param: " << key << " in file: " << conf_filename << "\n";
             assert(false);
