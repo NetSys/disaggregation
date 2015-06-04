@@ -92,9 +92,9 @@ void CapabilityFlow::receive(Packet *p)
 
     if(p->type == NORMAL_PACKET)
     {
-        if(!rts_received)
+        if(!rts_received && !params.cut_through)
             std::cout << get_current_time() << " flow " << this->id << " hasn't receive rts\n";
-        //assert(this->rts_received);
+        assert(this->rts_received || params.cut_through);
 
         if(packets_received[p->capa_data_seq] == 0){
             packets_received[p->capa_data_seq] = 1;

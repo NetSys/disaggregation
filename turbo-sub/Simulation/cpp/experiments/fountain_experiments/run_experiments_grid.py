@@ -7,9 +7,9 @@ import os
 
 os.system("cd ../..;make;cd -")
 
-conf_str = '''init_cwnd: 4
-max_cwnd: 7
-retx_timeout: 0.0000095
+conf_str = '''init_cwnd: 12
+max_cwnd: 14
+retx_timeout: 0.000045
 queue_size: {0}
 propagation_delay: 0.0000002
 bandwidth: 10000000000.0
@@ -17,7 +17,7 @@ queue_type: 2
 flow_type: {1}
 num_flow: {2}
 flow_trace: {3}
-cut_through: 0
+cut_through: 1
 mean_flow_size: {4}
 load_balancing: 0
 preemptive_queue: 0
@@ -26,16 +26,19 @@ host_type: {5}
 traffic_imbalance: {6}
 load: {7}
 reauth_limit: 3
+magic_inflate: 0
 magic_trans_slack: 1.1
 magic_delay_scheduling: 1
 use_flow_trace: 0
 smooth_cdf: {8}
 burst_at_beginning: {9}
-capability_timeout: 2
+capability_timeout: 1.5
 capability_resend_timeout: 9
 capability_initial: 8
-capability_window: 9
-capability_window_timeout: 9
+capability_window: 8
+capability_window_timeout: 25
+capability_thrid_level: 1
+capability_forth_level: 0
 ddc: 0
 ddc_cpu_ratio: 0.33
 ddc_mem_ratio: 0.33
@@ -55,16 +58,16 @@ experiments = {}
 
 schemes = {
 	"pfabric" : [2, 1],
-	"capability" : [112, 12],
+	"capability-prio" : [112, 12],
 #	"magic" : [113, 13]
 }
 
 nflow = [100]
-qsize = [3000, 4500, 6000, 7500, 9000, 10500, 12000, 13500, 15000]
-load = [0.6, 0.8]
+qsize = [36864]
+load = [0.5, 0.6, 0.7, 0.8, 0.9]
 #load = ["burst"]
 #fsize = ["00short", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
-fsize = ["aditya"]#, "dctcp", "datamining"]
+fsize = ["aditya", "dctcp", "datamining"]
 #fsize = ["new"]
 skew =  [0.0]
 smooth = 1
