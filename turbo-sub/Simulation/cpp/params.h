@@ -50,8 +50,8 @@ public:
   int capability_initial;
   int capability_window;
   double capability_window_timeout;
-  int capability_thrid_level;
-  int capability_forth_level;
+  int capability_third_level;
+  int capability_fourth_level;
 
   int ddc;
   double ddc_cpu_ratio;

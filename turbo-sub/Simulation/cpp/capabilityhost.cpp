@@ -155,7 +155,7 @@ void CapabilityHost::send(){
         }
 
 //        //code for 4th priority level
-        if(params.capability_forth_level && !pkt_sent && flows_tried.size() > 0){
+        if(params.capability_fourth_level && !pkt_sent && flows_tried.size() > 0){
             std::vector<CapabilityFlow*> candidate;
             for(int i = 0; i < flows_tried.size(); i++){
                 if(flows_tried.front()->size_in_pkt > params.capability_initial)
