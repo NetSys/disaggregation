@@ -50,6 +50,8 @@ public:
   int capability_initial;
   int capability_window;
   double capability_window_timeout;
+  int capability_thrid_level;
+  int capability_forth_level;
 
   int ddc;
   double ddc_cpu_ratio;
@@ -69,8 +71,6 @@ public:
 
 
 #define CAPABILITY_MEASURE_WASTE false
-#define CAPABILITY_THIRD_LEVEL true
-#define CAPABILITY_FOURTH_LEVEL false
 #define CAPABILITY_NOTIFY_BLOCKING false
 #define CAPABILITY_HOLD false
 

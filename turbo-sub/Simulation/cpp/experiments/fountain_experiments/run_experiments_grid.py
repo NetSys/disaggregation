@@ -41,6 +41,9 @@ ddc_cpu_ratio: 0.33
 ddc_mem_ratio: 0.33
 ddc_disk_ratio: 0.34
 ddc_normalize: 2
+deadline: 0
+schedule_by_deadline: 0
+avg_deadline: 0.0001
 '''
 
 def get_mean_flow_size(cdf_file):

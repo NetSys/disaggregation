@@ -109,6 +109,12 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
         else if (key == "capability_window") {
             lineStream >> params.capability_window;
         }
+        else if (key == "capability_thrid_level") {
+            lineStream >> params.capability_thrid_level;
+        }
+        else if (key == "capability_forth_level") {
+            lineStream >> params.capability_forth_level;
+        }
         else if (key == "capability_window_timeout") {
             lineStream >> params.capability_window_timeout;
         }
