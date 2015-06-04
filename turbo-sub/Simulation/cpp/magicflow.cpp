@@ -15,7 +15,12 @@ MagicFlow::MagicFlow(uint32_t id, double start_time, uint32_t size, Host *s, Hos
   this->remaining_pkt_this_round = 0;
   this->ack_timeout = 0;
   this->virtual_rts_send_count = 0;
-  this->added_infl_time = false;
+  if (params.magic_inflate == 1) {
+    this->added_infl_time = false;
+  }
+  else {
+    this->added_infl_time = true;
+  }
 }
 
 void MagicFlow::start_flow() {

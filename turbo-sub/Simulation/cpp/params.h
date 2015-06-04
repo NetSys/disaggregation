@@ -62,6 +62,8 @@ public:
   int schedule_by_deadline;
   double avg_deadline;
 
+  int magic_inflate;
+
   double get_full_pkt_tran_delay(int size_in_byte = 1500)
   {
       return size_in_byte * 8 / this->bandwidth;

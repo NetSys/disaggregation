@@ -142,6 +142,9 @@ void read_experiment_parameters(std::string conf_filename, uint32_t exp_type) {
         else if (key == "avg_deadline") {
             lineStream >> params.avg_deadline;
         }
+        else if (key == "magic_inflate") {
+            lineStream >> params.magic_inflate;
+        }
         else {
             std::cout << "Unknown conf param: " << key << " in file: " << conf_filename << "\n";
             assert(false);
