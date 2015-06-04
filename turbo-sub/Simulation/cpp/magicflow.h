@@ -8,6 +8,7 @@
 class MagicFlow : public FountainFlowWithSchedulingHost {
 public:
     MagicFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d);
+    virtual void start_flow();
     virtual void receive(Packet *p);
     virtual void send_pending_data();
     double estimated_finish_time();
@@ -21,6 +22,8 @@ public:
     int remaining_pkt_this_round;
     double last_pkt_sent_at;
     double total_waiting_time;
+
+    bool added_infl_time;
 };
 
 #endif

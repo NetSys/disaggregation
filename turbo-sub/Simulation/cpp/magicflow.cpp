@@ -15,6 +15,18 @@ MagicFlow::MagicFlow(uint32_t id, double start_time, uint32_t size, Host *s, Hos
   this->remaining_pkt_this_round = 0;
   this->ack_timeout = 0;
   this->virtual_rts_send_count = 0;
+  this->added_infl_time = false;
+}
+
+void MagicFlow::start_flow() {
+    if (!this->added_infl_time) {
+        add_to_event_queue(new FlowArrivalEvent(get_current_time() + 1.6e-6, this));
+        this->added_infl_time = true;
+        return;
+    }
+    else {
+        FountainFlowWithSchedulingHost::start_flow();
+    }
 }
 
 double MagicFlow::get_propa_time(){
