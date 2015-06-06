@@ -34,12 +34,17 @@
 #define CAPABILITY_PROCESSING 11
 #define MAGIC_HOST_SCHEDULE 12
 #define SENDER_NOTIFY 13
+#define ARBITER_PROCESSING 14
+#define FASTPASS_FLOW_PROCESSING 15
+#define FASTPASS_TIMEOUT 16
 
 class CapabilityHost;
 class CapabilityFlow;
 class SchedulingHost;
 class MagicHost;
 class MagicFlow;
+class FastpassArbiter;
+class FastpassFlow;
 
 class Event {
 public:
@@ -213,6 +218,30 @@ public:
     ~SenderNotifyEvent();
     void process_event();
     CapabilityHost *host;
+};
+
+class ArbiterProcessingEvent : public Event {
+public:
+    ArbiterProcessingEvent(double time, FastpassArbiter *host);
+    ~ArbiterProcessingEvent();
+    void process_event();
+    FastpassArbiter *arbiter;
+};
+
+class FastpassFlowProcessingEvent : public Event {
+public:
+    FastpassFlowProcessingEvent(double time, FastpassFlow *flow);
+    ~FastpassFlowProcessingEvent();
+    void process_event();
+    FastpassFlow* flow;
+};
+
+class FastpassTimeoutEvent : public Event {
+public:
+    FastpassTimeoutEvent(double time, FastpassFlow *flow);
+    ~FastpassTimeoutEvent();
+    void process_event();
+    FastpassFlow* flow;
 };
 
 #endif /* defined(EVENT_H) */

@@ -21,6 +21,9 @@
 #include "magicflow.h"
 #include "magichost.h"
 
+#include "fastpasshost.h"
+#include "fastpassflow.h"
+
 extern Topology *topology;
 extern std::priority_queue<Event *, std::vector<Event *>,
                            EventComparator> event_queue;
@@ -37,6 +40,7 @@ extern uint32_t num_outstanding_packets_at_100;
 extern uint32_t arrival_packets_at_50;
 extern uint32_t arrival_packets_at_100;
 extern uint32_t arrival_packets_count;
+extern uint32_t total_finished_flows;
 
 extern EmpiricalRandomVariable *nv_bytes;
 
@@ -150,6 +154,7 @@ void FlowFinishedEvent::process_event() {
     this->flow->finished = true;
     this->flow->finish_time = get_current_time();
     this->flow->flow_completion_time = this->flow->finish_time - this->flow->start_time;
+    total_finished_flows++;
     
     if(print_flow_result()){
         std::cout << std::setprecision(4) << std::fixed ;
@@ -457,5 +462,42 @@ SenderNotifyEvent::~SenderNotifyEvent() {
 void SenderNotifyEvent::process_event() {
     this->host->sender_notify_evt = NULL;
     this->host->notify_flow_status();
+}
+
+
+ArbiterProcessingEvent::ArbiterProcessingEvent(double time, FastpassArbiter* a) : Event(ARBITER_PROCESSING, time) {
+    this->arbiter = a;
+}
+
+ArbiterProcessingEvent::~ArbiterProcessingEvent() {
+}
+
+void ArbiterProcessingEvent::process_event() {
+    this->arbiter->arbiter_proc_evt = NULL;
+    this->arbiter->schedule_epoch();
+}
+
+
+FastpassFlowProcessingEvent::FastpassFlowProcessingEvent(double time, FastpassFlow* f) : Event(FASTPASS_FLOW_PROCESSING, time) {
+    this->flow = f;
+}
+
+FastpassFlowProcessingEvent::~FastpassFlowProcessingEvent() {
+}
+
+void FastpassFlowProcessingEvent::process_event() {
+    this->flow->send_data_pkt();
+}
+
+
+FastpassTimeoutEvent::FastpassTimeoutEvent(double time, FastpassFlow* f) : Event(FASTPASS_TIMEOUT, time) {
+    this->flow = f;
+}
+
+FastpassTimeoutEvent::~FastpassTimeoutEvent() {
+}
+
+void FastpassTimeoutEvent::process_event() {
+    this->flow->fastpass_timeout();
 }
 

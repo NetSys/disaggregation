@@ -35,7 +35,7 @@ public:
 
 class Host : public Node {
 public:
-  Host(uint32_t id, double rate, uint32_t queue_type);
+  Host(uint32_t id, double rate, uint32_t queue_type, uint32_t host_type);
   Queue *queue;
   int host_type;
 };
@@ -58,6 +58,7 @@ public:
   // Different Rates
   AggSwitch(uint32_t id, uint32_t nq1, double r1,
             uint32_t nq2, double r2, uint32_t queue_type);
+  Queue* queue_to_arbiter;
 };
 
 #endif

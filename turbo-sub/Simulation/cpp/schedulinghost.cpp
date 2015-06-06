@@ -6,6 +6,7 @@
 #include "packet.h"
 #include "debug.h"
 #include "params.h"
+#include "factory.h"
 
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
@@ -18,7 +19,7 @@ bool HostFlowComparator::operator() (Flow* a, Flow* b) {
 
 
 
-SchedulingHost::SchedulingHost(uint32_t id, double rate, uint32_t queue_type) : Host(id, rate, queue_type) {
+SchedulingHost::SchedulingHost(uint32_t id, double rate, uint32_t queue_type) : Host(id, rate, queue_type, SCHEDULING_HOST) {
     this->host_proc_event = NULL;
 }
 
@@ -83,6 +84,7 @@ PipelineSchedulingHost::PipelineSchedulingHost(uint32_t id, double rate, uint32_
     this->sender_rej_received_count = 0;
     this->sender_last_rts_send_time = 0;
     this->sender_rts_sent_count = 0;
+    this->host_type = PIPELINE_SCHEDULING_HOST;
 }
 
 void PipelineSchedulingHost::start(Flow* f) {
@@ -412,8 +414,9 @@ bool RTSComparator::operator() (RTSCTS* a, RTSCTS* b) {
     return a->sending_time > b->sending_time;
 }
 
-RTSCTSHost::RTSCTSHost(uint32_t id, double rate, uint32_t queue_type) : SchedulingHost(id, rate, queue_type) {
+RTSCTSHost::RTSCTSHost(uint32_t id, double rate, uint32_t queue_type) : SchedulingHost(id, rate, queue_type ) {
     this->active_CTS = NULL;
+    this->host_type = RTSCTS_HOST;
 }
 
 void RTSCTSHost::get_RTS(RTSCTS* rts) {

@@ -41,6 +41,7 @@ public:
 
   double magic_trans_slack;
   int magic_delay_scheduling;
+  int magic_inflate;
 
   int use_flow_trace;
   int smooth_cdf;
@@ -58,11 +59,12 @@ public:
   double ddc_mem_ratio;
   double ddc_disk_ratio;
   int ddc_normalize; //0: sender send, 1: receiver side, 2: both
+
   int deadline;
   int schedule_by_deadline;
   double avg_deadline;
 
-  int magic_inflate;
+
 
   double get_full_pkt_tran_delay(int size_in_byte = 1500)
   {
@@ -75,6 +77,9 @@ public:
 #define CAPABILITY_MEASURE_WASTE false
 #define CAPABILITY_NOTIFY_BLOCKING false
 #define CAPABILITY_HOLD false
+
+#define FASTPASS_EPOCH_TIME 0.000010
+#define FASTPASS_EPOCH_PKTS 8
 
 void read_experiment_parameters(std::string conf_filename, uint32_t exp_type); 
 

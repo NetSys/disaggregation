@@ -39,6 +39,8 @@ uint32_t arrival_packets_at_50;
 uint32_t arrival_packets_at_100;
 uint32_t arrival_packets_count = 0;
 
+uint32_t total_finished_flows = 0;
+
 extern DCExpParams params;
 extern double get_current_time();
 extern void add_to_event_queue(Event *);
@@ -91,7 +93,7 @@ void run_scenario() {
 
     last_evt_type = ev->type;
 
-    if(same_evt_count > 1000){
+    if(same_evt_count > 100){
       std::cout << "Ended event dead loop. Type:" << last_evt_type << "\n";
       break;
     }

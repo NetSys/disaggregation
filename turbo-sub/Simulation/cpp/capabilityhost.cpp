@@ -10,6 +10,7 @@
 
 #include "capabilityflow.h"
 #include "capabilityhost.h"
+#include "factory.h"
 
 
 extern double get_current_time();
@@ -69,6 +70,7 @@ CapabilityHost::CapabilityHost(uint32_t id, double rate, uint32_t queue_type)
     this->total_capa_schd_evt_count = 0;
     this->could_better_schd_count = 0;
     this->sender_notify_evt = NULL;
+    this->host_type = CAPABILITY_HOST;
 }
 
 void CapabilityHost::start_capability_flow(CapabilityFlow* f){
@@ -154,7 +156,7 @@ void CapabilityHost::send(){
 
         }
 
-//        //code for 4th priority level
+        //code for 4th priority level
         if(params.capability_fourth_level && !pkt_sent && flows_tried.size() > 0){
             std::vector<CapabilityFlow*> candidate;
             for(int i = 0; i < flows_tried.size(); i++){

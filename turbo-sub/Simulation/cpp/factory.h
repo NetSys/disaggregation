@@ -34,6 +34,7 @@
 #define FOUNTAIN_FLOW_PIPELINE_SCHEDULING_HOST 111
 #define CAPABILITY_FLOW 112
 #define MAGIC_FLOW 113
+#define FASTPASS_FLOW 114
 
 /* Host types */
 #define NORMAL_HOST 1
@@ -42,6 +43,8 @@
 #define PIPELINE_SCHEDULING_HOST 11
 #define CAPABILITY_HOST 12
 #define MAGIC_HOST 13
+#define FASTPASS_HOST 14
+#define FASTPASS_ARBITER 10
 
 class Factory {
 public:

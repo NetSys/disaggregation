@@ -13,8 +13,7 @@ class FlowProcessingEvent;
 class Flow {
 
 public:
-  Flow(uint32_t id, double start_time, uint32_t size,
-    Host *s, Host *d);
+  Flow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d);
 
   ~Flow(); // Destructor
 
@@ -24,6 +23,7 @@ public:
   virtual Packet *send(uint32_t seq);
   virtual void send_ack(uint32_t seq, std::vector<uint32_t> sack_list);
   virtual void receive_ack(uint32_t ack, std::vector<uint32_t> sack_list);
+  void receive_data_pkt(Packet* p);
   virtual void receive(Packet *p);
 
   // Only sets the timeout if needed; i.e., flow hasn't finished

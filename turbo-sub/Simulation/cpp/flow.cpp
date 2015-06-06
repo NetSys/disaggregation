@@ -156,49 +156,60 @@ void Flow::receive(Packet *p) {
 
 
   if (p->type == ACK_PACKET) {
-    Ack *a = (Ack *) p;
-    receive_ack(a->seq_no, a->sack_list);
-    delete p;
-    return;
+      Ack *a = (Ack *) p;
+      receive_ack(a->seq_no, a->sack_list);
+  }
+  else if(p->type == NORMAL_PACKET)
+  {
+      this->receive_data_pkt(p);
+  }
+  else
+  {
+      assert(false);
   }
 
-  received_count++;
-  total_queuing_time += p->total_queuing_delay;
-
-  if (received.count(p->seq_no) == 0) {
-    received[p->seq_no] = true;
-    if(num_outstanding_packets >= ((p->size - hdr_size) / (mss)))
-        num_outstanding_packets -= ((p->size - hdr_size) / (mss));
-    else
-        num_outstanding_packets = 0;
-    received_bytes += (p->size - hdr_size);
-  } else {
-    duplicated_packets_received += 1;
-  }
-  if (p->seq_no > max_seq_no_recv) {
-    max_seq_no_recv = p->seq_no;
-  }
-  // Determing which ack to send
-  uint32_t s = recv_till;
-  bool in_sequence = true;
-  std::vector<uint32_t> sack_list;
-  while (s <= max_seq_no_recv) {
-    if (received.count(s) > 0) {
-      if (in_sequence) {
-        recv_till += mss;
-      } else {
-        sack_list.push_back(s);
-      }
-    } else {
-      in_sequence = false;
-    }
-    s += mss;
-  }
 
   delete p;
-  send_ack(recv_till, sack_list); // Cumulative Ack
 }
 
+void Flow::receive_data_pkt(Packet * p)
+{
+    received_count++;
+    total_queuing_time += p->total_queuing_delay;
+
+    if (received.count(p->seq_no) == 0) {
+      received[p->seq_no] = true;
+      if(num_outstanding_packets >= ((p->size - hdr_size) / (mss)))
+          num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+      else
+          num_outstanding_packets = 0;
+      received_bytes += (p->size - hdr_size);
+    } else {
+      duplicated_packets_received += 1;
+    }
+    if (p->seq_no > max_seq_no_recv) {
+      max_seq_no_recv = p->seq_no;
+    }
+    // Determing which ack to send
+    uint32_t s = recv_till;
+    bool in_sequence = true;
+    std::vector<uint32_t> sack_list;
+    while (s <= max_seq_no_recv) {
+      if (received.count(s) > 0) {
+        if (in_sequence) {
+          recv_till += mss;
+        } else {
+          sack_list.push_back(s);
+        }
+      } else {
+        in_sequence = false;
+      }
+      s += mss;
+    }
+
+    send_ack(recv_till, sack_list); // Cumulative Ack
+
+}
 
 void Flow::set_timeout(double time) {
   if (last_unacked_seq < size) {

@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "assert.h"
 #include "params.h"
+#include "factory.h"
 
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
@@ -46,6 +47,7 @@ bool MagicFlowTimeoutComparator::operator() (MagicFlow* a, MagicFlow* b) {
 MagicHost::MagicHost(uint32_t id, double rate, uint32_t queue_type) : SchedulingHost(id, rate, queue_type) {
   this->flow_sending = NULL;
   this->recv_busy_until = 0;
+  this->host_type = MAGIC_HOST;
 }
 
 void MagicHost::start(Flow* f) {

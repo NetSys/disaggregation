@@ -1,6 +1,7 @@
 
 #include "topology.h"
 #include "factory.h"
+#include "fastpasshost.h"
 
 extern DCExpParams params;
 
@@ -9,7 +10,10 @@ extern DCExpParams params;
   uint32_t num_agg_switches = 9;
   uint32_t num_core_switches = 4;
 */
-Topology::Topology() {}
+Topology::Topology()
+{
+    arbiter = NULL;
+}
 
 /*
  *PFabric topology with 144 hosts (16, 9, 4)
@@ -33,11 +37,14 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
   for (uint32_t i = 0; i < num_hosts; i++) {
     hosts.push_back(Factory::get_host(i, c1, queue_type, params.host_type)); // new Host(i, c1, queue_type)
   }
+  if(params.flow_type == FASTPASS_FLOW)
+  {
+      arbiter = new FastpassArbiter(num_hosts, c1, queue_type);
+  }
 
   // Create Switches
   for (uint32_t i = 0; i < num_agg_switches; i++) {
-    AggSwitch* sw = new AggSwitch(i, hosts_per_agg_switch, c1,
-        num_core_switches, c2, queue_type);
+    AggSwitch* sw = new AggSwitch(i, hosts_per_agg_switch, c1, num_core_switches, c2, queue_type);
     agg_switches.push_back(sw); // TODO make generic
     switches.push_back(sw);
   }
@@ -47,6 +54,7 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
     core_switches.push_back(sw);
     switches.push_back(sw);
   }
+  agg_switches[0]->queue_to_arbiter = Factory::get_queue(num_agg_switches + num_core_switches, c1, params.queue_size, queue_type, 0, 3);
 
 
   //Connect host queues
@@ -54,6 +62,9 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
     hosts[i]->queue->set_src_dst(hosts[i], agg_switches[i/16]);
     //std::cout << "Linking Host " << i << " to Agg " << i/16 << "\n";
   }
+  if(params.flow_type == FASTPASS_FLOW)
+      arbiter->queue->set_src_dst(arbiter, agg_switches[0]);
+
 
   // For agg switches -- REMAINING
   for (uint32_t i = 0; i < num_agg_switches; i++) {
@@ -70,6 +81,8 @@ PFabricTopology::PFabricTopology(uint32_t num_hosts, uint32_t num_agg_switches,
       //std::cout << "Linking Agg " << i << " to Core" << j << "\n";
     }
   }
+  agg_switches[0]->queue_to_arbiter->set_src_dst(agg_switches[0], arbiter);
+
 
   //For core switches -- PERFECT
   for (uint32_t i = 0; i < num_core_switches; i++) {
@@ -86,34 +99,45 @@ Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
   //if(p->flow->id == 61 || p->flow->id == 70)
   //  std::cout << "PFabricTopology::get_next_hop() fid:" << p->flow->id << " seq:" << p->seq_no << " ptr:" << p << " qloc:" << q->location << "\n";
 
+
   if (q->dst->type == HOST) {
-    return NULL; // Packet Arrival
+      return NULL; // Packet Arrival
   }
 
   // At host level
   if (q->src->type == HOST) { // Same Rack or not
-    assert (p->src->id == q->src->id);
+      assert (p->src->id == q->src->id);
 
-    if (p->src->id / 16 == p->dst->id / 16) {
-      return ((Switch *) q->dst)->queues[p->dst->id % 16];
-    } else {
-      uint32_t hash_port = 0;
-      if(params.load_balancing == 0)
-        hash_port = q->spary_counter++%4;
-      else if(params.load_balancing == 1)
-        hash_port = (p->src->id + p->dst->id + p->flow->id) % 4;
-      return ((Switch *) q->dst)->queues[16 + hash_port];
-    }
+
+      if (p->src->id / 16 == p->dst->id / 16 || (params.flow_type == FASTPASS_FLOW && p->src->host_type == FASTPASS_ARBITER && p->dst->id / 16 == 0)) {
+          return ((Switch *) q->dst)->queues[p->dst->id % 16];
+      } else {
+          uint32_t hash_port = 0;
+          if(params.load_balancing == 0)
+              hash_port = q->spary_counter++%4;
+          else if(params.load_balancing == 1)
+              hash_port = (p->src->id + p->dst->id + p->flow->id) % 4;
+          return ((Switch *) q->dst)->queues[16 + hash_port];
+      }
   }
 
   // At switch level
   if (q->src->type == SWITCH) {
-    if (((Switch *) q->src)->switch_type == AGG_SWITCH) {
-      return ((Switch *) q->dst)->queues[p->dst->id / 16];
-    }
-    if (((Switch *) q->src)->switch_type == CORE_SWITCH) {
-      return ((Switch *) q->dst)->queues[p->dst->id % 16];
-    }
+      if (((Switch *) q->src)->switch_type == AGG_SWITCH) {
+          if(params.flow_type == FASTPASS_FLOW && p->dst->host_type == FASTPASS_ARBITER)
+              return ((Switch *) q->dst)->queues[0];
+          else
+              return ((Switch *) q->dst)->queues[p->dst->id / 16];
+      }
+      if (((Switch *) q->src)->switch_type == CORE_SWITCH) {
+          if(params.flow_type == FASTPASS_FLOW && p->dst->host_type == FASTPASS_ARBITER)
+          {
+              assert(((Switch*)q->dst)->id == 0);
+              return ((AggSwitch *) q->dst)->queue_to_arbiter;
+          }
+          else
+              return ((Switch *) q->dst)->queues[p->dst->id % 16];
+      }
   }
 
   assert(false);
@@ -164,7 +188,7 @@ BigSwitchTopology::BigSwitchTopology(uint32_t num_hosts, double bandwidth, uint3
 
   // Create Hosts
   for (uint32_t i = 0; i < num_hosts; i++) {
-    hosts.push_back(new Host(i, c1, queue_type));
+    hosts.push_back(Factory::get_host(i, c1, queue_type, params.host_type));
   }
 
   the_switch = new CoreSwitch(0, num_hosts, c1, queue_type);
