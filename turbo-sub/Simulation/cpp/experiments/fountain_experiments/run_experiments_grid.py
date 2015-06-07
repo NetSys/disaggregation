@@ -37,8 +37,8 @@ capability_resend_timeout: 9
 capability_initial: 8
 capability_window: 8
 capability_window_timeout: 25
-capability_thrid_level: 1
-capability_forth_level: 0
+capability_third_level: 1
+capability_fourth_level: 0
 ddc: 0
 ddc_cpu_ratio: 0.33
 ddc_mem_ratio: 0.33
@@ -59,6 +59,7 @@ experiments = {}
 schemes = {
 	"pfabric" : [2, 1],
 	"capability-prio" : [112, 12],
+    "fastpass" : [114, 14],
 #	"magic" : [113, 13]
 }
 

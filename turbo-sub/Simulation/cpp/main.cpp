@@ -21,6 +21,7 @@
 
 #include "factory.h"
 #include "random_variable.h"
+#include "fastpasshost.h"
 
 using namespace std;
 
@@ -64,6 +65,8 @@ const std::string currentDateTime() {
 
 /* Runs a initialized scenario */
 void run_scenario() {
+  if(params.flow_type == FASTPASS_FLOW)
+      ((PFabricTopology*)topology)->arbiter->start_arbiter();
   // Flow Arrivals create new flow arrivals
   // Add the first flow arrival
   if (flow_arrivals.size() > 0) {
@@ -93,7 +96,7 @@ void run_scenario() {
 
     last_evt_type = ev->type;
 
-    if(same_evt_count > 100){
+    if(same_evt_count > 1000){
       std::cout << "Ended event dead loop. Type:" << last_evt_type << "\n";
       break;
     }

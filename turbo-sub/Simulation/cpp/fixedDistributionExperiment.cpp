@@ -326,15 +326,15 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
 
   if (params.cut_through == 1) {
-    topology = new CutThroughTopology(params.num_hosts, params.num_agg_switches,
-    params.num_core_switches, params.bandwidth, params.queue_type);
-  } else {
-    if(params.big_switch){
-      topology = new BigSwitchTopology(params.num_hosts, params.bandwidth, params.queue_type);
-    }else{
-      topology = new PFabricTopology(params.num_hosts, params.num_agg_switches,
+      topology = new CutThroughTopology(params.num_hosts, params.num_agg_switches,
       params.num_core_switches, params.bandwidth, params.queue_type);
-    }
+  } else {
+      if(params.big_switch){
+          topology = new BigSwitchTopology(params.num_hosts, params.bandwidth, params.queue_type);
+      }else{
+          topology = new PFabricTopology(params.num_hosts, params.num_agg_switches,
+          params.num_core_switches, params.bandwidth, params.queue_type);
+      }
   }
 
 
