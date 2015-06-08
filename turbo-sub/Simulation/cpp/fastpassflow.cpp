@@ -43,6 +43,7 @@ void FastpassFlow::send_schedule_pkt(FastpassEpochSchedule* schd) {
     add_to_event_queue(new PacketQueuingEvent(get_current_time(), pkt, ((PFabricTopology*) topology)->arbiter->queue));
 }
 
+
 int FastpassFlow::next_pkt_to_send()
 {
     int pkt = this->sender_last_pkt_sent;
