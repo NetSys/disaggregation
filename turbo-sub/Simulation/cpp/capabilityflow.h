@@ -4,6 +4,7 @@
 #include "fountainflow.h"
 #include "custompriorityqueue.h"
 #include <map>
+#include <set>
 
 
 struct Capability //for extendability
@@ -45,7 +46,7 @@ public:
     int get_next_capa_seq_num();
 
     std::priority_queue<Capability*, std::vector<Capability*>, CapabilityComparator> capabilities;
-    std::map<int, int> packets_received;
+    std::set<int> packets_received;
     int last_capa_data_seq_num_sent;
     int received_until;
     bool finished_at_receiver;

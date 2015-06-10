@@ -109,7 +109,14 @@ Queue *PFabricTopology::get_next_hop(Packet *p, Queue *q) {
       assert (p->src->id == q->src->id);
 
 
-      if (p->src->id / 16 == p->dst->id / 16 || (params.flow_type == FASTPASS_FLOW && p->src->host_type == FASTPASS_ARBITER && p->dst->id / 16 == 0)) {
+      if (p->src->id / 16 == p->dst->id / 16 ||
+              (params.flow_type == FASTPASS_FLOW && (
+                          (p->src->host_type == FASTPASS_ARBITER && p->dst->id / 16 == 0) ||
+                          (p->dst->host_type == FASTPASS_ARBITER && p->src->id / 16 == 0)
+                      )
+              )
+         )
+      {
           return ((Switch *) q->dst)->queues[p->dst->id % 16];
       } else {
           uint32_t hash_port = 0;

@@ -2,7 +2,7 @@
 #define STATS_H
 
 #include <map>
-
+#include <vector>
 class Stats
 {
 private:
@@ -12,6 +12,7 @@ private:
     bool get_dist;
     std::map<double, int> distribution;
     int dist_round_precision;
+    std::vector<double> raw;
 
 public:
     Stats(bool get_dist = false);
@@ -24,6 +25,7 @@ public:
     double total();
     double sd();
     void set_precision();
+    double get_percentile(double p);
 };
 
 

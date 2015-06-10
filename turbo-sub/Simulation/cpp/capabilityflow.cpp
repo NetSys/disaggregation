@@ -37,10 +37,7 @@ CapabilityFlow::CapabilityFlow(uint32_t id, double start_time, uint32_t size, Ho
     this->notified_num_flow_at_sender = 1;
     this->last_capa_data_seq_num_sent = -1;
     this->received_until = 0;
-    for(int i = 0; i < this->size_in_pkt; i++)
-    {
-        packets_received[i] = 0;
-    }
+
 }
 
 
@@ -96,10 +93,10 @@ void CapabilityFlow::receive(Packet *p)
             std::cout << get_current_time() << " flow " << this->id << " hasn't receive rts\n";
         assert(this->rts_received || params.cut_through);
 
-        if(packets_received[p->capa_data_seq] == 0){
-            packets_received[p->capa_data_seq] = 1;
+        if(packets_received.count(p->capa_data_seq) == 0){
+            packets_received.insert(p->capa_data_seq);
             received_count++;
-            while(received_until < size_in_pkt && packets_received[received_until] == 1)
+            while(received_until < size_in_pkt && packets_received.count(received_until) > 0)
             {
                 received_until++;
             }
@@ -251,7 +248,7 @@ int CapabilityFlow::get_next_capa_seq_num()
     int data_seq = (last_capa_data_seq_num_sent + 1)%this->size_in_pkt;
     while(count < this->size_in_pkt)
     {
-        if(packets_received[data_seq] == 0)
+        if(packets_received.count(data_seq) == 0)
         {
             assert(data_seq >= 0 && data_seq < size_in_pkt);
             return data_seq;

@@ -3,6 +3,7 @@
 
 #include "flow.h"
 #include <unordered_map>
+#include <set>
 
 class FastpassEpochSchedule;
 
@@ -21,7 +22,8 @@ public:
     void fastpass_timeout();
 
     int sender_remaining_num_pkts;
-    std::unordered_map<int,bool> sender_acked;
+    std::set<int> sender_acked;
+    std::set<int> receiver_received;
     int sender_acked_count;
     int sender_acked_until;
     int sender_last_pkt_sent;

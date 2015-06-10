@@ -9,6 +9,7 @@ extern Topology *topology;
 extern double get_current_time();
 extern void add_to_event_queue(Event*);
 extern DCExpParams params;
+extern uint32_t num_outstanding_packets;
 
 FastpassFlow::FastpassFlow(uint32_t id, double start_time, uint32_t size,
         Host *s, Host *d) :
@@ -20,8 +21,6 @@ FastpassFlow::FastpassFlow(uint32_t id, double start_time, uint32_t size,
     this->sender_acked_until = 0;
     this->sender_last_pkt_sent = -1;
     this->sender_finished = false;
-    for(int i = 0; i < this->size_in_pkt; i++)
-        sender_acked[i] = false;
 }
 
 void FastpassFlow::start_flow() {
@@ -51,7 +50,7 @@ int FastpassFlow::next_pkt_to_send()
         pkt++;
         if(pkt >= this->size_in_pkt)
             pkt = sender_acked_until;
-        if(!sender_acked[pkt])
+        if(sender_acked.count(pkt) == 0)
             return pkt;
     }
 }
@@ -93,15 +92,24 @@ void FastpassFlow::receive(Packet *p) {
             std::cout << get_current_time() << " flow " << this->id << " received data seq" << p->seq_no << "\n";
         this->send_ack_pkt(p->seq_no);
         this->received_bytes += mss;
+        if(receiver_received.count(p->seq_no) == 0)
+        {
+            receiver_received.insert(p->seq_no);
+            if(num_outstanding_packets >= ((p->size - hdr_size) / (mss)))
+                num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+            else
+                num_outstanding_packets = 0;
+        }
+
     } else if (p->type == ACK_PACKET) {
         if(debug_flow(this->id))
             std::cout << get_current_time() << " flow " << this->id << " received ack seq" << p->seq_no << "\n";
         int acked_pkt = p->seq_no/mss;
-        if(!sender_acked[acked_pkt])
+        if(sender_acked.count(acked_pkt) == 0)
         {
-            sender_acked[acked_pkt] = true;
+            sender_acked.insert(acked_pkt);
             sender_acked_count++;
-            while(sender_acked[sender_acked_until]){
+            while(sender_acked.count(sender_acked_until) > 0){
                 sender_acked_until++;
             }
         }

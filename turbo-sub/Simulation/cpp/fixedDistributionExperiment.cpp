@@ -27,6 +27,7 @@
 #include "fountainflow.h"
 #include "stats.h"
 #include "capabilityflow.h"
+#include "math.h"
 
 extern Topology *topology;
 extern double current_time;
@@ -386,11 +387,11 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   write_flows_to_file(flows_sorted, "flow.tmp");
 
-  Stats slowdown, inflation, fct, oracle_fct, first_send_time, slowdown_0_100, slowdown_100_inf;
+  Stats slowdown, inflation, fct, oracle_fct, first_send_time, slowdown_0_100, slowdown_100k_10m, slowdown_10m_inf;
   Stats data_pkt_sent, parity_pkt_sent, data_pkt_drop, parity_pkt_drop, deadline;
   std::map<unsigned, Stats*> slowdown_by_size, queuing_delay_by_size, capa_sent_by_size,
       fct_by_size, drop_rate_by_size, wait_time_by_size, first_hop_depart_by_size, last_hop_depart_by_size,
-      capa_waste_by_size;
+      capa_waste_by_size, log_slow_down_in_bytes;
 
 
   std::cout << std::setprecision(4) ;
@@ -415,6 +416,13 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
         last_hop_depart_by_size[f->size_in_pkt] = new Stats();
         capa_waste_by_size[f->size_in_pkt] = new Stats();
     }
+    int log_flow_size_in_bytes = (int)log10(f->size);
+    if(log_slow_down_in_bytes.find(log_flow_size_in_bytes) == log_slow_down_in_bytes.end())
+    {
+        log_slow_down_in_bytes[log_flow_size_in_bytes] = new Stats();
+    }
+
+    log_slow_down_in_bytes[log_flow_size_in_bytes]->input_data(slow);
     slowdown_by_size[f->size_in_pkt]->input_data(slow);
     queuing_delay_by_size[f->size_in_pkt]->input_data(f->get_avg_queuing_delay_in_us());
     fct_by_size[f->size_in_pkt]->input_data(f->flow_completion_time * 1000000);
@@ -434,8 +442,10 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     slowdown += slow;
     if(f->size < 100 * 1024)
         slowdown_0_100 += slow;
+    else if(f->size < 10 * 1024 * 1024)
+        slowdown_100k_10m += slow;
     else
-        slowdown_100_inf += slow;
+        slowdown_10m_inf += slow;
     inflation += (double)f->total_pkt_sent / (f->size/f->mss);
     fct += (1000000.0 * f->flow_completion_time);
     oracle_fct += topology->get_oracle_fct(f);
@@ -457,6 +467,12 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
 
   std::cout << "\n";
 
+  std::cout << "Slowdown Log Scale: ";
+  for(auto it = log_slow_down_in_bytes.begin(); it != log_slow_down_in_bytes.end(); ++it){
+      std::cout << pow(10, it->first) << ":" << it->second->avg() << " ";
+  }
+  std::cout << "\n";
+
   int i = 0;
   for(auto it = slowdown_by_size.begin(); it != slowdown_by_size.end() && i < 6; ++it, ++i){
       unsigned key = it->first;
@@ -469,7 +485,9 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
       std::cout << " WST:" << capa_waste_by_size[it->first]->total()/capa_sent_by_size[it->first]->total();
       std::cout << "    ";
   }
-  std::cout << " [0,100k]: " << slowdown_0_100.avg() << " [100k, inf]: " << slowdown_100_inf.avg();
+  std::cout << " [0,100k]avg: " << slowdown_0_100.avg() << " [0,100k]99p: " << slowdown_0_100.get_percentile(0.99)
+          << " [100k,10m]avg: " << slowdown_100k_10m.avg() << " [100k,10m]99p: " << slowdown_100k_10m.get_percentile(0.99)
+          << " [10m,inf]avg: " << slowdown_10m_inf.avg() << " [10m,inf]99p: " << slowdown_10m_inf.get_percentile(0.99);
   std::cout << "\n";
 
   printQueueStatistics(topology);
