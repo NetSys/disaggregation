@@ -20,10 +20,11 @@ public:
     void schedule_send_pkt(double time);
     int next_pkt_to_send();
     void fastpass_timeout();
+    void finish_flow();
 
     int sender_remaining_num_pkts;
-    std::set<int> sender_acked;
-    std::set<int> receiver_received;
+    std::set<int>* sender_acked;
+    std::set<int>* receiver_received;
     int sender_acked_count;
     int sender_acked_until;
     int sender_last_pkt_sent;

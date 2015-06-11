@@ -17,7 +17,10 @@ extern Topology *topology;
 
 bool FastpassFlowComparator::operator() (FastpassFlow* a, FastpassFlow* b)
 {
-    return a->arbiter_remaining_num_pkts > b->arbiter_remaining_num_pkts;
+    if(params.schedule_by_deadline)
+        return a->deadline > b->deadline;
+    else
+        return a->arbiter_remaining_num_pkts > b->arbiter_remaining_num_pkts;
 }
 
 
@@ -51,11 +54,17 @@ FastpassHost::FastpassHost(uint32_t id, double rate, uint32_t queue_type)
 
 void FastpassHost::receive_schedule_pkt(FastpassSchedulePkt* pkt)
 {
-    assert(pkt->schedule->start_time >= get_current_time());
+    if(pkt->schedule->start_time < get_current_time())
+    {
+        std::cout << get_current_time() << " " << "pkt->schedule->start_time < get_current_time()\n";
+    }
     for(int i = 0; i < FASTPASS_EPOCH_PKTS; i++)
     {
-        if(pkt->schedule->schedule[i])
-            pkt->schedule->schedule[i]->schedule_send_pkt(pkt->schedule->start_time + i * FASTPASS_EPOCH_TIME / FASTPASS_EPOCH_PKTS);
+        if(pkt->schedule->schedule[i]){
+            double scheudle_time = pkt->schedule->start_time + i * FASTPASS_EPOCH_TIME / FASTPASS_EPOCH_PKTS;
+            if(scheudle_time >= get_current_time())
+                pkt->schedule->schedule[i]->schedule_send_pkt(scheudle_time);
+        }
     }
     delete pkt->schedule;
 }

@@ -7,9 +7,9 @@ import os
 
 os.system("cd ../..;make;cd -")
 
-conf_str = '''init_cwnd: 4
-max_cwnd: 7
-retx_timeout: 0.0000095
+conf_str = '''init_cwnd: 12
+max_cwnd: 14
+retx_timeout: 0.000045
 queue_size: {0}
 propagation_delay: 0.0000002
 bandwidth: 10000000000.0
@@ -57,16 +57,15 @@ def get_mean_flow_size(cdf_file):
 experiments = {}
 
 schemes = {
-	"pfabric" : [2, 1],
-	"capability-prio" : [112, 12],
+#	"pfabric" : [2, 1],
+#	"capability-prio" : [112, 12],
     "fastpass" : [114, 14],
 #	"magic" : [113, 13]
 }
 
 nflow = [100]
-qsize = [6200]
-load = [0.5, 0.6, 0.7, 0.8, 0.9]
-#load = [0.6, 0.8]
+qsize = [36864]
+load = [0.5, 0.6, 0.7, 0.8]
 #load = ["burst"]
 #fsize = ["00short", "10short", "20short", "30short", "40short", "50short", "60short", "70short", "80short", "90short", "allshort"]
 #fsize = ["92short", "94short", "96short", "98short", "99short", "99.2short", "99.4short", "99.6short", "99.8short"]
@@ -97,6 +96,7 @@ def run_exp(exp_name):
     	cmd = ['../../simulator', '6', conf_file_name]
         print " ".join(cmd)
         subprocess.call(cmd, stdout = res_file)
+        print "!!!finished" + " ".join(cmd)
 
 threads = []
 for exp_name in experiments:

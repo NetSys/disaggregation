@@ -121,6 +121,7 @@ void FlowArrivalEvent::process_event() {
       std::cout << "## " << current_time << " NumPacketOutstanding " << num_outstanding_packets
               << " NumUnfinishedFlows " << num_unfinished_flows << " StartedFlows " << flow_arrival_count
               << " StartedPkts " << arrival_packets_count << "\n";
+      std::cout << std::flush;
   }
 
 }
@@ -349,6 +350,7 @@ void FlowCreationForInitializationEventWithTimeLimit::process_event() {
   std::cout << 1000000.0 * time << " Generating new flow " << id << " of size "
    << size << " between " << src->id << " " << dst->id << "\n";
 
+
   double tnext = time + nv_intarr->value();
   if (tnext < time_limit)
     add_to_event_queue(
@@ -393,6 +395,7 @@ void LoggingEvent::process_event() {
     << " NumPacketOutstanding " << num_outstanding_packets
     << " NumUnfinishedFlows " << num_unfinished_flows
     << " StartedFlows " << started_flows << "\n";
+  std::cout << std::flush;
 
   if (!finished_simulation && ttl > get_current_time()) {
     add_to_event_queue(new LoggingEvent(current_time + 0.01, ttl));

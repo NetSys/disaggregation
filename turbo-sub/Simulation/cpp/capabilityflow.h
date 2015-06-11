@@ -44,9 +44,10 @@ public:
     int init_capa_size();
     bool has_sibling_idle_source();
     int get_next_capa_seq_num();
+    void finish_flow();
 
     std::priority_queue<Capability*, std::vector<Capability*>, CapabilityComparator> capabilities;
-    std::set<int> packets_received;
+    std::set<int> *packets_received;
     int last_capa_data_seq_num_sent;
     int received_until;
     bool finished_at_receiver;

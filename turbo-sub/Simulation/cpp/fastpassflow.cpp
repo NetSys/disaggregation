@@ -21,6 +21,8 @@ FastpassFlow::FastpassFlow(uint32_t id, double start_time, uint32_t size,
     this->sender_acked_until = 0;
     this->sender_last_pkt_sent = -1;
     this->sender_finished = false;
+    this->sender_acked = new std::set<int>();
+    this->receiver_received = new std::set<int>();
 }
 
 void FastpassFlow::start_flow() {
@@ -50,7 +52,7 @@ int FastpassFlow::next_pkt_to_send()
         pkt++;
         if(pkt >= this->size_in_pkt)
             pkt = sender_acked_until;
-        if(sender_acked.count(pkt) == 0)
+        if(sender_acked && sender_acked->count(pkt) == 0)
             return pkt;
     }
 }
@@ -92,9 +94,9 @@ void FastpassFlow::receive(Packet *p) {
             std::cout << get_current_time() << " flow " << this->id << " received data seq" << p->seq_no << "\n";
         this->send_ack_pkt(p->seq_no);
         this->received_bytes += mss;
-        if(receiver_received.count(p->seq_no) == 0)
+        if(receiver_received && receiver_received->count(p->seq_no) == 0)
         {
-            receiver_received.insert(p->seq_no);
+            receiver_received->insert(p->seq_no);
             if(num_outstanding_packets >= ((p->size - hdr_size) / (mss)))
                 num_outstanding_packets -= ((p->size - hdr_size) / (mss));
             else
@@ -105,11 +107,11 @@ void FastpassFlow::receive(Packet *p) {
         if(debug_flow(this->id))
             std::cout << get_current_time() << " flow " << this->id << " received ack seq" << p->seq_no << "\n";
         int acked_pkt = p->seq_no/mss;
-        if(sender_acked.count(acked_pkt) == 0)
+        if(sender_acked && sender_acked->count(acked_pkt) == 0)
         {
-            sender_acked.insert(acked_pkt);
+            sender_acked->insert(acked_pkt);
             sender_acked_count++;
-            while(sender_acked.count(sender_acked_until) > 0){
+            while(sender_acked->count(sender_acked_until) > 0){
                 sender_acked_until++;
             }
         }
@@ -117,6 +119,7 @@ void FastpassFlow::receive(Packet *p) {
             this->sender_finished = true;
             this->update_remaining_size();
             add_to_event_queue(new FlowFinishedEvent(get_current_time(), this));
+            this->finish_flow();
         }
     } else {
         assert(false);
@@ -126,4 +129,14 @@ void FastpassFlow::receive(Packet *p) {
 
 void FastpassFlow::schedule_send_pkt(double time) {
     add_to_event_queue(new FastpassFlowProcessingEvent(time, this));
+}
+
+void FastpassFlow::finish_flow()
+{
+    this->sender_acked->clear();
+    this->receiver_received->clear();
+    delete this->sender_acked;
+    delete this->receiver_received;
+    this->sender_acked = NULL;
+    this->receiver_received = NULL;
 }
