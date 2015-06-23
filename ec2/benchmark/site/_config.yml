@@ -1,0 +1,4 @@
+auto: True
+server: True
+pygments: True
+markdown: maruku
