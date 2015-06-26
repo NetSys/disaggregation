@@ -29,7 +29,6 @@ import datetime
 import re
 import multiprocessing
 from StringIO import StringIO
-from pg8000 import DBAPI
 import shutil
 
 # A scratch directory on your filesystem
@@ -242,39 +241,6 @@ def parse_args():
     parser.print_help()
     sys.exit(1)
 
-  if opts.impala and (opts.impala_identity_file is None or
-                      opts.impala_hosts is None):
-    print >> stderr, "Impala requires identity file and hostname"
-    sys.exit(1)
-
-  if opts.spark and (opts.spark_identity_file is None or
-                     opts.spark_host is None):
-    print >> stderr, \
-        "Spark requires identity file and hostname"
-    sys.exit(1)
-
-  if opts.shark and (opts.shark_identity_file is None or
-                     opts.shark_host is None):
-    print >> stderr, \
-        "Shark requires identity file and hostname"
-    sys.exit(1)
-
-  if opts.redshift and (opts.redshift_username is None or
-                        opts.redshift_password is None or
-                        opts.redshift_host is None or
-                        opts.redshift_database is None):
-    print >> stderr, \
-        "Redshift requires host, username, password and db"
-    sys.exit(1)
-
-  if opts.impala:
-    hosts = opts.impala_hosts.split(",")
-    print >> stderr, "Impala hosts:\n%s" % "\n".join(hosts)
-    opts.impala_hosts = hosts
-
-  if opts.hive or opts.hive_cdh:
-    opts.hive_slaves = opts.hive_slaves.split(",")
-    print >> stderr, "Hive slaves:\n%s" % "\n".join(opts.hive_slaves)
 
   if opts.query_num not in QUERY_MAP:
     print >> stderr, "Unknown query number: %s" % opts.query_num
@@ -283,7 +249,7 @@ def parse_args():
   return opts
 
 # Run a command on a host through ssh, throwing an exception if ssh fails
-def ssh(host, username, identity_file, command):
+def ssh(command):
   print command
   return os.system(command)
 
