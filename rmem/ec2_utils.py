@@ -6,7 +6,7 @@ def banner(content):
 
 def run(cmd):
   print "###Running local cmd:" + cmd
-  os.system(cmd)
+  os.system("source ~/.bash_profile; %s" % cmd)
 
 def run_and_get(cmd):
   return commands.getstatusoutput(cmd)
@@ -28,12 +28,16 @@ def scp_to(local_file, remote_file, remote_machine):
   scp_cmd = "scp -q %s %s:%s" % (local_file, remote_machine, remote_file)
   os.system(scp_cmd)
 
-def slaves_run(cmd):
+def slaves_run(cmd, background = False):
   lines = get_slaves()
   for s in lines:
-    command = "ssh " + s + " \"" + cmd + "\""
+    command = "ssh " + s + " \"" + cmd + "\"" + " &> /dev/null &" if background else ""
     print "#####Running cmd:" + command
     os.system(command)
+
+def all_run(cmd, background = False):
+  slaves_run(cmd, background)
+  run(cmd)
 
 bash_run_counter = 0
 def slaves_run_bash(cmd, silent = False, background = False):
@@ -49,7 +53,7 @@ def slaves_run_bash(cmd, silent = False, background = False):
   for s in lines:
     scp_to("/root/disaggregation/rmem/.cmd_temp.sh", "/root/disaggregation/rmem/.remote_commands/cmd_%d.sh" % bash_run_counter, s)
 
-    command = "ssh %s \"sh /root/disaggregation/rmem/.remote_commands/cmd_%d.sh%s%s\"" % (s, bash_run_counter, " > /root/disaggregation/rmem/.remote_commands/cmd_" + str(bash_run_counter) + ".log 2>&1" if silent else "", " &" if background else "")
+    command = "ssh %s \"sh /root/disaggregation/rmem/.remote_commands/cmd_%d.sh%s%s\"" % (s, bash_run_counter, (" > /root/disaggregation/rmem/.remote_commands/cmd_" + str(bash_run_counter) + ".log 2>&1") if silent else "", " &" if background else "")
     print "#####Running cmd:" + command
     os.system(command)
 

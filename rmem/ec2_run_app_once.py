@@ -158,7 +158,7 @@ def collect_trace():
     
 
 
-def run_spark_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
 
@@ -177,13 +177,24 @@ def run_spark_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
 
   master = get_master()
 
+  banner("Running app")
   if task == "wordcount":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount")
     start_time = time.time()
-    run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
+    run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
     time_used = time.time() - start_time
-  elif task == "sort":
-    pass
+  elif task == "terasort":
+    run("/root/ephemeral-hdfs/bin/start-mapred.sh")
+    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
+    start_time = time.time()
+    run("/root/ephemeral-hdfs/bin/hadoop jar /root/ephemeral-hdfs/hadoop-examples-1.0.4.jar terasort hdfs://%s:9000/sortinput hdfs://%s:9000/sortoutput" % (master, master))
+    time_used = time.time() - start_time
+    run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
+  elif task == "als":
+    all_run("rm -rf /mnt/netflix_m/out")
+    start_time = time.time()
+    run("mpiexec -n 10 -hostfile ~/machines /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt/netflix_m/ --max_iter=3 --ncpus=1 --minval=1 --maxval=5 --predictions=/mnt/netflix_m/out/out")
+    time_used = time.time() - start_time
 
   if trace:
     collect_trace()
@@ -193,7 +204,7 @@ def run_spark_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   print "Execution time:" + str(time_used)
   return time_used
 
-def teragen(size = 1):
+def teragen(size = 2):
   num_record = size * 1024 * 1024 * 1024 / 100
   master = get_master()
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
@@ -201,14 +212,21 @@ def teragen(size = 1):
   run("/root/ephemeral-hdfs/bin/hadoop jar /root/ephemeral-hdfs/hadoop-examples-1.0.4.jar teragen %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
+def graphlab_prepare():
+  #all_run("yum install openmpi -y")
+  #all_run("yum install openmpi-devel -y")
+  #all_run("echo 'export PATH=/usr/lib64/openmpi/bin/:\$PATH' > /root/.bashrc; echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:\$LD_LIBRARY_PATH' >> /root/.bashrc; source /root/.bashrc")
+  run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
+  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 20000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
+
 def main():
   opts = parse_args()
-  if opts.task == "wordcount":
-    run_spark_exp(opts.task, opts.remote_memory, opts.bandwidth, opts.latency, opts.inject, opts.trace)
+  if opts.task == "wordcount" or opts.task == "terasort" or opts.task == "als":
+    run_exp(opts.task, opts.remote_memory, opts.bandwidth, opts.latency, opts.inject, opts.trace)
   elif opts.task == "teragen":
     teragen()
-  elif opts.task == "sort":
-    run_spark_exp(opts.task, opts.remote_memory, opts.bandwidth, opts.latency, opts.inject, opts.trace)
+  elif opts.task == "graphlab-prepare":
+    graphlab_prepare()
   else:
     print "Unknow task %s" % opts.task
 
