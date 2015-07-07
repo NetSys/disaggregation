@@ -17,6 +17,8 @@ from optparse import OptionParser
 import os
 import time
 from ec2_utils import *
+import datetime
+import sys
 
 def parse_args():
   parser = OptionParser(usage="ec2_run_exp_once.py [options]")
@@ -27,6 +29,8 @@ def parse_args():
   parser.add_option("-l", "--latency", type="int", default=1, help="Latency in us")
   parser.add_option("-i", "--inject", action="store_true", default=False, help="Whether to inject latency")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
+  parser.add_option("--diff-latency", action="store_true", default=False, help="Experiment on different latency")
+  parser.add_option("--iter", type="int", default=1, help="Number of iterations")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -156,7 +160,16 @@ def collect_trace():
     scp_from("/root/disaggregation/rmem/.disk_io.blktrace.1", "%s/%d-disk-%s.blktrace.1" % (result_dir, count, s), s)
     scp_from("/root/disaggregation/rmem/.metadata", "%s/%d-meta-%s" % (result_dir, count, s), s)
     
-
+def get_rw_bytes():
+  reads = []
+  writes = []
+  slaves = get_slaves()
+  for s in slaves:
+    read_bytes = int(run_and_get("ssh root@%s \"cat /proc/sys/fs/rmem/read_bytes\"" % s)[1].replace("\n",""))
+    write_bytes = int(run_and_get("ssh root@%s \"cat /proc/sys/fs/rmem/write_bytes\"" % s)[1].replace("\n",""))
+    reads.append(read_bytes)
+    writes.append(write_bytes)
+  return (reads, writes)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   banner("Sync rmem code")
@@ -193,11 +206,24 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   elif task == "als":
     all_run("rm -rf /mnt/netflix_m/out")
     start_time = time.time()
-    run("mpiexec -n 10 -hostfile ~/machines /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt/netflix_m/ --max_iter=3 --ncpus=1 --minval=1 --maxval=5 --predictions=/mnt/netflix_m/out/out")
+    run("mpiexec -n 10 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt/netflix_m/ --max_iter=3 --ncpus=1 --minval=1 --maxval=5 --predictions=/mnt/netflix_m/out/out")
     time_used = time.time() - start_time
+  elif task == "memcached":
+    slaves_run("memcached -d -m 6000 -u root")
+    run("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/workloadb")
+    start_time = time.time()
+    run("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/workloadb")
+    time_used = time.time() - start_time
+    slaves_run("killall memcached")
 
   if trace:
     collect_trace()
+
+  (reads, writes) = get_rw_bytes()
+  print "Remote Reads:"
+  print reads
+  print "Remote Writes:"
+  print writes
 
   clean_existing_rmem()
 
@@ -212,23 +238,62 @@ def teragen(size = 2):
   run("/root/ephemeral-hdfs/bin/hadoop jar /root/ephemeral-hdfs/hadoop-examples-1.0.4.jar teragen %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
+def memcached_prepare():
+  all_run("yum install memcached -y")
+  #all_run("yum install python-memcached")
+  
+
 def graphlab_prepare():
   #all_run("yum install openmpi -y")
   #all_run("yum install openmpi-devel -y")
   #all_run("echo 'export PATH=/usr/lib64/openmpi/bin/:\$PATH' > /root/.bashrc; echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:\$LD_LIBRARY_PATH' >> /root/.bashrc; source /root/.bashrc")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
-  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 20000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
+  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 200000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
+
+def run_diff_latency(opts):
+  confs = []
+  confs.append((False, 0, 0))
+  confs.append((True, 1, 100))
+  confs.append((True, 1, 40))
+  confs.append((True, 1, 10))
+  confs.append((True, 10, 100))
+  confs.append((True, 10, 40))
+  confs.append((True, 10, 10))
+ 
+  results = {}
+  for conf in confs:
+    results[conf] = []
+
+  for i in range(0, opts.iter):
+    for conf in confs:
+      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False)
+      results[conf].append(time)
+
+  for conf in results:
+    result_str = "Latency: %d BW: %d Result: %s" % (conf[1], conf[2], ",".join(map(str, results[conf])))
+    log(result_str)
+    print result_str
 
 def main():
+  log("\n\n\n")
+  log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
+  log('Argument %s' % str(sys.argv))
+
   opts = parse_args()
-  if opts.task == "wordcount" or opts.task == "terasort" or opts.task == "als":
+  run_exp_tasks = ["wordcount", "terasort", "als", "memcached"]
+  
+  if opts.diff_latency:
+    run_diff_latency(opts)
+  elif opts.task in run_exp_tasks:
     run_exp(opts.task, opts.remote_memory, opts.bandwidth, opts.latency, opts.inject, opts.trace)
   elif opts.task == "teragen":
     teragen()
   elif opts.task == "graphlab-prepare":
     graphlab_prepare()
+  elif opts.task == "memcached-prepare":
+    memcached_prepare()
   else:
-    print "Unknow task %s" % opts.task
+    print "Unknown task %s" % opts.task
 
 if __name__ == "__main__":
   main()

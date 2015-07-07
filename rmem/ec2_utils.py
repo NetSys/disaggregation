@@ -16,6 +16,10 @@ def get_master():
       master = content_file.read().replace("\n","")
   return master
 
+def log(str):
+  f = open("/root/disaggregation/rmem/ec2_run_app_once.py.log", "a")
+  f.write(str + "\n")
+  f.close()
 
 def get_slaves():
   return [line.rstrip('\n') for line in open('/root/spark-ec2/slaves')]
@@ -31,7 +35,7 @@ def scp_to(local_file, remote_file, remote_machine):
 def slaves_run(cmd, background = False):
   lines = get_slaves()
   for s in lines:
-    command = "ssh " + s + " \"" + cmd + "\"" + " &> /dev/null &" if background else ""
+    command = "ssh " + s + " \"" + cmd + "\"" + (" &> /dev/null &" if background else "")
     print "#####Running cmd:" + command
     os.system(command)
 
