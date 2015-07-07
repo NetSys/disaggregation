@@ -244,17 +244,14 @@ def memcached_prepare():
   
 
 def graphlab_prepare():
-  #all_run("yum install openmpi -y")
-  #all_run("yum install openmpi-devel -y")
-  #all_run("echo 'export PATH=/usr/lib64/openmpi/bin/:\$PATH' > /root/.bashrc; echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:\$LD_LIBRARY_PATH' >> /root/.bashrc; source /root/.bashrc")
+  all_run("yum install openmpi -y")
+  all_run("yum install openmpi-devel -y")
+  slaves_run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bashrc; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bashrc")
+  run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bash_profile; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bash_profile")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
   all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 200000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
 
 def run_diff_latency(opts):
-  log("\n\n\n")
-  log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
-  log('Argument %s' % str(sys.argv))
-
 
   confs = []
   confs.append((False, 0, 0))
@@ -273,6 +270,11 @@ def run_diff_latency(opts):
     for conf in confs:
       time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False)
       results[conf].append(time)
+
+
+  log("\n\n\n")
+  log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
+  log('Argument %s' % str(sys.argv))
 
   for conf in results:
     result_str = "Latency: %d BW: %d Result: %s" % (conf[1], conf[2], ",".join(map(str, results[conf])))
