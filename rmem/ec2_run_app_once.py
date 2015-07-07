@@ -251,6 +251,11 @@ def graphlab_prepare():
   all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 200000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
 
 def run_diff_latency(opts):
+  log("\n\n\n")
+  log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
+  log('Argument %s' % str(sys.argv))
+
+
   confs = []
   confs.append((False, 0, 0))
   confs.append((True, 1, 100))
@@ -275,10 +280,6 @@ def run_diff_latency(opts):
     print result_str
 
 def main():
-  log("\n\n\n")
-  log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
-  log('Argument %s' % str(sys.argv))
-
   opts = parse_args()
   run_exp_tasks = ["wordcount", "terasort", "als", "memcached"]
   
