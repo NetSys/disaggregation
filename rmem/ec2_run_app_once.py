@@ -203,7 +203,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
     run("/root/ephemeral-hdfs/bin/hadoop jar /root/ephemeral-hdfs/hadoop-examples-1.0.4.jar terasort hdfs://%s:9000/sortinput hdfs://%s:9000/sortoutput" % (master, master))
     time_used = time.time() - start_time
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
-  elif task == "als":
+  elif task == "graphlab":
     all_run("rm -rf /mnt/netflix_m/out")
     start_time = time.time()
     run("mpiexec -n 10 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt/netflix_m/ --max_iter=3 --ncpus=1 --minval=1 --maxval=5 --predictions=/mnt/netflix_m/out/out")
@@ -238,18 +238,25 @@ def teragen(size = 2):
   run("/root/ephemeral-hdfs/bin/hadoop jar /root/ephemeral-hdfs/hadoop-examples-1.0.4.jar teragen %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
-def memcached_prepare():
+def memcached_install():
   all_run("yum install memcached -y")
   #all_run("yum install python-memcached")
-  
 
-def graphlab_prepare():
+def graphlab_install():
   all_run("yum install openmpi -y")
   all_run("yum install openmpi-devel -y")
   slaves_run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bashrc; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bashrc")
   run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bash_profile; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bash_profile")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
-  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 200000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
+
+def graphlab_prepare():
+  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 60000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
+
+def wordcount_prepare():
+  run("mount /dev/xvdg /root/ssd")
+  run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/f7168.txt /wiki")
 
 def run_diff_latency(opts):
 
@@ -281,20 +288,40 @@ def run_diff_latency(opts):
     log(result_str)
     print result_str
 
+def stop_tachyon():
+  run("/root/tachyon/bin/tachyon-stop.sh")
+
+def install_all():
+  graphlab_install():
+
+def prepare_all():
+  stop_tachyon()
+  teragen()
+  graphlab_prepare()
+  wordcount_prepare()
+
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "terasort", "als", "memcached"]
+  run_exp_tasks = ["wordcount", "terasort", "graphlab", "memcached"]
   
   if opts.diff_latency:
     run_diff_latency(opts)
   elif opts.task in run_exp_tasks:
     run_exp(opts.task, opts.remote_memory, opts.bandwidth, opts.latency, opts.inject, opts.trace)
-  elif opts.task == "teragen":
+  elif opts.task == "wordcount-prepare":
+    wordcount_prepare()
+  elif opts.task == "terasort-prepare":
     teragen()
+  elif opts.task == "graphlab-install":
+    graphlab_install()
   elif opts.task == "graphlab-prepare":
     graphlab_prepare()
-  elif opts.task == "memcached-prepare":
-    memcached_prepare()
+  elif opts.task == "memcached-install":
+    memcached_install()
+  elif opts.task == "prepare-all":
+    prepare_all()
+  elif opts.task == "install-all":
+    install_all()
   else:
     print "Unknown task %s" % opts.task
 
