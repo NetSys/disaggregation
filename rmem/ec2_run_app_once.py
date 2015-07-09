@@ -175,10 +175,6 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
 
-  banner("Prepare environment")
-  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
-  install_blktrace()
-
   turn_off_os_swap()
 
   clean_existing_rmem()
@@ -292,7 +288,9 @@ def stop_tachyon():
   run("/root/tachyon/bin/tachyon-stop.sh")
 
 def install_all():
-  graphlab_install():
+  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
+  install_blktrace()
+  graphlab_install()
 
 def prepare_all():
   stop_tachyon()
