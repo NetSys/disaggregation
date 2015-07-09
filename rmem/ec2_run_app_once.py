@@ -230,7 +230,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   print "Execution time:" + str(time_used)
   return time_used
 
-def teragen(size = 2):
+def teragen(size = 5):
   num_record = size * 1024 * 1024 * 1024 / 100
   master = get_master()
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
@@ -292,7 +292,7 @@ def stop_tachyon():
   run("/root/tachyon/bin/tachyon-stop.sh")
 
 def install_all():
-  graphlab_install():
+  graphlab_install()
 
 def prepare_all():
   stop_tachyon()
