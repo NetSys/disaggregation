@@ -250,7 +250,7 @@ def graphlab_install():
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
 
 def graphlab_prepare():
-  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 60000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
+  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 200000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
 
 def wordcount_prepare():
   run("mount /dev/xvdg /root/ssd")
@@ -292,7 +292,7 @@ def stop_tachyon():
   run("/root/tachyon/bin/tachyon-stop.sh")
 
 def install_all():
-  graphlab_install():
+  graphlab_install()
 
 def prepare_all():
   stop_tachyon()
