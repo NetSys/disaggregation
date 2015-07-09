@@ -178,7 +178,6 @@ def sync_rmem_code():
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
 
-  turn_off_os_swap()
 
   clean_existing_rmem()
 
@@ -232,7 +231,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   print "Execution time:" + str(time_used)
   return time_used
 
-def teragen(size = 5):
+def teragen(size = 3):
   num_record = size * 1024 * 1024 * 1024 / 100
   master = get_master()
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
@@ -306,10 +305,12 @@ def install_all():
 
 def prepare_all():
   stop_tachyon()
+  turn_off_os_swap()
   teragen()
   graphlab_prepare()
   wordcount_prepare()
   sync_rmem_code()
+
 
 def main():
   opts = parse_args()
