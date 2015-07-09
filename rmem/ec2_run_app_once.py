@@ -234,7 +234,7 @@ def teragen(size = 5):
   master = get_master()
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
-  run("/root/ephemeral-hdfs/bin/hadoop jar /root/ephemeral-hdfs/hadoop-examples-1.0.4.jar teragen %d hdfs://%s:9000/sortinput" % (num_record, master))
+  run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar teragen %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def memcached_install():
