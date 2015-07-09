@@ -290,7 +290,12 @@ def run_diff_latency(opts):
 def stop_tachyon():
   run("/root/tachyon/bin/tachyon-stop.sh")
 
+def update_kernel():
+  all_run("yum install kernel-devel -y; yum install kernel -y", background=True)
+
+
 def install_all():
+  update_kernel()
   slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
   install_blktrace()
   graphlab_install()
