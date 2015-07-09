@@ -175,10 +175,6 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
 
-  banner("Prepare environment")
-  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
-  install_blktrace()
-
   turn_off_os_swap()
 
   clean_existing_rmem()
@@ -196,18 +192,21 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
     start_time = time.time()
     run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
     time_used = time.time() - start_time
+
   elif task == "terasort":
     run("/root/ephemeral-hdfs/bin/start-mapred.sh")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
     start_time = time.time()
-    run("/root/ephemeral-hdfs/bin/hadoop jar /root/ephemeral-hdfs/hadoop-examples-1.0.4.jar terasort hdfs://%s:9000/sortinput hdfs://%s:9000/sortoutput" % (master, master))
+    run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort hdfs://%s:9000/sortinput hdfs://%s:9000/sortoutput" % (master, master))
     time_used = time.time() - start_time
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
+ 
   elif task == "graphlab":
     all_run("rm -rf /mnt/netflix_m/out")
     start_time = time.time()
     run("mpiexec -n 10 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt/netflix_m/ --max_iter=3 --ncpus=1 --minval=1 --maxval=5 --predictions=/mnt/netflix_m/out/out")
     time_used = time.time() - start_time
+
   elif task == "memcached":
     slaves_run("memcached -d -m 6000 -u root")
     run("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/workloadb")
@@ -292,7 +291,10 @@ def stop_tachyon():
   run("/root/tachyon/bin/tachyon-stop.sh")
 
 def install_all():
+  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
+  install_blktrace()
   graphlab_install()
+  memcached_install()
 
 def prepare_all():
   stop_tachyon()
