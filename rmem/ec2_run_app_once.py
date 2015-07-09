@@ -85,7 +85,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace):
 
   install_rmem = '''
     cd /root/disaggregation/rmem
-    make;
+
     mkdir -p swap;
     insmod rmem.ko npages=%d;
     mkswap /dev/rmem0;
@@ -171,9 +171,12 @@ def get_rw_bytes():
     writes.append(write_bytes)
   return (reads, writes)
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
+def sync_rmem_code():
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
+  slaves_run("cd /root/disaggregation/rmem; make")
+
+def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
 
   turn_off_os_swap()
 
@@ -252,7 +255,7 @@ def graphlab_prepare():
   all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 200000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
 
 def wordcount_prepare():
-  run("mount /dev/xvdg /root/ssd")
+  run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
   run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/f7168.txt /wiki")
@@ -306,6 +309,7 @@ def prepare_all():
   teragen()
   graphlab_prepare()
   wordcount_prepare()
+  sync_rmem_code()
 
 def main():
   opts = parse_args()
