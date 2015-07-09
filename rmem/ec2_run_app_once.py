@@ -291,6 +291,7 @@ def install_all():
   slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
   install_blktrace()
   graphlab_install()
+  memcached_install()
 
 def prepare_all():
   stop_tachyon()
