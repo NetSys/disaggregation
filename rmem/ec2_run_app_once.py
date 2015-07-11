@@ -24,12 +24,12 @@ def parse_args():
   parser = OptionParser(usage="ec2_run_exp_once.py [options]")
  
   parser.add_option("--task", help="Task to be done")
-  parser.add_option("-r", "--remote-memory", type="float", default=6, help="Remote memory size in GB")
+  parser.add_option("-r", "--remote-memory", type="float", default=23.56, help="Remote memory size in GB")
   parser.add_option("-b", "--bandwidth", type="float", default=10, help="Bandwidth in Gbps")
   parser.add_option("-l", "--latency", type="int", default=1, help="Latency in us")
   parser.add_option("-i", "--inject", action="store_true", default=False, help="Whether to inject latency")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
-  parser.add_option("--diff-latency", action="store_true", default=False, help="Experiment on different latency")
+  parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
 
   (opts, args) = parser.parse_args()
@@ -257,18 +257,21 @@ def wordcount_prepare():
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
-  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/f7168.txt /wiki")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki /wiki")
 
-def run_diff_latency(opts):
+def execute(opts):
 
   confs = []
-  confs.append((False, 0, 0))
-  confs.append((True, 1, 100))
-  confs.append((True, 1, 40))
-  confs.append((True, 1, 10))
-  confs.append((True, 10, 100))
-  confs.append((True, 10, 40))
-  confs.append((True, 10, 10))
+  if opts.vary_latency:
+    confs.append((False, 0, 0))
+    confs.append((True, 1, 100))
+    confs.append((True, 1, 40))
+    confs.append((True, 1, 10))
+    confs.append((True, 10, 100))
+    confs.append((True, 10, 40))
+    confs.append((True, 10, 10))
+  else:
+    confs.append((opts.inject, opts.latency, opts.bandwidth))
  
   results = {}
   for conf in confs:
@@ -316,10 +319,9 @@ def main():
   opts = parse_args()
   run_exp_tasks = ["wordcount", "terasort", "graphlab", "memcached"]
   
-  if opts.diff_latency:
-    run_diff_latency(opts)
-  elif opts.task in run_exp_tasks:
-    run_exp(opts.task, opts.remote_memory, opts.bandwidth, opts.latency, opts.inject, opts.trace)
+  
+  if opts.task in run_exp_tasks:
+    execute(opts)
   elif opts.task == "wordcount-prepare":
     wordcount_prepare()
   elif opts.task == "terasort-prepare":
