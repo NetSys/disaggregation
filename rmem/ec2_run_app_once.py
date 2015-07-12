@@ -320,13 +320,16 @@ def install_all():
   graphlab_install()
   memcached_install()
 
-def prepare_all():
+def prepare_env():
   stop_tachyon()
   turn_off_os_swap()
+  sync_rmem_code()
+
+def prepare_all():
+  prepare_env()
   teragen()
   graphlab_prepare()
   wordcount_prepare()
-  sync_rmem_code()
 
 
 def main():
@@ -346,6 +349,8 @@ def main():
     graphlab_prepare()
   elif opts.task == "memcached-install":
     memcached_install()
+  elif opts.task == "prepare-env":
+    prepare_env()
   elif opts.task == "prepare-all":
     prepare_all()
   elif opts.task == "install-all":
