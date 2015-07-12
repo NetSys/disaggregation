@@ -204,9 +204,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
  
   elif task == "graphlab":
-    all_run("rm -rf /mnt/netflix_m/out")
+    all_run("rm -rf /mnt2/netflix_m/out")
     start_time = time.time()
-    run("mpiexec -n 10 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt/netflix_m/ --max_iter=3 --ncpus=1 --minval=1 --maxval=5 --predictions=/mnt/netflix_m/out/out")
+    run("mpiexec -n 5 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt2/netflix_m/ --max_iter=3 --ncpus=6 --minval=1 --maxval=5 --predictions=/mnt2/netflix_m/out/out")
     time_used = time.time() - start_time
 
   elif task == "memcached":
@@ -231,7 +231,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
   print "Execution time:" + str(time_used)
   return time_used
 
-def teragen(size = 3):
+def teragen(size = 20):
   num_record = size * 1024 * 1024 * 1024 / 100
   master = get_master()
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
@@ -251,7 +251,21 @@ def graphlab_install():
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
 
 def graphlab_prepare():
-  all_run("cd /mnt; rm netflix_mm; wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; rm -rf netflix_m; mkdir netflix_m; cd netflix_m; head -n 200000000 ../netflix_mm | sed -e '1,3d' > netflix_mm; rm ../netflix_mm;", background = True)
+  cmd = '''
+    cd /mnt2; 
+    rm netflix_mm; 
+    wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; 
+    rm -rf netflix_m; 
+    mkdir netflix_m; 
+    cd netflix_m; 
+    for i in `seq 1 8`; 
+    do 
+      head -n 100000000 ../netflix_mm | sed -e '1,3d' >> netflix_mm; 
+    done ; 
+    rm ../netflix_mm;
+  '''
+  slaves_run_bash(cmd, silent=True, background = True)
+  run(cmd)
 
 def wordcount_prepare():
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
