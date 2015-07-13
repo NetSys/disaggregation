@@ -205,7 +205,7 @@ def update_hadoop_conf():
   root.append(slowstart)
   root.append(iosort)
 
-  tree.write("/root/ephemeral-hdfs/conf/mapred-site.xml2")
+  tree.write("/root/ephemeral-hdfs/conf/mapred-site.xml")
 
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
