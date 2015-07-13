@@ -218,7 +218,7 @@ def memcached_kill_loadgen(deadline):
       print ">>>>>>>>>>>>>>>>>>>>memcached_kill_loadgen == False, return<<<<<<<<<<<<<<<<"
       return
   print ">>>>>>>>>>>>>>>>>>>>>Timeout, kill process loadgen<<<<<<<<<<<<<<<<<<<"
-  slaves_run("kill `jps | grep \"LoadGenerator\" | cut -d \" \" -f 1`")
+  slaves_run("kill `jps | grep LoadGenerator | cut -d ' ' -f 1`")
   memcached_kill_loadgen_on=False
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
