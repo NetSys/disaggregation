@@ -1,5 +1,8 @@
 import os
 import commands
+import threading
+
+bash_run_counter = 0
 
 def banner(content):
   print "+++++++++++++++++++ " + content + " +++++++++++++++++++"
@@ -39,11 +42,30 @@ def slaves_run(cmd, background = False):
     print "#####Running cmd:" + command
     os.system(command)
 
+def slaves_run_parallel(cmd):
+  global bash_run_counter
+  def ssh(machine, cmd, counter):
+    command = "ssh " + machine + " \"" + cmd + "\" &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
+    print "#######Running cmd:" + command
+    os.system(command)
+    print "#######Server " + machine + " command finished"
+
+  if not os.path.exists("/root/disaggregation/rmem/.local_commands"):
+    os.system("mkdir -p /root/disaggregation/rmem/.local_commands")
+
+  threads = []
+  for s in get_slaves():
+    threads.append(threading.Thread(target=ssh, args=(s, cmd, bash_run_counter,)))
+    bash_run_counter += 1
+  [t.start() for t in threads]
+  [t.join() for t in threads]
+  print "Finished parallel run: " + cmd
+
+
 def all_run(cmd, background = False):
   slaves_run(cmd, background)
   run(cmd)
 
-bash_run_counter = 0
 def slaves_run_bash(cmd, silent = False, background = False):
   global bash_run_counter
   f = open("/root/disaggregation/rmem/.cmd_temp.sh", "w")

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <project name="ycsb" default="compile" basedir=".">
+   
+    <property name="src.dir"     value="src"/>
+    <property name="lib.dir"     value="lib"/>
+    <property name="doc.dir"     value="doc"/>
+
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir"     value="${build.dir}/jar"/>
+
+    <path id="build.classpath">
+        <fileset dir="${lib.dir}">
+          <include name="**/*.jar" />
+        </fileset>
+    </path>
+
+    <target name="dbcompile-cassandra-0.5" depends="compile">
+    	<property name="db.dir" value="db/cassandra-0.5"/>
+        <antcall target="dbcompile"/>
+    </target>
+    	
+   	<target name="dbcompile-cassandra-0.6" depends="compile">
+		<property name="db.dir" value="db/cassandra-0.6"/>
+		<antcall target="dbcompile"/>
+	</target>
+   	
+   	<target name="dbcompile-cassandra-0.7" depends="compile">
+		<property name="db.dir" value="db/cassandra-0.7"/>
+		<antcall target="dbcompile"/>
+	</target>   	
+   	
+   	<target name="dbcompile-hbase" depends="compile">
+		<property name="db.dir" value="db/hbase"/>
+		<antcall target="dbcompile"/>
+	</target>
+
+   	<target name="dbcompile-mongodb" depends="compile">
+		<property name="db.dir" value="db/mongodb"/>
+		<antcall target="dbcompile"/>
+	</target>
+
+   	<target name="dbcompile-voldemort" depends="compile">
+		<property name="db.dir" value="db/voldemort"/>
+		<antcall target="dbcompile"/>
+	</target>
+   	
+   	<target name="dbcompile-membase" depends="compile">
+   			<property name="db.dir" value="db/membase"/>
+   			<antcall target="dbcompile"/>
+   	</target>
+	
+   	<target name="dbcompile-memcached" depends="compile">
+   	   			<property name="db.dir" value="db/memcached"/>
+   	   			<antcall target="dbcompile"/>
+   	</target>
+   	
+ 	<target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="build.classpath" deprecation="on" includeantruntime="false">
+          <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+        <antcall target="makejar"/>
+    </target>
+
+	<target name="dbcompile">
+	    <path id="dbclasspath">
+	        <fileset dir="${db.dir}/lib" includes="**/*.jar"/>
+	        <fileset file="build/ycsb.jar"/>
+	    </path>
+		
+    	<mkdir dir="${classes.dir}"/>
+        <javac srcdir="${db.dir}/src" destdir="${classes.dir}" classpathref="dbclasspath" deprecation="on" includeantruntime="false">
+          <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+        <antcall target="makejar"/>
+    </target>
+
+   	<target name ="makejar" description="Create a jar for the YCSB project">
+		<jar jarfile="build/ycsb.jar" includes="**/*.class" basedir="${classes.dir}"/>
+	</target>
+   	
+    <target name="clean">
+       <delete includeemptydirs="true">
+          <fileset dir="build" includes="**/*"/>
+       </delete>
+       <delete dir="${build.dir}"/>
+    </target>
+
+   <target name="doc">
+      <javadoc destdir="${doc.dir}/javadoc" packagenames="com.yahoo.ycsb,com.yahoo.ycsb.workloads,com.yahoo.ycsb.db,com.yahoo.ycsb.generator,com.yahoo.ycsb.measurements"> 
+         <fileset dir="." defaultexcludes="yes">
+           <include name="src/**"/>
+           <include name="db/**/src/**"/>
+         </fileset>
+      </javadoc>
+   </target>
+   	
+   <target name="load">
+	  <exec executable="java" >
+	     <arg value="-cp" />
+	  	 <arg value="build/ycsb.jar:lib/*" />
+		 <arg value="com.yahoo.ycsb.LoadGenerator" />
+		 <arg value="-load" />
+	  	 <arg value="-db" />
+	  	 <arg value="com.yahoo.ycsb.db.SpymemcachedClient" />
+		 <arg value="-P" />
+	  	<arg value="workloads/workloadb" />
+	  </exec>
+   </target>
+   	
+   <target name="master">
+	  <exec executable="java" >
+	     <arg value="-Djava.security.policy=client.policy" />
+	  	 <arg value="-Xms128m" />
+	  	 <arg value="-Xmx256m" />
+	     <arg value="-cp" />
+	  	 <arg value="build/ycsb.jar:lib/*" />
+		 <arg value="com.yahoo.ycsb.LoadGenerator" />
+		 <arg value="-t" />
+	  	 <arg value="-db" />
+	  	 <arg value="com.yahoo.ycsb.db.SpymemcachedClient" />
+		 <arg value="-P" />
+	  	 <arg value="workloads/workloadb" />
+	  </exec>
+   </target>
+   	
+   <target name="slave">
+	  <exec executable="java" >
+	  	<arg value="-Djava.security.policy=server.policy" />
+	  	<arg value="-Xms128m" />
+	  	<arg value="-Xmx256m" />
+   		<arg value="-cp" />
+	  	<arg value="build/ycsb.jar:lib/*" />
+		<arg value="com.yahoo.ycsb.client.SlaveClient" />
+	  </exec>
+    </target>
+   	
+   	<target name="control">
+   		  <exec executable="java" >
+   		  	<arg value="-Djava.security.policy=server.policy" />
+   		  	<arg value="-Xms128m" />
+   		  	<arg value="-Xmx256m" />
+   	   		<arg value="-cp" />
+   		  	<arg value="build/ycsb.jar:lib/*" />
+   			<arg value="com.yahoo.ycsb.client.ControlClient" />
+   		  	<arg value="incitems" />
+   		  	<arg value="-s" />
+   		  	<arg value="20000" />
+   		  	<arg value="-t" />
+   		  	<arg value="3600" />
+   		  	<arg value="-c" />
+   		  	<arg value="1000" />
+   		  </exec>
+   	    </target>
+   		
+
+</project>
+

@@ -21,6 +21,7 @@ import datetime
 import sys
 import xml.etree.ElementTree as etree
 from xml.dom import minidom
+import threading
 
 def parse_args():
   parser = OptionParser(usage="ec2_run_exp_once.py [options]")
@@ -207,9 +208,21 @@ def update_hadoop_conf():
 
   tree.write("/root/ephemeral-hdfs/conf/mapred-site.xml2")
 
+memcached_kill_loadgen_on=False
+def memcached_kill_loadgen(deadline):
+  global memcached_kill_loadgen_on
+  memcached_kill_loadgen_on = True
+  while time.time() < deadline:
+    time.sleep(30)
+    if memcached_kill_loadgen_on == False:
+      print ">>>>>>>>>>>>>>>>>>>>memcached_kill_loadgen == False, return<<<<<<<<<<<<<<<<"
+      return
+  print ">>>>>>>>>>>>>>>>>>>>>Timeout, kill process loadgen<<<<<<<<<<<<<<<<<<<"
+  slaves_run("kill `jps | grep \"LoadGenerator\" | cut -d \" \" -f 1`")
+  memcached_kill_loadgen_on=False
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
-
+  global memcached_kill_loadgen_on
 
   clean_existing_rmem()
 
@@ -242,8 +255,11 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
     time_used = time.time() - start_time
 
   elif task == "memcached":
-    slaves_run("memcached -d -m 6000 -u root")
-    run("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/workloadb")
+    slaves_run("memcached -d -m 26000 -u root")
+    run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
+    threading.Thread(target=memcached_kill_loadgen, args=(time.time() + 10 * 60,))
+    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/workloadb_ins")
+    memcached_kill_loadgen_on = False
     start_time = time.time()
     run("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/workloadb")
     time_used = time.time() - start_time
