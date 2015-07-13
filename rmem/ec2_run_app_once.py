@@ -19,6 +19,8 @@ import time
 from ec2_utils import *
 import datetime
 import sys
+import xml.etree.ElementTree as etree
+from xml.dom import minidom
 
 def parse_args():
   parser = OptionParser(usage="ec2_run_exp_once.py [options]")
@@ -176,6 +178,36 @@ def sync_rmem_code():
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
   slaves_run("cd /root/disaggregation/rmem; make")
 
+def update_hadoop_conf():
+  def get_conf(k, v):
+    elem = etree.Element("property")
+    name = etree.Element("name")
+    value = etree.Element("value")
+    name.text = k
+    value.text = v
+    elem.insert(0, name)
+    elem.insert(1, value)
+    return elem
+
+
+  tree=etree.parse("/root/ephemeral-hdfs/conf/mapred-site.xml")
+  root=tree.getroot()
+  if "io.sort.mb" in etree.tostring(root):
+    print "conf file is already updated"
+    return
+  map = get_conf("mapreduce.admin.map.child.java.opts", "-Xmx26000m")
+  reduce = get_conf("mapreduce.admin.reduce.child.java.opts", "-Xmx26000m")
+  slowstart = get_conf("mapred.reduce.slowstart.completed.maps", "1.0")
+  iosort = get_conf("io.sort.mb", "2047")
+
+  root.append(map)
+  root.append(reduce)
+  root.append(slowstart)
+  root.append(iosort)
+
+  tree.write("/root/ephemeral-hdfs/conf/mapred-site.xml2")
+
+
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
 
 
@@ -199,7 +231,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
     run("/root/ephemeral-hdfs/bin/start-mapred.sh")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
     start_time = time.time()
-    run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort hdfs://%s:9000/sortinput hdfs://%s:9000/sortoutput" % (master, master))
+    run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /sortoutput")
     time_used = time.time() - start_time
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
  
@@ -320,13 +352,17 @@ def install_all():
   graphlab_install()
   memcached_install()
 
-def prepare_all():
+def prepare_env():
   stop_tachyon()
   turn_off_os_swap()
+  sync_rmem_code()
+  update_hadoop_conf()
+
+def prepare_all():
+  prepare_env()
   teragen()
   graphlab_prepare()
   wordcount_prepare()
-  sync_rmem_code()
 
 
 def main():
@@ -346,10 +382,14 @@ def main():
     graphlab_prepare()
   elif opts.task == "memcached-install":
     memcached_install()
+  elif opts.task == "prepare-env":
+    prepare_env()
   elif opts.task == "prepare-all":
     prepare_all()
   elif opts.task == "install-all":
     install_all()
+  elif opts.task == "test":
+    update_hadoop_conf()
   else:
     print "Unknown task %s" % opts.task
 
