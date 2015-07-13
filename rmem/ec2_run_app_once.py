@@ -324,7 +324,7 @@ def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
   return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, inject, False, profile = True)
 
 def terasort_vary_size(opts):
-  sizes = [20, 30, 40, 50]
+  sizes = [20, 40, 60, 80, 100, 120]
 
   confs = [] #(inject, latency, bw, size)
   for s in sizes:
@@ -428,6 +428,7 @@ def execute(opts):
 
 def stop_tachyon():
   run("/root/tachyon/bin/tachyon-stop.sh")
+  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /tachyon")
 
 def update_kernel():
   all_run("yum install kernel-devel -y; yum install kernel -y", background=True)
