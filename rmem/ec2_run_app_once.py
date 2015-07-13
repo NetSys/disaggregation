@@ -221,8 +221,35 @@ def memcached_kill_loadgen(deadline):
   slaves_run("kill `jps | grep \"LoadGenerator\" | cut -d \" \" -f 1`")
   memcached_kill_loadgen_on=False
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
+memmon_peak_remaining_ram = 100000
+memmon_on = False
+
+def mem_monitor_worker():
+  global memmon_peak_remaining_ram
+  global memmon_on
+  memmon_peak_remaining_ram = 100000
+  memmon_on = True
+  while memmon_on:
+    remaining = get_cluster_remaining_memory()
+    if remaining < memmon_peak_remaining_ram:
+      memmon_peak_remaining_ram = remaining
+    time.sleep(5)
+
+def mem_monitor_start():
+  assert(memmon_on == False)
+  thrd = threading.Thread(target=mem_monitor_worker)
+  thrd.start()
+
+def mem_monitor_stop():
+  global memmon_peak_remaining_ram
+  global memmon_on
+  memmon_on = False
+  return memmon_peak_remaining_ram
+
+
+def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
   global memcached_kill_loadgen_on
+  min_ram = 0
 
   clean_existing_rmem()
 
@@ -244,7 +271,11 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
     run("/root/ephemeral-hdfs/bin/start-mapred.sh")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
     start_time = time.time()
-    run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /sortoutput")
+    if profile:
+      mem_monitor_start()
+    run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /sortoutput")
+    if profile:
+      min_ram = mem_monitor_stop()
     time_used = time.time() - start_time
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
  
@@ -277,8 +308,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace):
 
   clean_existing_rmem()
 
-  print "Execution time:" + str(time_used)
-  return time_used
+  print "Execution time:" + str(time_used) + " Min Ram:" + str(min_ram)
+  return (time_used, min_ram)
 
 def teragen(size = 20):
   num_record = size * 1024 * 1024 * 1024 / 100
@@ -287,6 +318,46 @@ def teragen(size = 20):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
   run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar teragen %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
+
+def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
+  teragen(size)
+  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, inject, False, profile = True)
+
+def terasort_vary_size(opts):
+  sizes = [20, 30, 40, 50]
+
+  confs = [] #(inject, latency, bw, size)
+  for s in sizes:
+    confs.append((False, 0, 0, s))
+    confs.append((True, 10, 40, s))
+
+
+  results = {}
+
+  for conf in confs:
+    results[conf] = []
+
+  for i in range(0, opts.iter):
+    for conf in confs:
+      res = terasort_prepare_and_run(opts, conf[3], conf[2], conf[1], conf[0] )
+      results[conf].append(res)
+
+  log("\n\n\n")
+  log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
+  log('Argument %s' % str(sys.argv))
+
+  for conf in results:
+    result_str = "Latency: %d BW: %d Size: %f Result: %s" % (conf[1], conf[2], conf[3], ",".join(map(lambda r: str(r[0]), results[conf])))
+    log(result_str)
+    print result_str
+
+  print "--------------------"
+
+  for conf in results:
+    result_str = "Latency: %d BW: %d Size: %f RemainingRam: %s" % (conf[1], conf[2], conf[3], ",".join(map(lambda r: str(r[1]), results[conf])))
+    log(result_str) 
+    print result_str
+
 
 def memcached_install():
   all_run("yum install memcached -y")
@@ -342,7 +413,7 @@ def execute(opts):
 
   for i in range(0, opts.iter):
     for conf in confs:
-      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False)
+      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False)[0]
       results[conf].append(time)
 
 
@@ -389,6 +460,8 @@ def main():
   
   if opts.task in run_exp_tasks:
     execute(opts)
+  elif opts.task == "terasort-vary-size":
+    terasort_vary_size(opts)
   elif opts.task == "wordcount-prepare":
     wordcount_prepare()
   elif opts.task == "terasort-prepare":
@@ -406,7 +479,7 @@ def main():
   elif opts.task == "install-all":
     install_all()
   elif opts.task == "test":
-    update_hadoop_conf()
+    get_cluster_remaining_memory()
   else:
     print "Unknown task %s" % opts.task
 

@@ -84,3 +84,16 @@ def slaves_run_bash(cmd, silent = False, background = False):
     os.system(command)
 
     bash_run_counter += 1
+
+def get_remaining_memory(machine):
+  freemem = int(run_and_get("ssh %s \"cat /proc/meminfo | grep MemFree\"" % machine)[1].replace("MemFree:","").replace("kB","").replace("\n","").replace(" ",""))
+  freeswap = int(run_and_get("ssh %s \"cat /proc/meminfo | grep SwapFree\"" % machine)[1].replace("SwapFree:","").replace("kB","").replace("\n","").replace(" ",""))
+  return (freemem + freeswap)/1024.0/1024.0
+
+
+def get_cluster_remaining_memory():
+  sum = 0
+  for s in get_slaves():
+    mem = get_remaining_memory(s)
+    sum += mem
+  return sum
