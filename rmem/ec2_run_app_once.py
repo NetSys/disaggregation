@@ -206,7 +206,7 @@ def update_hadoop_conf():
   root.append(slowstart)
   root.append(iosort)
 
-  tree.write("/root/ephemeral-hdfs/conf/mapred-site.xml2")
+  tree.write("/root/ephemeral-hdfs/conf/mapred-site.xml")
 
 memcached_kill_loadgen_on=False
 def memcached_kill_loadgen(deadline):
