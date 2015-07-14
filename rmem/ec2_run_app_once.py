@@ -218,7 +218,7 @@ def memcached_kill_loadgen(deadline):
       print ">>>>>>>>>>>>>>>>>>>>memcached_kill_loadgen == False, return<<<<<<<<<<<<<<<<"
       return
   print ">>>>>>>>>>>>>>>>>>>>>Timeout, kill process loadgen<<<<<<<<<<<<<<<<<<<"
-  slaves_run("kill `jps | grep LoadGenerator | cut -d ' ' -f 1`")
+  slaves_run("pid=\$(jps | grep LoadGenerator | cut -d ' ' -f 1);kill \$pid")
   memcached_kill_loadgen_on=False
 
 memmon_peak_remaining_ram = 100000
@@ -345,6 +345,7 @@ def terasort_vary_size(opts):
 
   for i in range(0, opts.iter):
     for conf in confs:
+      print "Running iter %d conf %s" % (i, str(conf))
       res = terasort_prepare_and_run(opts, conf[3], conf[2], conf[1], conf[0] )
       results[conf].append(res)
 
@@ -419,6 +420,7 @@ def execute(opts):
 
   for i in range(0, opts.iter):
     for conf in confs:
+      print "Running iter %d, conf %s" % (i, str(conf))
       time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False)[0]
       results[conf].append(time)
 
