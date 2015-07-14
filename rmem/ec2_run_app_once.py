@@ -278,7 +278,10 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
       min_ram = mem_monitor_stop()
     time_used = time.time() - start_time
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
- 
+    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
+    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
+    slaves_run("rm -rf /mnt/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*")
+
   elif task == "graphlab":
     all_run("rm -rf /mnt2/netflix_m/out")
     start_time = time.time()
@@ -320,11 +323,14 @@ def teragen(size = 20):
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
+  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
+  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
+  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
   teragen(size)
   return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, inject, False, profile = True)
 
 def terasort_vary_size(opts):
-  sizes = [20, 40, 60, 80, 100, 120]
+  sizes = [150, 120, 90, 60, 30]
 
   confs = [] #(inject, latency, bw, size)
   for s in sizes:
