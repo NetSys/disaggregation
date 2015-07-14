@@ -331,3 +331,23 @@ Latency: 0 BW: 0 Size: 50.000000 RemainingRam: 67.7602462769,72.5441398621,74.21
 Latency: 0 BW: 0 Size: 30.000000 RemainingRam: 87.9393959045,91.7502822876,90.5646209717,90.0573043823,87.7461242676
 Latency: 0 BW: 0 Size: 40.000000 RemainingRam: 77.228553772,82.6641616821,81.5969047546,82.425994873,80.7423934937
 Latency: 0 BW: 0 Size: 20.000000 RemainingRam: 100.197101593,101.85843277,97.9251861572,100.263004303,98.1561546326
+
+
+
+
+================== Started exp at:2015-07-14 01:49:34.516261 ==================
+Argument ['ec2_run_app_once.py', '--task', 'terasort-vary-size', '--iter', '1']
+Latency: 0 BW: 0 Size: 120.000000 Result: 2023.72438312
+Latency: 10 BW: 40 Size: 120.000000 Result: 1850.75701189
+Latency: 0 BW: 0 Size: 120.000000 RemainingRam: 39.001247406
+Latency: 10 BW: 40 Size: 120.000000 RemainingRam: 40.135017395
+
+
+
+
+================== Started exp at:2015-07-14 03:49:27.739574 ==================
+Argument ['ec2_run_app_once.py', '--task', 'terasort-vary-size', '--iter', '1']
+Latency: 0 BW: 0 Size: 120.000000 Result: 1798.40546703
+Latency: 10 BW: 40 Size: 120.000000 Result: 1839.50816607
+Latency: 0 BW: 0 Size: 120.000000 RemainingRam: 39.7317008972
+Latency: 10 BW: 40 Size: 120.000000 RemainingRam: 41.2967376709
