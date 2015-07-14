@@ -35,6 +35,7 @@ def parse_args():
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
+  parser.add_option("--teragen-size", type="float", default=50.0, help="Sort input data size (GB)")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -84,8 +85,10 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace):
   banner("setting up rmem")
   remote_page = int(rmem_gb * 1024 * 1024 * 1024 / 4096)
   bandwidth_bps = int(bw_gbps * 1000 * 1000 * 1000)
+  latency_ns = latency_us * 1000
   inject_int = 1 if inject else 0
   trace_int = 1 if trace else 0
+
 
   install_rmem = '''
     cd /root/disaggregation/rmem
@@ -101,7 +104,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace):
     echo %d > /proc/sys/fs/rmem/latency_ns;
     echo %d > /proc/sys/fs/rmem/inject_latency;
     echo %d > /proc/sys/fs/rmem/get_record;
-    ''' % (remote_page, bandwidth_bps, latency_us, inject_int, trace_int)
+    ''' % (remote_page, bandwidth_bps, latency_ns, inject_int, trace_int)
 
 
   slaves_run_bash(install_rmem)
@@ -219,7 +222,7 @@ def memcached_kill_loadgen(deadline):
       print ">>>>>>>>>>>>>>>>>>>>memcached_kill_loadgen == False, return<<<<<<<<<<<<<<<<"
       return
   print ">>>>>>>>>>>>>>>>>>>>>Timeout, kill process loadgen<<<<<<<<<<<<<<<<<<<"
-  slaves_run("kill `jps | grep LoadGenerator | cut -d ' ' -f 1`")
+  slaves_run("pid=\$(jps | grep LoadGenerator | cut -d ' ' -f 1);kill \$pid")
   memcached_kill_loadgen_on=False
 
 memmon_peak_remaining_ram = 100000
@@ -315,7 +318,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
   print "Execution time:" + str(time_used) + " Min Ram:" + str(min_ram)
   return (time_used, min_ram)
 
-def teragen(size = 20):
+def teragen(size):
   num_record = size * 1024 * 1024 * 1024 / 100
   master = get_master()
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
@@ -327,7 +330,7 @@ def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
-  teragen(size)
+  teragen(opts.teragen_size)
   return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, inject, False, profile = True)
 
 def terasort_vary_size(opts):
@@ -460,9 +463,9 @@ def prepare_env():
   sync_rmem_code()
   update_hadoop_conf()
 
-def prepare_all():
+def prepare_all(opts):
   prepare_env()
-  teragen()
+  teragen(opts.teragen_size)
   graphlab_prepare()
   wordcount_prepare()
 
@@ -479,7 +482,7 @@ def main():
   elif opts.task == "wordcount-prepare":
     wordcount_prepare()
   elif opts.task == "terasort-prepare":
-    teragen()
+    teragen(opts.teragen_size)
   elif opts.task == "graphlab-install":
     graphlab_install()
   elif opts.task == "graphlab-prepare":
@@ -489,7 +492,7 @@ def main():
   elif opts.task == "prepare-env":
     prepare_env()
   elif opts.task == "prepare-all":
-    prepare_all()
+    prepare_all(opts)
   elif opts.task == "install-all":
     install_all()
   elif opts.task == "test":
