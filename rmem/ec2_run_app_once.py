@@ -33,6 +33,7 @@ def parse_args():
   parser.add_option("-i", "--inject", action="store_true", default=False, help="Whether to inject latency")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
+  parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
 
   (opts, args) = parser.parse_args()
@@ -411,6 +412,10 @@ def execute(opts):
     confs.append((True, 10, 100))
     confs.append((True, 10, 40))
     confs.append((True, 10, 10))
+  elif opts.vary_latency_40g:
+    latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
+    for l in latency_40g:
+      confs.append((True, l, 40))
   else:
     confs.append((opts.inject, opts.latency, opts.bandwidth))
  
