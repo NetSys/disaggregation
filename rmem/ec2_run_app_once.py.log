@@ -447,3 +447,19 @@ Latency: 1 BW: 10 Result: 261.558
 ================== Started exp at:2015-07-15 07:24:11.465590 ==================
 Argument ['ec2_run_app_once.py', '--task', 'memcached', '-i', '-b', '10', '-l', '10']
 Latency: 10 BW: 10 Result: 324.764
+
+
+
+
+================== Started exp at:2015-07-15 23:21:09.585691 ==================
+Argument ['ec2_run_app_once.py', '--task', 'memcached', '--vary-latency', '--iter', '1']
+Latency: 5 BW: 100 Result: 142.145782948 246.834
+Latency: 5 BW: 40 Result: 142.614557028 247.654
+Latency: 10 BW: 10 Result: 157.390887976 274.16
+Latency: 1 BW: 40 Result: 137.244465113 236.198
+Latency: 5 BW: 10 Result: 147.218815088 260.814
+Latency: 0 BW: 0 Result: 137.054336071 232.138
+Latency: 1 BW: 10 Result: 142.619420052 250.504
+Latency: 10 BW: 40 Result: 147.691431999 257.346
+Latency: 1 BW: 100 Result: 137.744789839 236.012
+Latency: 10 BW: 100 Result: 147.979622126 258.63
