@@ -27,7 +27,7 @@ def parse_args():
   parser = OptionParser(usage="ec2_run_exp_once.py [options]")
  
   parser.add_option("--task", help="Task to be done")
-  parser.add_option("-r", "--remote-memory", type="float", default=23.56, help="Remote memory size in GB")
+  parser.add_option("-r", "--remote-memory", type="float", default=22.09, help="Remote memory size in GB")
   parser.add_option("-b", "--bandwidth", type="float", default=10, help="Bandwidth in Gbps")
   parser.add_option("-l", "--latency", type="int", default=1, help="Latency in us")
   parser.add_option("-i", "--inject", action="store_true", default=False, help="Whether to inject latency")
@@ -250,9 +250,36 @@ def mem_monitor_stop():
   memmon_on = False
   return memmon_peak_remaining_ram
 
+def get_memcached_avg_latency():
+  r = run_and_get("cat /root/disaggregation/apps/memcached/results.txt | grep AverageLatency")[1]
+  return float(r.replace("[GET] AverageLatency, ","").replace("us",""))
+
+def slaves_get_memcached_avg_latency():
+  total = 0
+  slaves = get_slaves()
+  for s in slaves:
+    r = run_and_get("ssh %s \"cat /root/disaggregation/apps/memcached/results.txt | grep AverageLatency\"" % s)[1]
+    total += float(r.replace("[GET] AverageLatency, ","").replace("us",""))
+  return total / len(slaves)
+
+
+class ExpResult:
+  runtime = 0.0
+  min_ram_gb = -1.0
+  memcached_latency_us = -1.0
+  task = ""
+  def get(self):
+    if self.task == "memcached":
+      return self.memcached_latency_us
+    else:
+      return runtime
+
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
   global memcached_kill_loadgen_on
+  result = ExpResult()
+  result.task = task
+
   min_ram = 0
 
   clean_existing_rmem()
@@ -280,6 +307,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
     run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /sortoutput")
     if profile:
       min_ram = mem_monitor_stop()
+      result.min_ram_gb = min_ram
     time_used = time.time() - start_time
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
@@ -299,8 +327,11 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
     thrd.start()
     slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/workloadb_ins")
     memcached_kill_loadgen_on = False
+    thrd.join()
+    all_run("rm /root/disaggregation/apps/memcached/results.txt")
     start_time = time.time()
-    run("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/workloadb")
+    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/workloadb")
+    result.memcached_latency_us = slaves_get_memcached_avg_latency()
     time_used = time.time() - start_time
     slaves_run("killall memcached")
 
@@ -316,7 +347,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
   clean_existing_rmem()
 
   print "Execution time:" + str(time_used) + " Min Ram:" + str(min_ram)
-  return (time_used, min_ram)
+  result.runtime = time_used
+  return result
 
 def teragen(size):
   num_record = size * 1024 * 1024 * 1024 / 100
@@ -358,14 +390,14 @@ def terasort_vary_size(opts):
   log('Argument %s' % str(sys.argv))
 
   for conf in results:
-    result_str = "Latency: %d BW: %d Size: %f Result: %s" % (conf[1], conf[2], conf[3], ",".join(map(lambda r: str(r[0]), results[conf])))
+    result_str = "Latency: %d BW: %d Size: %f Result: %s" % (conf[1], conf[2], conf[3], ",".join(map(lambda r: str(r.get()), results[conf])))
     log(result_str)
     print result_str
 
   print "--------------------"
 
   for conf in results:
-    result_str = "Latency: %d BW: %d Size: %f RemainingRam: %s" % (conf[1], conf[2], conf[3], ",".join(map(lambda r: str(r[1]), results[conf])))
+    result_str = "Latency: %d BW: %d Size: %f RemainingRam: %s" % (conf[1], conf[2], conf[3], ",".join(map(lambda r: str(r.min_ram_gb), results[conf])))
     log(result_str) 
     print result_str
 
@@ -409,11 +441,11 @@ def execute(opts):
   confs = []
   if opts.vary_latency:
     confs.append((False, 0, 0))
-    confs.append((True, 1, 100))
-    confs.append((True, 1, 40))
-    confs.append((True, 1, 10))
-    confs.append((True, 10, 100))
-    confs.append((True, 10, 40))
+    #confs.append((True, 1, 100))
+    #confs.append((True, 1, 40))
+    #confs.append((True, 1, 10))
+    #confs.append((True, 10, 100))
+    #confs.append((True, 10, 40))
     confs.append((True, 10, 10))
   elif opts.vary_latency_40g:
     latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
@@ -429,7 +461,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False)[0]
+      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False).get()
       results[conf].append(time)
 
 
