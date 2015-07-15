@@ -441,11 +441,14 @@ def execute(opts):
   confs = []
   if opts.vary_latency:
     confs.append((False, 0, 0))
-    #confs.append((True, 1, 100))
-    #confs.append((True, 1, 40))
-    #confs.append((True, 1, 10))
-    #confs.append((True, 10, 100))
-    #confs.append((True, 10, 40))
+    confs.append((True, 1, 100))
+    confs.append((True, 1, 40))
+    confs.append((True, 1, 10))
+    confs.append((True, 5, 100))
+    confs.append((True, 5, 40))
+    confs.append((True, 5, 10))
+    confs.append((True, 10, 100))
+    confs.append((True, 10, 40))
     confs.append((True, 10, 10))
   elif opts.vary_latency_40g:
     latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
