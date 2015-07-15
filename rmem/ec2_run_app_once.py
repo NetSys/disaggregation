@@ -402,7 +402,7 @@ def wordcount_prepare():
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
-  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki /wiki")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/f10240.txt /wiki")
 
 def execute(opts):
 
