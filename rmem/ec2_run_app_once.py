@@ -481,6 +481,8 @@ def stop_tachyon():
 def update_kernel():
   all_run("yum install kernel-devel -y; yum install kernel -y", background=True)
 
+def install_mosh():
+  run("sudo yum --enablerepo=epel install -y mosh")
 
 def install_all():
   update_kernel()
@@ -488,6 +490,7 @@ def install_all():
   install_blktrace()
   graphlab_install()
   memcached_install()
+  install_mosh()
 
 def prepare_env():
   stop_tachyon()
