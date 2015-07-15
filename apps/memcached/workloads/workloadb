@@ -30,7 +30,7 @@ memcached.port=11211
 histogram.buckets=20
 exportfile=results.txt
 recordcount=1000000
-operationcount=5000000
+operationcount=4000000
 workload=com.yahoo.ycsb.workloads.MemcachedCoreWorkload
 #insertstart=200000
 
@@ -52,12 +52,12 @@ memupdateproportion=0.0
 
 valuelength=10240
 
-workingset=2000000
-churndelta=2000000
+workingset=1000000
+churndelta=1000000
 
 printstatsinterval=5
 
 requestdistribution=zipfian
 
 threadcount=8
-#target=10000
+target=100000
