@@ -270,9 +270,9 @@ class ExpResult:
   task = ""
   def get(self):
     if self.task == "memcached":
-      return self.memcached_latency_us
+      return self.runtime + " " + self.memcached_latency_us
     else:
-      return runtime
+      return self.runtime
 
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
