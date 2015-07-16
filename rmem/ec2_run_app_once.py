@@ -157,7 +157,7 @@ def collect_trace():
   time.sleep(0.5)
   
   result_dir = "/root/disaggregation/rmem/results/%s" % run_and_get("date +%y%m%d%H%M%S")[1]
-  run("mkdir %s" % result_dir)
+  run("mkdir -p %s" % result_dir)
 
   count = 0
   slaves = get_slaves()
