@@ -421,7 +421,7 @@ def graphlab_prepare():
     rm -rf netflix_m; 
     mkdir netflix_m; 
     cd netflix_m; 
-    for i in `seq 1 8`; 
+    for i in `seq 1 6`; 
     do 
       head -n 100000000 ../netflix_mm | sed -e '1,3d' >> netflix_mm; 
     done ; 
