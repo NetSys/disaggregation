@@ -126,7 +126,7 @@ def parse_args():
         "-i", "--identity-file",
         help="SSH private key file to use for logging into instances")
     parser.add_option(
-        "-t", "--instance-type", default="m1.large",
+        "-t", "--instance-type", default="m3.large",
         help="Type of instance to launch (default: %default). " +
              "WARNING: must be 64-bit; small instances won't work")
     parser.add_option(
@@ -136,7 +136,7 @@ def parse_args():
         "-r", "--region", default="us-east-1",
         help="EC2 region zone to launch instances in")
     parser.add_option(
-        "-z", "--zone", default="",
+        "-z", "--zone", default="us-east-1a",
         help="Availability zone to launch instances in, or 'all' to spread " +
              "slaves across multiple (an additional $0.01/Gb for bandwidth" +
              "between zones applies) (default: a single zone chosen at random)")
@@ -149,7 +149,7 @@ def parse_args():
         default=DEFAULT_SPARK_GITHUB_REPO,
         help="Github repo from which to checkout supplied commit hash (default: %default)")
     parser.add_option(
-        "--hadoop-major-version", default="2",
+        "--hadoop-major-version", default="1",
         help="Major version of Hadoop (default: %default)")
     parser.add_option(
         "-D", metavar="[ADDRESS:]PORT", dest="proxy_port",
