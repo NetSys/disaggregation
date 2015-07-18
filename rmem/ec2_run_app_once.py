@@ -157,7 +157,7 @@ def collect_trace():
   time.sleep(0.5)
   
   result_dir = "/root/disaggregation/rmem/results/%s" % run_and_get("date +%y%m%d%H%M%S")[1]
-  run("mkdir %s" % result_dir)
+  run("mkdir -p %s" % result_dir)
 
   count = 0
   slaves = get_slaves()
@@ -270,7 +270,7 @@ class ExpResult:
   task = ""
   def get(self):
     if self.task == "memcached":
-      return self.runtime + " " + self.memcached_latency_us
+      return str(self.runtime) + ":" + str(self.memcached_latency_us)
     else:
       return self.runtime
 
@@ -421,7 +421,7 @@ def graphlab_prepare():
     rm -rf netflix_m; 
     mkdir netflix_m; 
     cd netflix_m; 
-    for i in `seq 1 8`; 
+    for i in `seq 1 6`; 
     do 
       head -n 100000000 ../netflix_mm | sed -e '1,3d' >> netflix_mm; 
     done ; 
