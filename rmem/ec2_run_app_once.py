@@ -372,7 +372,7 @@ def terasort_vary_size(opts):
   confs = [] #(inject, latency, bw, size)
   for s in sizes:
     confs.append((False, 0, 0, s))
-    confs.append((True, 10, 40, s))
+    confs.append((True, 1, 40, s))
 
 
   results = {}
