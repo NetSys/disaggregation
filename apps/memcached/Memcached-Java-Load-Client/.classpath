@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="db/memcached/src"/>
+	<classpathentry kind="src" path="db/membase/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="lib/jackson-mapper-asl-1.5.2.jar"/>
+	<classpathentry kind="lib" path="db/mongodb/lib/mongo-2.3.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-asl-1.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/spymemcached-2.7.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

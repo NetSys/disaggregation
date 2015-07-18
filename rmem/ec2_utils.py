@@ -1,5 +1,8 @@
 import os
 import commands
+import threading
+
+bash_run_counter = 0
 
 def banner(content):
   print "+++++++++++++++++++ " + content + " +++++++++++++++++++"
@@ -39,11 +42,30 @@ def slaves_run(cmd, background = False):
     print "#####Running cmd:" + command
     os.system(command)
 
+def slaves_run_parallel(cmd):
+  global bash_run_counter
+  def ssh(machine, cmd, counter):
+    command = "ssh " + machine + " \"" + cmd + "\" &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
+    print "#######Running cmd:" + command
+    os.system(command)
+    print "#######Server " + machine + " command finished"
+
+  if not os.path.exists("/root/disaggregation/rmem/.local_commands"):
+    os.system("mkdir -p /root/disaggregation/rmem/.local_commands")
+
+  threads = []
+  for s in get_slaves():
+    threads.append(threading.Thread(target=ssh, args=(s, cmd, bash_run_counter,)))
+    bash_run_counter += 1
+  [t.start() for t in threads]
+  [t.join() for t in threads]
+  print "Finished parallel run: " + cmd
+
+
 def all_run(cmd, background = False):
   slaves_run(cmd, background)
   run(cmd)
 
-bash_run_counter = 0
 def slaves_run_bash(cmd, silent = False, background = False):
   global bash_run_counter
   f = open("/root/disaggregation/rmem/.cmd_temp.sh", "w")
@@ -62,3 +84,16 @@ def slaves_run_bash(cmd, silent = False, background = False):
     os.system(command)
 
     bash_run_counter += 1
+
+def get_remaining_memory(machine):
+  freemem = int(run_and_get("ssh %s \"cat /proc/meminfo | grep MemFree\"" % machine)[1].replace("MemFree:","").replace("kB","").replace("\n","").replace(" ",""))
+  freeswap = int(run_and_get("ssh %s \"cat /proc/meminfo | grep SwapFree\"" % machine)[1].replace("SwapFree:","").replace("kB","").replace("\n","").replace(" ",""))
+  return (freemem + freeswap)/1024.0/1024.0
+
+
+def get_cluster_remaining_memory():
+  sum = 0
+  for s in get_slaves():
+    mem = get_remaining_memory(s)
+    sum += mem
+  return sum

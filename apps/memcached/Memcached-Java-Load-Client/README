@@ -1,0 +1,70 @@
+Yahoo! Cloud System Benchmark (YCSB)
+
+http://wiki.github.com/brianfrankcooper/YCSB/
+http://research.yahoo.com/Web_Information_Management/YCSB
+ycsb-users@yahoogroups.com
+
+
+Overview
+========
+
+It is difficult to decide which system is right for your application,
+partially because the features differ between systems, and partially
+because there is not an easy way to compare the performance of one
+system versus another.
+
+The goal of the YCSB project is to develop a framework and common set
+of workloads for evaluating the performance of different "key-value"
+and "cloud" serving stores. The project comprises two things:
+
+* The YCSB Client, an extensible workload generator
+
+* The Core workloads, a set of workload scenarios to be executed by
+  the generator
+
+Although the core workloads provide a well rounded picture of a
+system's performance, the Client is extensible so that you can define
+new and different workloads to examine system aspects, or application
+scenarios, not adequately covered by the core workload. Similarly, the
+Client is extensible to support benchmarking different
+databases. Although we include sample code for benchmarking HBase and
+Cassandra, it is straightforward to write a new interface layer to
+benchmark your favorite database.
+
+A common use of the tool is to benchmark multiple systems and compare
+them. For example, you can install multiple systems on the same
+hardward configuration, and run the same workloads against each
+system. Then you can plot the performance of each system (for example,
+as latency versus throughput curves) to see when one system does
+better than another.
+
+Detailed information about using the benchmark is available in the
+doc/index.html file.
+
+Revision History
+================
+
+0.1.3 - 10/26/10
+
+- Voldemort binding (rsumbaly)
+- HBase client improvements (ryanobjc)
+- Fixes to Cassandra 0.7 binding (johanoskarsson, nickmbailey)
+- Added an interface for exporting the measurements and a JSON implementation. It can write to both stdout and to a file (johanoskarsson)
+- Other minor fixes (brianfrankcooper)
+
+0.1.2 - 5/12/10
+
+- MongoDB binding (ypai)
+- Cassandra 0.7 binding (johanoskarsson)
+- Simple command line interface (brianfrankcooper)
+- Faster string generation (tlipcon)
+- Avoid Bytes conversion in HBaseClient (tlipcon)
+
+0.1.1 - 4/25/10
+
+- Compiles under 1.5
+- Fixes doc and HBaseClient bugs
+
+0.1.0 - 4/23/10 
+
+- Initial open source release

@@ -1,0 +1,31 @@
+[OVERALL] RunTime(ms), 30015.0
+[OVERALL] Throughput(ops/sec), 6663.334999167083
+[SET] Operations, 200000
+[SET] AverageLatency, 448.82us
+[SET] MinLatency, 121.0us
+[SET] MaxLatency, 22.8ms
+[SET] 95thPercentileLatency, 2ms   
+[SET] 99thPercentileLatency, 4ms   
+[SET] 99.9thPercentileLatency, 16ms  
+[SET] Return=0, 200000
+[SET] 0us    - 256us , 31497
+[SET] 256us  - 512us , 126914
+[SET] 512us  - 1024us, 34737
+[SET] 1024us - 2ms   , 5526
+[SET] 2ms    - 4ms   , 780
+[SET] 4ms    - 8ms   , 479
+[SET] 8ms    - 16ms  , 66
+[SET] 16ms   - 32ms  , 1
+[SET] 32ms   - 64ms  , 0
+[SET] 64ms   - 128ms , 0
+[SET] 128ms  - 256ms , 0
+[SET] 256ms  - 512ms , 0
+[SET] 512ms  - 1024ms, 0
+[SET] 1024ms - 2s    , 0
+[SET] 2s     - 4s    , 0
+[SET] 4s     - 8s    , 0
+[SET] 8s     - 16s   , 0
+[SET] 16s    - 32s   , 0
+[SET] 32s    - 64s   , 0
+[SET] 64s    - 128s  , 0
+[SET] >128s  , 0

@@ -1,0 +1,8 @@
+com.yahoo.ycsb
+com.yahoo.ycsb.database
+com.yahoo.ycsb.db
+com.yahoo.ycsb.generator
+com.yahoo.ycsb.measurements
+com.yahoo.ycsb.measurements.exporter
+com.yahoo.ycsb.memcached
+com.yahoo.ycsb.workloads

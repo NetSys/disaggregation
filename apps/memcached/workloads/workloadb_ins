@@ -1,0 +1,63 @@
+# Copyright (c) 2010 Yahoo! Inc. All rights reserved.                                                                                                                             
+#                                                                                                                                                                                 
+# Licensed under the Apache License, Version 2.0 (the "License"); you                                                                                                             
+# may not use this file except in compliance with the License. You                                                                                                                
+# may obtain a copy of the License at                                                                                                                                             
+#                                                                                                                                                                                 
+# http://www.apache.org/licenses/LICENSE-2.0                                                                                                                                      
+#                                                                                                                                                                                 
+# Unless required by applicable law or agreed to in writing, software                                                                                                             
+# distributed under the License is distributed on an "AS IS" BASIS,                                                                                                               
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or                                                                                                                 
+# implied. See the License for the specific language governing                                                                                                                    
+# permissions and limitations under the License. See accompanying                                                                                                                 
+# LICENSE file.                                                                                                                                                                   
+
+# Yahoo! Cloud System Benchmark
+# Workload B: Read mostly workload
+#   Application example: photo tagging; add a tag is an update, but most operations are to read tags
+#                        
+#   Read/update ratio: 95/5
+#   Default data size: 1 KB records (10 fields, 100 bytes each, plus key)
+#   Request distribution: zipfian
+
+db=com.yahoo.ycsb.db.SpymemcachedClient
+memcached.address=/root/spark-ec2/slaves
+memcached.port=11211
+
+#slaveaddress=10.17.7.102
+
+histogram.buckets=20
+exportfile=results.txt
+recordcount=1000000
+operationcount=4000000
+workload=com.yahoo.ycsb.workloads.MemcachedCoreWorkload
+#insertstart=200000
+
+readallfields=true
+
+insertproportion=0
+readproportion=0.95
+updateproportion=0
+scanproportion=0
+
+#memaddproportion=0.05
+memgetproportion=0.100
+#memsetproportion=0.25
+memupdateproportion=0.0
+#memappendproportion=0.05
+#memprependproportion=0.05
+#memreplaceproportion=0.05
+#memcasproportion=0.05
+
+valuelength=10240
+
+workingset=1000000
+churndelta=1000000
+
+printstatsinterval=5
+
+requestdistribution=zipfian
+
+threadcount=20
+target=100000
