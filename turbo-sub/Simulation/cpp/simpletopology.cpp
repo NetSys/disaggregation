@@ -9,8 +9,8 @@ extern DCExpParams params;
  * A -- B egress queues at A and B
  */
 SingleLinkTopology::SingleLinkTopology(double bandwidth, double drop_prob) {
-  src = new Host(0, bandwidth, DROPTAIL_QUEUE);
-  dst = new Host(1, bandwidth, DROPTAIL_QUEUE);
+  src = new Host(0, bandwidth, DROPTAIL_QUEUE, NORMAL_HOST);
+  dst = new Host(1, bandwidth, DROPTAIL_QUEUE, NORMAL_HOST);
 
   // Modify the queue
   src->queue = Factory::get_queue(0, bandwidth, params.queue_size,
@@ -45,8 +45,8 @@ double SingleLinkTopology::get_oracle_fct(Flow *f) {
 SingleSenderReceiverTopology::SingleSenderReceiverTopology(
   double bandwidth, double drop_prob) {
 
-  src = new Host(0, bandwidth, DROPTAIL_QUEUE);
-  dst = new Host(1, bandwidth, DROPTAIL_QUEUE);
+  src = new Host(0, bandwidth, DROPTAIL_QUEUE, NORMAL_HOST);
+  dst = new Host(1, bandwidth, DROPTAIL_QUEUE, NORMAL_HOST);
   sw = new CoreSwitch(0, 2, bandwidth, DROPTAIL_QUEUE);
 
   // Modify the second queue of the switch to drop packets
@@ -94,9 +94,9 @@ NToOneTopology::NToOneTopology(uint32_t num_senders, double bandwidth) {
   this->num_senders = num_senders;
   // Create Hosts
   for (uint32_t i = 0; i < num_senders; i++) {
-    senders.push_back(new Host(i, bandwidth, params.queue_type));
+    senders.push_back(new Host(i, bandwidth, params.queue_type, NORMAL_HOST));
   }
-  receiver = new Host(num_senders, bandwidth, params.queue_type);
+  receiver = new Host(num_senders, bandwidth, params.queue_type, NORMAL_HOST);
 
   // Create switch
   sw = new CoreSwitch(0, num_senders + 1, bandwidth, params.queue_type);

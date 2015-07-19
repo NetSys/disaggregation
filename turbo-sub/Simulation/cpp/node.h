@@ -12,6 +12,10 @@
 #define CORE_SWITCH 10
 #define AGG_SWITCH 11
 
+#define CPU 0
+#define MEM 1
+#define DISK 2
+
 class Packet;
 class Flow;
 
@@ -31,10 +35,9 @@ public:
 
 class Host : public Node {
 public:
-  Host(uint32_t id, double rate, uint32_t queue_type);
+  Host(uint32_t id, double rate, uint32_t queue_type, uint32_t host_type);
   Queue *queue;
-  std::priority_queue<Flow *, std::vector<Flow *>, FlowComparator> active_flows;
-  Flow *receiving;
+  int host_type;
 };
 
 class Switch : public Node {
@@ -55,6 +58,7 @@ public:
   // Different Rates
   AggSwitch(uint32_t id, uint32_t nq1, double r1,
             uint32_t nq2, double r2, uint32_t queue_type);
+  Queue* queue_to_arbiter;
 };
 
 #endif

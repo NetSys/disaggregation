@@ -2,6 +2,7 @@
 #define RANDOM_VARIABLE_H
 
 #include <vector>
+#include <random>
 
 class UniformRandomVariable {
 public:
@@ -34,10 +35,12 @@ public:
   virtual double value();
   double interpolate(double u, double x1, double y1, double x2, double y2);
 
-  EmpiricalRandomVariable(std::string filename);
+  EmpiricalRandomVariable(std::string filename, bool smooth = true);
   int loadCDF(std::string filename);
 
   double mean_flow_size;
+
+  bool smooth;
 
 protected:
   int lookup(double u);
@@ -72,5 +75,22 @@ public:
   virtual double value();
 };
 
+class ConstantVariable : public EmpiricalRandomVariable {
+public:
+    double v;
+    ConstantVariable(double value);
+    double value();
+};
+
+class GaussianRandomVariable{
+  public:
+  double value();
+  GaussianRandomVariable(double avg, double std);
+  double avg;
+  double std;
+
+  std::default_random_engine generator;
+  std::normal_distribution<double> *distribution;
+};
 
 #endif

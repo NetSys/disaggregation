@@ -16,15 +16,15 @@ def get_longflows(flows, thresh=1000000):
         else:
             nonlongflows.append(x)
     return longflows, nonlongflows
-    
+
 def get_average_slowdown(flows):
-    return sum([float(x.split()[-1]) for x in flows])/len(flows)
+    return sum([float(x.split()[8]) for x in flows])/len(flows)
 
 def get_average_fct(flows):
-    return sum([float(x.split()[-3]) for x in flows])/len(flows)
+    return sum([float(x.split()[6]) for x in flows])/len(flows)
 
 def get_start_range(flows):
-    start = lambda x:float(x.split()[4]) 
+    start = lambda x:float(x.split()[4])
     return min(flows, key=start), max(flows, key=start)
 
 def get_end_range(flows):
@@ -43,9 +43,9 @@ def get_finishing_cdf(flows):
         cumulative_fraction += additional_fraction
     return cdf_points
 
-#flows = [x for x in fileinput.input()]
-#print 'slowdown: ', get_average_slowdown(flows)
-#print 'avrg fct: ', get_average_fct(flows)
+flows = [x for x in fileinput.input()]
+print 'slowdown: ', get_average_slowdown(flows)
+print 'avrg fct: ', get_average_fct(flows)
 
 
 

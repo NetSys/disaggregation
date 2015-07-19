@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include "assert.h"
+#include "debug.h"
 
 extern double get_current_time(); // TODOm
 extern void add_to_event_queue(Event *ev);
@@ -66,6 +67,7 @@ Packet *Queue::deque() {
 }
 
 void Queue::drop(Packet *packet) {
+
   packet->flow->pkt_drop++;
   if(packet->seq_no < packet->flow->size){
     packet->flow->data_pkt_drop++;
@@ -73,10 +75,13 @@ void Queue::drop(Packet *packet) {
   if(packet->type == ACK_PACKET)
     packet->flow->ack_pkt_drop++;
 
-//  std::cout << get_current_time() << " queue.cpp:73 delete " << packet << " id:" << packet->unique_id << " qid:" << this->unique_id << "\n";
-//  if(packet->unique_id == 761){
-//    std::cout << "queue.cpp:75 !!!!!!!!deleting pkt 761\n";
-//  }
+  if(debug_flow(packet->flow->id))
+    std::cout << get_current_time() << " pkt drop. flow:" << packet->flow->id
+        << " type:" << packet->type << " seq:" << packet->seq_no
+        << " at queue id:" << this->id << " loc:" << this->location << "\n";
+
+
+
   delete packet;
 }
 
@@ -129,12 +134,11 @@ PFabricQueue::PFabricQueue(uint32_t id, double rate, uint32_t limit_bytes, int l
 }
 
 void PFabricQueue::enque(Packet *packet) {
-  //if(this->unique_id == 354)
-  //  std::cout << get_current_time() << " queue.cpp129 q:" << this->unique_id << " qptr:" << this << " enqueue pkt:" << packet << " id:" << packet->unique_id << "\n" << std::flush;
   p_arrivals += 1;
   b_arrivals += packet->size;
   packets.push_back(packet);
   bytes_in_queue += packet->size;
+  packet->last_enque_time = get_current_time();
   if (bytes_in_queue > limit_bytes) {
     uint32_t worst_priority = 0;
     uint32_t worst_index = 0;
@@ -205,7 +209,15 @@ Packet * PFabricQueue::deque() {
     b_departures += p->size;
 
     //std::cout << get_current_time() <<  " queue.cpp:200 deque pkt ptr:" << p << " id:" << p->unique_id << "qid:" << this->unique_id << "\n" << std::flush;
-
+    p->total_queuing_delay += get_current_time() - p->last_enque_time;
+    if(p->type ==  NORMAL_PACKET){
+        if(p->flow->first_byte_send_time < 0)
+            p->flow->first_byte_send_time = get_current_time();
+        if(this->location == 0)
+            p->flow->first_hop_departure++;
+        if(this->location == 3)
+            p->flow->last_hop_departure++;
+    }
     return p;
 
   } else {
