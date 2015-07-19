@@ -627,3 +627,10 @@ Latency: 10 BW: 100 Result: 147.979622126 258.63
 ================== Started exp at:2015-07-16 22:59:39.793245 ==================
 Argument ['ec2_run_app_once.py', '--task', 'terasort', '-t']
 Latency: 1 BW: 10 Result: 640.782480001
+
+
+
+
+================== Started exp at:2015-07-19 06:02:23.462075 ==================
+Argument ['ec2_run_app_once.py', '--task', 'wordcount', '-t']
+Latency: 1 BW: 10 Result: 323.930896997

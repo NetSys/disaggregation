@@ -464,7 +464,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], False).get()
+      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], opts.trace).get()
       results[conf].append(time)
 
 
