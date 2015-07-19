@@ -255,9 +255,9 @@ def prepare_spark_dataset(opts):
   ssh_spark("/root/spark-ec2/copy-dir /root/url_count.py")
 
   #ssh_spark("/root/spark/sbin/start-thriftserver.sh --executor-memory %s &" % opts.executor_memory)
-  ssh_spark("/root/spark/sbin/stop-thriftserver.sh")
-  ssh_spark("/root/spark/sbin/start-thriftserver.sh")
-  #ssh_spark("nohup /root/spark/sbin/start-thriftserver-bg.sh")
+  #ssh_spark("/root/spark/sbin/stop-thriftserver.sh")
+  #ssh_spark("/root/spark/sbin/start-thriftserver.sh")
+  ssh_spark("nohup /root/spark/sbin/start-thriftserver-bg.sh")
 
   #TODO: Should keep checking to see if the JDBC server has started yet
   print "Sleeping for 30 seconds so the jdbc server can start"
