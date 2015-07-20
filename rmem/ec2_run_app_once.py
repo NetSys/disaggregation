@@ -422,13 +422,13 @@ def graphlab_prepare():
     rm -rf netflix_m; 
     mkdir netflix_m; 
     cd netflix_m; 
-    for i in `seq 1 6`; 
+    for i in `seq 1 18`; 
     do 
       head -n 100000000 ../netflix_mm | sed -e '1,3d' >> netflix_mm; 
     done ; 
     rm ../netflix_mm;
   '''
-  slaves_run_bash(cmd, silent=True, background = True)
+  slaves_run_parallel(cmd)
   run(cmd)
 
 def wordcount_prepare():

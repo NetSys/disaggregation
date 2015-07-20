@@ -42,13 +42,19 @@ def slaves_run(cmd, background = False):
     print "#####Running cmd:" + command
     os.system(command)
 
-def slaves_run_parallel(cmd):
+def slaves_run_parallel(cmd, master=False):
   global bash_run_counter
   def ssh(machine, cmd, counter):
     command = "ssh " + machine + " \"" + cmd + "\" &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
     print "#######Running cmd:" + command
     os.system(command)
     print "#######Server " + machine + " command finished"
+
+  def local_run(cmd, counter):
+    print "#######Running cmd:" + cmd
+    os.system(cmd)
+    print "#######Local cmd finished"
+
 
   if not os.path.exists("/root/disaggregation/rmem/.local_commands"):
     os.system("mkdir -p /root/disaggregation/rmem/.local_commands")
@@ -57,6 +63,11 @@ def slaves_run_parallel(cmd):
   for s in get_slaves():
     threads.append(threading.Thread(target=ssh, args=(s, cmd, bash_run_counter,)))
     bash_run_counter += 1
+
+  if master:
+    threads.append(threading.Thread(target=local_run, args=(cmd, bash_run_counter,)))
+    bash_run_counter += 1
+
   [t.start() for t in threads]
   [t.join() for t in threads]
   print "Finished parallel run: " + cmd
