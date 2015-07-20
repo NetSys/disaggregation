@@ -45,14 +45,15 @@ def slaves_run(cmd, background = False):
 def slaves_run_parallel(cmd, master=False):
   global bash_run_counter
   def ssh(machine, cmd, counter):
-    command = "ssh " + machine + " \"" + cmd + "\" &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
+    command = "ssh " + machine + " '" + cmd + "' &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
     print "#######Running cmd:" + command
     os.system(command)
     print "#######Server " + machine + " command finished"
 
   def local_run(cmd, counter):
-    print "#######Running cmd:" + cmd
-    os.system(cmd)
+    command = cmd 
+    print "#######Running cmd:" + command
+    os.system(command)
     print "#######Local cmd finished"
 
 

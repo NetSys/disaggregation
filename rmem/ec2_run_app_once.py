@@ -424,12 +424,11 @@ def graphlab_prepare():
     cd netflix_m; 
     for i in `seq 1 18`; 
     do 
-      head -n 100000000 ../netflix_mm | sed -e '1,3d' >> netflix_mm; 
+      cat ../netflix_mm | sed -e '1,3d' >> netflix_mm; 
     done ; 
     rm ../netflix_mm;
-  '''
-  slaves_run_parallel(cmd)
-  run(cmd)
+  '''.replace("\n"," ")
+  slaves_run_parallel(cmd, master = True)
 
 def wordcount_prepare():
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
