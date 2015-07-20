@@ -1,11 +1,9 @@
-//#include "
 #include "packet.h"
 #include "params.h"
 #include "factory.h"
 #include "flow.h"
 
 extern DCExpParams params;
-
 
 bool FlowComparator::operator() (Flow *a, Flow *b) {
   return a->flow_priority > b->flow_priority;
@@ -23,10 +21,10 @@ Node::Node(uint32_t id, uint32_t type) {
 }
 
 // TODO FIX superclass constructor
-Host::Host(uint32_t id, double rate, uint32_t type) : Node(id, HOST)
+Host::Host(uint32_t id, double rate, uint32_t queue_type, uint32_t host_type) : Node(id, HOST)
 {
-  queue = Factory::get_queue(id, rate, params.queue_size, type, 0, 0);
-  receiving = NULL;
+  queue = Factory::get_queue(id, rate, params.queue_size, queue_type, 0, 0);
+  this->host_type = host_type;
 }
 
 // TODO FIX superclass constructor
@@ -54,4 +52,5 @@ AggSwitch::AggSwitch(uint32_t id, uint32_t nq1, double r1,
   for (uint32_t i = 0; i < nq2; i++) {
     queues.push_back(Factory::get_queue(i, r2, params.queue_size, type, 0, 1));
   }
+  queue_to_arbiter = NULL;
 }

@@ -1,5 +1,20 @@
-#include "factory.h"
 
+#include "factory.h"
+#include "turboqueue.h"
+
+
+#include "pacedflow.h"
+#include "turboflow.h"
+#include "turboflow_perpkt.h"
+#include "fountainflow.h"
+#include "rtsctsflow.h"
+#include "schedulinghost.h"
+#include "capabilityhost.h"
+#include "capabilityflow.h"
+#include "magicflow.h"
+#include "magichost.h"
+#include "fastpassflow.h"
+#include "fastpasshost.h"
 /* Factory method to return appropriate queue */
 Queue* Factory::get_queue(uint32_t id, double rate,
                         uint32_t queue_size, uint32_t type,
@@ -61,23 +76,56 @@ Flow* Factory::get_flow(uint32_t id, double start_time, uint32_t size,
     case PFABRIC_FLOW_NO_SLOWSTART:
       return new PFabricFlowNoSlowStart(id, start_time, size, src, dst);
       break;
-    /*
-    case TURBO_FLOW_PERPACKET_TIMEOUT_WITHPROBING:
-      return new TurboFlowPerPacketTimeoutWithProbing(id, start_time, size,
-        src, dst);
-      break;
-    case TURBO_FLOW_PERPACKET_TIMEOUT_WITHRAREPROBING:
-      return new TurboFlowPerPacketTimeoutWithRareProbing(id, start_time, size,
-        src, dst);
-      break;
-    */
     case FOUNTAIN_FLOW:
-      return new FountainFlow(id, start_time, size, src, dst, 1.00);
+      return new FountainFlow(id, start_time, size, src, dst);
       break;
-    case RTS_CTS_DTS_FLOW:
-      return new RTSFlow(id, start_time, size, src, dst, 1.00);
+    case FOUNTAIN_FLOW_SCHEDULING_HOST:
+      return new FountainFlowWithSchedulingHost(id, start_time, size, src, dst);
+      break;  
+    case RTSCTS_FLOW:
+      return new RTSCTSFlow(id, start_time, size, src, dst);
+      break;
+    case FOUNTAIN_FLOW_PIPELINE_SCHEDULING_HOST:
+      return new FountainFlowWithPipelineSchedulingHost(id, start_time, size, src, dst);
+      break;
+    case CAPABILITY_FLOW:
+      return new CapabilityFlow(id, start_time, size, src, dst);
+      break;
+    case MAGIC_FLOW:
+      return new MagicFlow(id, start_time, size, src, dst);
+      break;
+    case FASTPASS_FLOW:
+      return new FastpassFlow(id, start_time, size, src, dst);
       break;
   }
   assert(false);
   return NULL;
+}
+
+Host* Factory::get_host(uint32_t id, double rate, uint32_t queue_type, uint32_t host_type) {
+    switch (host_type) {
+        case NORMAL_HOST:
+            return new Host(id, rate, queue_type, NORMAL_HOST);
+            break;
+        case SCHEDULING_HOST:
+            return new SchedulingHost(id, rate, queue_type);
+            break;
+        case RTSCTS_HOST:
+            return new RTSCTSHost(id, rate, queue_type);
+            break;
+        case PIPELINE_SCHEDULING_HOST:
+            return new PipelineSchedulingHost(id, rate, queue_type);
+            break;
+        case CAPABILITY_HOST:
+            return new CapabilityHost(id, rate, queue_type);
+            break;
+        case MAGIC_HOST:
+            return new MagicHost(id, rate, queue_type);
+            break;
+        case FASTPASS_HOST:
+            return new FastpassHost(id, rate, queue_type);
+            break;
+    }
+    assert(false);
+    return NULL;
 }

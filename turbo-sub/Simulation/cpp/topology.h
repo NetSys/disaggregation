@@ -13,6 +13,8 @@
 #include <math.h>
 #include <vector>
 
+class FastpassArbiter;
+
 class Topology {
 public:
   Topology();
@@ -23,6 +25,8 @@ public:
 
   std::vector<Host *> hosts;
   std::vector<Switch*> switches;
+
+  FastpassArbiter* arbiter;
 };
 
 class PFabricTopology : public Topology {

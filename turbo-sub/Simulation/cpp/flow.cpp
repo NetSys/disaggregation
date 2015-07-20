@@ -48,7 +48,9 @@ Flow::Flow(uint32_t id, double start_time, uint32_t size,
   this->data_pkt_drop = 0;
   this->ack_pkt_drop = 0;
   this->flow_priority = 0;
-  this->useDDCTestFlowFinishedEvent = false;
+  this->first_byte_send_time = -1;
+  this->first_hop_departure = 0;
+  this->last_hop_departure = 0;
 }
 
 Flow::~Flow() {
@@ -62,7 +64,6 @@ void Flow::start_flow() {
 
 void Flow::send_pending_data() {
   if (received_bytes < size) {
-    //std::cout << "Sending Pending Data" << std::endl;
     uint32_t seq = next_seq_no;
     uint32_t window = cwnd_mss * mss + scoreboard_sack_bytes;
     while ((seq + mss <= last_unacked_seq + window) &&
@@ -73,7 +74,6 @@ void Flow::send_pending_data() {
       }
       next_seq_no = seq + mss;
       seq += mss;
-      //std::cout << "Adding Retx Event" << std::endl;
       if (retx_event == NULL) {
         set_timeout(get_current_time() + retx_timeout);
       }
@@ -92,10 +92,6 @@ Packet *Flow::send(uint32_t seq)
                  priority, mss + hdr_size, \
                  src, dst);
   this->total_pkt_sent++;
-
-//  if(this->id == 61 || this->id == 70)
-//    std::cout << "Flow::send: Flow:" << this->id << "@" << (int)(get_current_time() * 1000000) << " seq:" << seq << " sz:" << size << " pri:" << priority << " ptr:" << p <<  "\n";
-
 
   add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, src->queue));
   return p;
@@ -146,73 +142,74 @@ void Flow::receive_ack(uint32_t ack, std::vector<uint32_t> sack_list) {
     received.clear();
     finish_time = get_current_time();
     flow_completion_time = finish_time - start_time;
-    if(this->useDDCTestFlowFinishedEvent){
-      DDCTestFlowFinishedEvent *ev = new DDCTestFlowFinishedEvent(get_current_time(), this);
-      add_to_event_queue(ev);
-    }else{
-      FlowFinishedEvent *ev = new FlowFinishedEvent(get_current_time(), this);
-      add_to_event_queue(ev);
-    }
+    FlowFinishedEvent *ev = new FlowFinishedEvent(get_current_time(), this);
+    add_to_event_queue(ev);
   }
 }
 
 
 void Flow::receive(Packet *p) {
   if (finished) {
-    //std::cout << get_current_time() << " flow.cpp:162 delete " << p << "\n";
     delete p;
     return;
   }
 
 
   if (p->type == ACK_PACKET) {
-    Ack *a = (Ack *) p;
-    receive_ack(a->seq_no, a->sack_list);
-    //std::cout << get_current_time() << " flow.cpp:170 delete " << p << "\n";
-    delete p;
-    return;
+      Ack *a = (Ack *) p;
+      receive_ack(a->seq_no, a->sack_list);
+  }
+  else if(p->type == NORMAL_PACKET)
+  {
+      this->receive_data_pkt(p);
+  }
+  else
+  {
+      assert(false);
   }
 
-//  if(this->id == 70 || this->id == 61){
-//    std::cout << "Flow::receive:flow " << this->id << " " << (int)(get_current_time() * 1000000) << " get pkt seq:" << p->seq_no << " ptr:" << p << "\n";
-//  }
-  //std::cout << get_current_time() << " Received " << p->seq_no << std::endl;
 
-  if (received.count(p->seq_no) == 0) {
-    received[p->seq_no] = true;
-    //std::cout << get_current_time() << " Setting " << p->seq_no << std::endl;
-    num_outstanding_packets -= ((p->size - hdr_size) / (mss));
-    received_bytes += (p->size - hdr_size);
-  } else {
-    duplicated_packets_received += 1;
-  }
-  if (p->seq_no > max_seq_no_recv) {
-    max_seq_no_recv = p->seq_no;
-  }
-  // Determing which ack to send
-  uint32_t s = recv_till;
-  bool in_sequence = true;
-  std::vector<uint32_t> sack_list;
-  while (s <= max_seq_no_recv) {
-    if (received.count(s) > 0) {
-      //printf("s %d: count:%d\n", s, received.count(s));
-      if (in_sequence) {
-        recv_till += mss;
-      } else {
-        sack_list.push_back(s);
-      }
-    } else {
-      in_sequence = false;
-    }
-    s += mss;
-  }
-
-  //std::cout << get_current_time() << " flow.cpp:209 delete " << p << "\n";
   delete p;
-  //std::cout << get_current_time() << " Sending ack " << recv_till << std::endl;
-  send_ack(recv_till, sack_list); // Cumulative Ack
 }
 
+void Flow::receive_data_pkt(Packet * p)
+{
+    received_count++;
+    total_queuing_time += p->total_queuing_delay;
+
+    if (received.count(p->seq_no) == 0) {
+      received[p->seq_no] = true;
+      if(num_outstanding_packets >= ((p->size - hdr_size) / (mss)))
+          num_outstanding_packets -= ((p->size - hdr_size) / (mss));
+      else
+          num_outstanding_packets = 0;
+      received_bytes += (p->size - hdr_size);
+    } else {
+      duplicated_packets_received += 1;
+    }
+    if (p->seq_no > max_seq_no_recv) {
+      max_seq_no_recv = p->seq_no;
+    }
+    // Determing which ack to send
+    uint32_t s = recv_till;
+    bool in_sequence = true;
+    std::vector<uint32_t> sack_list;
+    while (s <= max_seq_no_recv) {
+      if (received.count(s) > 0) {
+        if (in_sequence) {
+          recv_till += mss;
+        } else {
+          sack_list.push_back(s);
+        }
+      } else {
+        in_sequence = false;
+      }
+      s += mss;
+    }
+
+    send_ack(recv_till, sack_list); // Cumulative Ack
+
+}
 
 void Flow::set_timeout(double time) {
   if (last_unacked_seq < size) {
@@ -229,7 +226,6 @@ void Flow::handle_timeout() {
   cwnd_mss = 1;
   send_pending_data(); //TODO Send again
   set_timeout(get_current_time() + retx_timeout);  // TODO
-  //std::cout << "timeout\n";
 }
 
 
@@ -242,7 +238,13 @@ void Flow::cancel_retx_event() {
 
 
 uint32_t Flow::get_priority(uint32_t seq) {
-  return (size - last_unacked_seq - scoreboard_sack_bytes);
+    if(params.deadline && params.schedule_by_deadline)
+    {
+        return (int)(this->deadline * 1000000);
+    }
+    else{
+        return (size - last_unacked_seq - scoreboard_sack_bytes);
+    }
 }
 
 
@@ -253,7 +255,10 @@ void Flow::increase_cwnd() {
   }
 }
 
-
+double Flow::get_avg_queuing_delay_in_us()
+{
+    return total_queuing_time/received_count * 1000000;
+}
 
 /* Implementation for pFabric Flow */
 
@@ -287,6 +292,10 @@ void PFabricFlow::handle_timeout() {
   Flow::handle_timeout();
 }
 
+
+
+
+
 PFabricFlowNoSlowStart::PFabricFlowNoSlowStart(uint32_t id, double start_time, uint32_t size, Host *s, Host *d)
   : PFabricFlow(id, start_time, size, s, d) {
 }
@@ -307,198 +316,5 @@ void PFabricFlowNoSlowStart::handle_timeout() {
   next_seq_no = last_unacked_seq;
   send_pending_data(); //TODO Send again
   set_timeout(get_current_time() + retx_timeout);  // TODO
-}
-
-
-FountainFlow::FountainFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy)
-  : Flow(id, start_time, size, s, d) {
-  transmission_delay = this->src->queue->get_transmission_delay(mss + hdr_size);
-  received_count = 0;
-  min_recv = (int)ceil(size_in_pkt * redundancy);
-  bytes_acked = 0;
-
-  goal = (int)ceil(min_recv * 1.1);
-}
-
-
-void FountainFlow::start_flow() {
-  this->flow_priority = ddc_get_priority();
-  send_pending_data();
-}
-
-
-void FountainFlow::send_pending_data() {
-//  if(this->id == 8)
-//    std::cout << get_current_time() << " flow.cpp:333 flow:" << this->id << " send seq:" << next_seq_no << "\n";
-  if (!this->finished) {
-    if(!src->queue->busy){
-
-
-      send(next_seq_no);
-      next_seq_no += mss;
-      this->flow_priority = ddc_get_priority();
-      total_pkt_sent++;
-
-//    //add a round trip time before sending parity
-//    if (total_pkt_sent == min_recv){
-//      add_to_event_queue(new FlowProcessingEvent(get_current_time() + 0.0000112 ,this));
-//      return;
-//    }
-
-      //add_to_event_queue(new FlowProcessingEvent(get_current_time() + transmission_delay ,this));
-
-
-//      if(total_pkt_sent == goal){
-//        goal += (int)ceil(min_recv * 0.1);
-//        add_to_event_queue(new DDCTimeoutEvent(get_current_time() + 0.0000095, this));
-//      }else{
-        src->active_flows.push(this);
-//      }
-    }else{
-      src->active_flows.push(this);
-    }
-  }
-}
-
-
-
-void FountainFlow::receive(Packet *p) {
-
-  if (!finished) {
-    if (p->type == ACK_PACKET) {
-//      Ack *a = (Ack *) p;
-//      if(a->seq_no == 0){//flow finished
-        finished = true;
-        finish_time = get_current_time();
-        flow_completion_time = finish_time - start_time;
-        if(this->useDDCTestFlowFinishedEvent){
-          DDCTestFlowFinishedEvent *ev = new DDCTestFlowFinishedEvent(get_current_time(), this);
-          add_to_event_queue(ev);
-        }else{
-          FlowFinishedEvent *ev = new FlowFinishedEvent(get_current_time(), this);
-          add_to_event_queue(ev);
-        }
-//      }else{
-//        bytes_acked = a->seq_no;
-//      }
-    }else{
-      received_count++;
-//      if(this->id == 70 || this->id == 61){
-//        std::cout << "flow " << this->id << " " << (int)(get_current_time() * 1000000) << " get pkt seq:" << p->seq_no << "\n";
-//      }
-      //TODO:fix this, this causes an underflow on NumPacketOutstanding
-      num_outstanding_packets -= ((p->size - hdr_size) / (mss));
-      if(received_count >= min_recv && (received_count - min_recv)%7 == 0){
-        send_ack(0, dummySack);
-      }
-//      else{
-//        send_ack(received_count * mss, dummySack);
-//      }
-    }
-
-  }
-  //std::cout << get_current_time() << " flow.cpp:380 delete " << p << "\n";
-  delete p;
-  return;
-}
-
-uint32_t FountainFlow::ddc_get_priority() {
-  //uint32_t priority = min_recv * mss >= next_seq_no? min_recv * mss - next_seq_no: 2147483648 - next_seq_no;
-  //uint32_t priority = min_recv * mss - bytes_acked ;
-  //uint32_t priority = 2147483648 + min_recv * mss - next_seq_no;
-  //uint32_t priority = this->size > next_seq_no? this->size - next_seq_no:this->size;
-  //uint32_t priority = next_seq_no >= this->size?2:1;
-  //uint32_t priority = this->size > next_seq_no? this->size - next_seq_no:2147483648;
-  //uint32_t priority = 1;
-  uint32_t priority = this->size;
-  return priority;
-}
-
-void FountainFlow::send_ack(uint32_t seq, std::vector<uint32_t> sack_list) {
-  Packet *p = new Ack(this, seq, sack_list, hdr_size, dst, src); //Acks are dst->src
-  add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, dst->queue));
-
-}
-
-Packet *FountainFlow::send(uint32_t seq)
-{
-
-  Packet *p = NULL;
-
-  //uint32_t priority = this->size > seq? this->size - seq:2147483648;
-
-  //uint32_t priority = next_seq_no >= this->size?2:1;
-  uint32_t priority = 1;
-  //uint32_t priority = min_recv * mss - bytes_acked;
-
-  uint32_t pkt_size = mss + hdr_size;
-  p = new Packet(get_current_time(), this, seq, \
-                 priority, pkt_size, \
-                 src, dst);
-
-
-  add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
-  return p;
-}
-
-RTSFlow::RTSFlow(uint32_t id, double start_time, uint32_t size, Host *s, Host *d, double redundancy) : FountainFlow(id, start_time, size, s, d, redundancy) {
-  cancelled_until = -1;
-}
-
-void RTSFlow::start_flow() {
-    Packet *p = new RTS(this, hdr_size, src, dst);
-    add_to_event_queue(new DDCHostPacketQueuingEvent(get_current_time(), p, src->queue));
-}
-
-void RTSFlow::send_pending_data() {
-    if (this->cancelled_until < get_current_time()) {
-        FountainFlow::send_pending_data();
-    }
-    else {
-        start_flow();
-    }
-}
-
-void RTSFlow::receive(Packet *p) {
-    if (p->type == NORMAL_PACKET || p->type == ACK_PACKET || p->type == PROBE_PACKET) {
-        FountainFlow::receive(p);
-    }
-    else if (p->type == RTS_PACKET) {
-        if (p->dst->receiving == NULL || p->dst->receiving->finished) {
-            p->dst->receiving = this;
-            //send a CTS
-            Packet *p = new CTS(this, hdr_size, dst, src);
-            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
-        }
-        else if (p->dst->receiving->size > this->size) {
-            Flow *old_f = p->dst->receiving;
-            p->dst->receiving = this;
-
-            //send a DTS to the old one
-            Packet *dts = new DTS(old_f, hdr_size, dst, old_f->src, retx_timeout);
-            add_to_event_queue(new PacketQueuingEvent(get_current_time(), dts, dst->queue));
-            //send a CTS
-            Packet *p = new CTS(this, hdr_size, dst, src);
-            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue)); 
-        }
-        else {
-            //send a DTS
-            //for now just wait a defined time
-            Packet *p = new DTS(this, hdr_size, dst, src, retx_timeout);
-            add_to_event_queue(new PacketQueuingEvent(get_current_time(), p, dst->queue));
-        }
-    }
-    else if (p->type == CTS_PACKET) {
-        send_pending_data();
-    }
-    else if (p->type == DTS_PACKET) {
-        //cancel sending for now
-        if (flow_proc_event != NULL) {
-            flow_proc_event->cancelled = true;
-            flow_proc_event = NULL;
-        }
-        cancelled_until = get_current_time() + ((DTS*) p)->wait_time;
-        add_to_event_queue(new FlowProcessingEvent(get_current_time() + ((DTS*) p)->wait_time, this));
-    }
 }
 
