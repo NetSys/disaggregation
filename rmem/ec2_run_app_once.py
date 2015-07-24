@@ -35,7 +35,7 @@ def parse_args():
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
-  parser.add_option("--teragen-size", type="float", default=50.0, help="Sort input data size (GB)")
+  parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -324,7 +324,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
   elif task == "memcached":
     slaves_run("memcached -d -m 26000 -u root")
     run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
-    thrd = threading.Thread(target=memcached_kill_loadgen, args=(time.time() + 10 * 60,))
+    thrd = threading.Thread(target=memcached_kill_loadgen, args=(time.time() + 25 * 60,))
     thrd.start()
     slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/workloadb_ins")
     memcached_kill_loadgen_on = False
@@ -434,7 +434,7 @@ def wordcount_prepare():
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
-  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki /wiki")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f125g.txt /wiki")
 
 def execute(opts):
 

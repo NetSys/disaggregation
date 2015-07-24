@@ -676,3 +676,115 @@ Latency: 1 BW: 10 Result: 838.245880842
 ================== Started exp at:2015-07-17 08:22:40.202861 ==================
 Argument ['ec2_run_app_once.py', '--task', 'memcached', '-t']
 Latency: 1 BW: 10 Result: 147.125025034:251.076
+
+
+
+
+================== Started exp at:2015-07-20 10:36:58.650640 ==================
+Argument ['ec2_run_app_once.py', '--task', 'graphlab', '--vary-latency']
+Latency: 5 BW: 100 Result: 1456.00150895
+Latency: 5 BW: 40 Result: 1451.65858889
+Latency: 10 BW: 10 Result: 1498.19324684
+Latency: 1 BW: 40 Result: 1451.05219102
+Latency: 5 BW: 10 Result: 1478.06730413
+Latency: 0 BW: 0 Result: 1430.41471815
+Latency: 1 BW: 10 Result: 1490.64388585
+Latency: 10 BW: 40 Result: 1459.55204105
+Latency: 1 BW: 100 Result: 1451.29141593
+Latency: 10 BW: 100 Result: 1460.38258696
+
+
+
+
+================== Started exp at:2015-07-21 00:29:14.596131 ==================
+Argument ['ec2_run_app_once.py', '--task', 'memcached', '--vary-latency']
+Latency: 5 BW: 100 Result: 701.022432089:529.2
+Latency: 5 BW: 40 Result: 706.881127119:532.782
+Latency: 10 BW: 10 Result: 849.952412128:654.636
+Latency: 1 BW: 40 Result: 650.141204119:490.928
+Latency: 5 BW: 10 Result: 781.288211823:594.376
+Latency: 0 BW: 0 Result: 647.077390194:481.258
+Latency: 1 BW: 10 Result: 716.435498953:546.264
+Latency: 10 BW: 40 Result: 785.179463148:592.848
+Latency: 1 BW: 100 Result: 654.443931818:491.612
+Latency: 10 BW: 100 Result: 832.254685163:600.842
+
+
+
+
+================== Started exp at:2015-07-21 06:15:23.046401 ==================
+Argument ['ec2_run_app_once.py', '--task', 'wordcount', '--vary-latency']
+Latency: 5 BW: 100 Result: 369.907783031
+Latency: 5 BW: 40 Result: 358.893008947
+Latency: 10 BW: 10 Result: 523.419457912
+Latency: 1 BW: 40 Result: 332.676401854
+Latency: 5 BW: 10 Result: 472.28501296
+Latency: 0 BW: 0 Result: 346.597427845
+Latency: 1 BW: 10 Result: 401.401756048
+Latency: 10 BW: 40 Result: 426.33838892
+Latency: 1 BW: 100 Result: 324.24563694
+Latency: 10 BW: 100 Result: 437.62163496
+
+
+
+
+================== Started exp at:2015-07-21 09:00:23.367082 ==================
+Argument ['ec2_run_app_once.py', '--task', 'wordcount', '--vary-latency']
+Latency: 5 BW: 100 Result: 353.543260098
+Latency: 5 BW: 40 Result: 359.13125515
+Latency: 10 BW: 10 Result: 480.841200829
+Latency: 1 BW: 40 Result: 322.619833946
+Latency: 5 BW: 10 Result: 462.792696953
+Latency: 0 BW: 0 Result: 300.631011009
+Latency: 1 BW: 10 Result: 394.247855902
+Latency: 10 BW: 40 Result: 410.516214848
+Latency: 1 BW: 100 Result: 318.244909048
+Latency: 10 BW: 100 Result: 429.127275944
+
+
+
+
+================== Started exp at:2015-07-21 17:05:48.331419 ==================
+Argument ['ec2_run_app_once.py', '--task', 'terasort', '--vary-latency']
+Latency: 5 BW: 100 Result: 2895.29307103
+Latency: 5 BW: 40 Result: 2841.42607689
+Latency: 10 BW: 10 Result: 3096.81560493
+Latency: 1 BW: 40 Result: 2209.81731415
+Latency: 5 BW: 10 Result: 3040.02729201
+Latency: 0 BW: 0 Result: 3035.52935386
+Latency: 1 BW: 10 Result: 2965.23995399
+Latency: 10 BW: 40 Result: 2842.08843184
+Latency: 1 BW: 100 Result: 2290.31209302
+Latency: 10 BW: 100 Result: 3037.66513205
+
+
+
+
+================== Started exp at:2015-07-22 02:55:58.130161 ==================
+Argument ['ec2_run_app_once.py', '--task', 'terasort', '--vary-latency']
+Latency: 5 BW: 100 Result: 1592.58068109
+Latency: 5 BW: 40 Result: 1749.8269701
+Latency: 10 BW: 10 Result: 1952.02037001
+Latency: 1 BW: 40 Result: 1773.19706917
+Latency: 5 BW: 10 Result: 1893.92736506
+Latency: 0 BW: 0 Result: 1967.30746889
+Latency: 1 BW: 10 Result: 1863.40955305
+Latency: 10 BW: 40 Result: 1831.96796298
+Latency: 1 BW: 100 Result: 1802.09045005
+Latency: 10 BW: 100 Result: 1843.98201799
+
+
+
+
+================== Started exp at:2015-07-22 09:52:35.225278 ==================
+Argument ['ec2_run_app_once.py', '--task', 'wordcount', '--vary-latency']
+Latency: 5 BW: 100 Result: 1800.04594398
+Latency: 5 BW: 40 Result: 1898.37467194
+Latency: 10 BW: 10 Result: 2619.09610891
+Latency: 1 BW: 40 Result: 1586.91691804
+Latency: 5 BW: 10 Result: 2209.39433002
+Latency: 0 BW: 0 Result: 1543.37357903
+Latency: 1 BW: 10 Result: 2075.32205915
+Latency: 10 BW: 40 Result: 2136.90046811
+Latency: 1 BW: 100 Result: 1601.558496
+Latency: 10 BW: 100 Result: 2130.99592996
