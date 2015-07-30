@@ -22,6 +22,7 @@ import sys
 import xml.etree.ElementTree as etree
 from xml.dom import minidom
 import threading
+from memcached_workload import *
 
 def parse_args():
   parser = OptionParser(usage="ec2_run_exp_once.py [options]")
@@ -34,6 +35,7 @@ def parse_args():
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
+  parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
 
@@ -54,29 +56,43 @@ def turn_off_os_swap():
   banner("Turn off os swap")
   turn_off_swap = '''
       if [ -n "$(cat /proc/swaps | grep /mnt/swap)" ];
-        then swapoff /mnt/swap;
+        then swapoff /mnt/swap; rm /mnt/swap;
       fi;
   '''
   slaves_run_bash(turn_off_swap)
 
 
-def clean_existing_rmem():
+def clean_existing_rmem(bw_gbps):
   banner("exiting rmem")
-  close_rmem = '''
-    cd /root/disaggregation/rmem;
-    while [ -n "$(cat /proc/swaps | grep /dev/rmem0)" ];
-      do swapoff /dev/rmem0;
-    done;
+  if bw_gbps < 0:
+    close_rmem = '''
+      while [ -n "$(mount | grep /root/disaggregation/rmem/tmpfs)" ];
+        do umount /root/disaggregation/rmem/tmpfs;
+      done;
+      rmdir /root/disaggregation/rmem/tmpfs;
 
-    while [ -n "$(lsmod | grep rmem)" ];
-      do rmmod rmem;
-    done;
+      cd /root/disaggregation/rmem;
+      while [ -n "$(cat /proc/swaps | grep /mnt2/swapdisk/swap)" ];
+        do swapoff /mnt2/swapdisk/swap;
+      done;
+      rm /mnt2/swapdisk/swap;
+    '''
+  else:
+    close_rmem = '''
+      cd /root/disaggregation/rmem;
+      while [ -n "$(cat /proc/swaps | grep /dev/rmem0)" ];
+        do swapoff /dev/rmem0;
+      done;
 
-    while [ -d "swap" ];
-      do rmdir swap;
-    done;
+      while [ -n "$(lsmod | grep rmem)" ];
+        do rmmod rmem;
+      done;
 
-    free > /dev/null && sync && echo 3 > /proc/sys/vm/drop_caches && free > /dev/null;
+      while [ -d "swap" ];
+        do rmdir swap;
+      done;
+
+      free > /dev/null && sync && echo 3 > /proc/sys/vm/drop_caches && free > /dev/null;
   '''
 
   slaves_run_bash(close_rmem)
@@ -89,22 +105,38 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace):
   inject_int = 1 if inject else 0
   trace_int = 1 if trace else 0
 
+  if bw_gbps < 0:
+    rmem_mb = int(rmem_gb * 1024)
+    install_rmem = '''
+      cd /root/disaggregation/rmem
+      mkdir -p tmpfs
+      mount -t tmpfs -o size=%dm tmpfs ./tmpfs/
+      fallocate -l %dm ./tmpfs/a.img
 
-  install_rmem = '''
-    cd /root/disaggregation/rmem
+      mkdir -p /mnt2/swapdisk
+      swapoff /mnt2/swapdisk/swap
+      rm /mnt2/swapdisk/swap
+      fallocate -l %dM /mnt2/swapdisk/swap
+      chmod 0600 /mnt2/swapdisk/swap
+      mkswap /mnt2/swapdisk/swap
+      swapon /mnt2/swapdisk/swap
+    ''' % (rmem_mb, rmem_mb, rmem_mb)
+  else:
+    install_rmem = '''
+      cd /root/disaggregation/rmem
 
-    mkdir -p swap;
-    insmod rmem.ko npages=%d;
-    mkswap /dev/rmem0;
-    swapon /dev/rmem0;
-    echo 0 > /proc/sys/fs/rmem/read_bytes;
-    echo 0 > /proc/sys/fs/rmem/write_bytes;
+      mkdir -p swap;
+      insmod rmem.ko npages=%d;
+      mkswap /dev/rmem0;
+      swapon /dev/rmem0;
+      echo 0 > /proc/sys/fs/rmem/read_bytes;
+      echo 0 > /proc/sys/fs/rmem/write_bytes;
 
-    echo %d > /proc/sys/fs/rmem/bandwidth_bps;
-    echo %d > /proc/sys/fs/rmem/latency_ns;
-    echo %d > /proc/sys/fs/rmem/inject_latency;
-    echo %d > /proc/sys/fs/rmem/get_record;
-    ''' % (remote_page, bandwidth_bps, latency_ns, inject_int, trace_int)
+      echo %d > /proc/sys/fs/rmem/bandwidth_bps;
+      echo %d > /proc/sys/fs/rmem/latency_ns;
+      echo %d > /proc/sys/fs/rmem/inject_latency;
+      echo %d > /proc/sys/fs/rmem/get_record;
+      ''' % (remote_page, bandwidth_bps, latency_ns, inject_int, trace_int)
 
 
   slaves_run_bash(install_rmem)
@@ -183,6 +215,10 @@ def sync_rmem_code():
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
   slaves_run("cd /root/disaggregation/rmem; make")
+
+def mkfs_xvdc_ext4():
+  all_run("umount /mnt2;mkfs.ext4 /dev/xvdc;mount /dev/xvdc /mnt2")
+  
 
 def update_hadoop_conf():
   def get_conf(k, v):
@@ -276,14 +312,14 @@ class ExpResult:
       return self.runtime
 
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
   result = ExpResult()
   result.task = task
 
   min_ram = 0
 
-  clean_existing_rmem()
+  clean_existing_rmem(bw_gbps)
 
   setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace)
 
@@ -323,15 +359,16 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
 
   elif task == "memcached":
     slaves_run("memcached -d -m 26000 -u root")
+    set_memcached_size(memcached_size)
     run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
     thrd = threading.Thread(target=memcached_kill_loadgen, args=(time.time() + 25 * 60,))
     thrd.start()
-    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/workloadb_ins")
+    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/running")
     memcached_kill_loadgen_on = False
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
     start_time = time.time()
-    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/workloadb")
+    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
     result.memcached_latency_us = slaves_get_memcached_avg_latency()
     time_used = time.time() - start_time
     slaves_run("killall memcached")
@@ -339,13 +376,14 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False):
   if trace:
     collect_trace()
 
-  (reads, writes) = get_rw_bytes()
-  print "Remote Reads:"
-  print reads
-  print "Remote Writes:"
-  print writes
+  if bw_gbps >= 0:
+    (reads, writes) = get_rw_bytes()
+    print "Remote Reads:"
+    print reads
+    print "Remote Writes:"
+    print writes
 
-  clean_existing_rmem()
+  clean_existing_rmem(bw_gbps)
 
   print "Execution time:" + str(time_used) + " Min Ram:" + str(min_ram)
   result.runtime = time_used
@@ -402,6 +440,50 @@ def terasort_vary_size(opts):
     log(result_str) 
     print result_str
 
+def disk_vary_size(opts):
+  if opts.task == "graphlab" or opts.task == "memcached":
+    run("/root/ephemeral-hdfs/bin/stop-all.sh")
+    run("/root/spark/sbin/stop-all.sh")
+
+
+  #sizes = [3, 6, 9, 12, 15, 18, 21, 24, 27]
+  sizes = [6]
+  rmems = [0.7]
+
+  banner("Prepare input data")
+  if opts.task == "graphlab":
+    for s in sizes:
+      slaves_run_parallel("python /root/disaggregation/rmem/trim_file.py /mnt2/netflix_mm %d /mnt2/nf%d.txt" % (s, s), master = True)
+
+  confs = [] #(inject, latency, bw, size, rmem)
+  for s in sizes:
+    for rmem in rmems:
+      confs.append((False, -1, -1, s, rmem))
+      #confs.append((True, 1, 40, s, rmem))
+
+  results = {}
+  for conf in confs:
+    results[conf] = []
+
+  for i in range(0, opts.iter):
+    for conf in confs:
+      print "Running iter %d, conf %s" % (i, str(conf))
+      if opts.task == "graphlab":
+        all_run("rm /mnt2/netflix_m/netflix_mm; mkdir -p /mnt2/netflix_m; ln -s /mnt2/nf%d.txt /mnt2/netflix_m/netflix_mm" % (conf[3]))
+      elif opts.task == "wordcount":
+        wordcount_prepare(conf[3])
+      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], conf[0], False, memcached_size = conf[3]).get()
+      results[conf].append(time)
+
+
+  log("\n\n\n")
+  log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
+  log('Argument %s' % str(sys.argv))
+
+  for conf in results:
+    result_str = "Conf: %s Result: %s" % (str(conf), ",".join(map(str, results[conf])))
+    log(result_str)
+    print result_str
 
 def memcached_install():
   all_run("yum install memcached -y")
@@ -418,23 +500,24 @@ def graphlab_prepare():
   cmd = '''
     cd /mnt2; 
     rm netflix_mm; 
-    wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm; 
+    wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm;
+    cat netflix_mm | sed -e '1,3d' >> temp.txt;
+    mv temp.txt netflix_mm;
     rm -rf netflix_m; 
     mkdir netflix_m; 
     cd netflix_m; 
     for i in `seq 1 18`; 
     do 
-      cat ../netflix_mm | sed -e '1,3d' >> netflix_mm; 
+      cat ../netflix_mm >> netflix_mm; 
     done ; 
-    rm ../netflix_mm;
   '''.replace("\n"," ")
   slaves_run_parallel(cmd, master = True)
 
-def wordcount_prepare():
+def wordcount_prepare(size=125):
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
-  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f125g.txt /wiki")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
 
 def execute(opts):
 
@@ -500,6 +583,7 @@ def prepare_env():
   turn_off_os_swap()
   sync_rmem_code()
   update_hadoop_conf()
+  mkfs_xvdc_ext4()
 
 def prepare_all(opts):
   prepare_env()
@@ -512,8 +596,10 @@ def main():
   opts = parse_args()
   run_exp_tasks = ["wordcount", "terasort", "graphlab", "memcached"]
   
-  
-  if opts.task in run_exp_tasks:
+
+  if opts.disk_vary_size:
+    disk_vary_size(opts) 
+  elif opts.task in run_exp_tasks:
     execute(opts)
   elif opts.task == "terasort-vary-size":
     terasort_vary_size(opts)
@@ -534,7 +620,7 @@ def main():
   elif opts.task == "install-all":
     install_all()
   elif opts.task == "test":
-    get_cluster_remaining_memory()
+    wordcount_prepare(12.5)
   else:
     print "Unknown task %s" % opts.task
 
