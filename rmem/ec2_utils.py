@@ -19,8 +19,8 @@ def get_master():
       master = content_file.read().replace("\n","")
   return master
 
-def log(str):
-  f = open("/root/disaggregation/rmem/ec2_run_app_once.py.log", "a")
+def log(str, level = 0):
+  f = open("/root/disaggregation/rmem/execute.py.log%d" % ("" if level == 0 else level), "a")
   f.write(str + "\n")
   f.close()
 

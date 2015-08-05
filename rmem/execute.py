@@ -305,17 +305,31 @@ class ExpResult:
   min_ram_gb = -1.0
   memcached_latency_us = -1.0
   task = ""
+  exp_start = ""
+  rmem_gb = -1
+  bw_gbps = -1
+  latency_us = -1
+  inject = -1
+  trace = -1
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us)
     else:
       return self.runtime
 
+  def __str__(self):
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
   result = ExpResult()
+  result.exp_start = str(datetime.datetime.now())
   result.task = task
+  result.rmem_gb = rmem_gb
+  result.bw_gbps = bw_gbps
+  result.latency_us = latency_us
+  result.inject = inject
+  result.trace = trace
 
   min_ram = 0
 
@@ -387,6 +401,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
 
   print "Execution time:" + str(time_used) + " Min Ram:" + str(min_ram)
   result.runtime = time_used
+  log(str(result), level = 1)
   return result
 
 def teragen(size):
