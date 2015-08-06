@@ -516,7 +516,7 @@ def graphlab_install():
   run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bash_profile; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bash_profile")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
 
-def graphlab_prepare(size_gb = 27):
+def graphlab_prepare(size_gb = 25):
   cmd = ('''
     cd /mnt2; 
     rm netflix_mm; 
@@ -574,7 +574,7 @@ def execute(opts):
   log('Argument %s' % str(sys.argv))
 
   for conf in results:
-    result_str = "Latency: %d BW: %d Result: %s" % (conf[1], conf[2], ",".join(map(str, results[conf])))
+    result_str = "Latency: %d BW: %d RMEM: %s Result: %s" % (conf[1], conf[2], conf[3], ",".join(map(str, results[conf])))
     log(result_str)
     print result_str
 

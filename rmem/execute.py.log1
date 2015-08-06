@@ -18,3 +18,23 @@ ExpStart: 2015-08-04 08:49:35.096340  Task: memcached  RmemGb: 22.09  BwGbps: 40
 ExpStart: 2015-08-04 09:20:56.490861  Task: memcached  RmemGb: 22.09  BwGbps: 10  LatencyUs: 5  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 980.63097477  MemCachedLatencyUs: 572.226
 ExpStart: 2015-08-04 09:55:46.812625  Task: memcached  RmemGb: 22.09  BwGbps: 100  LatencyUs: 10  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 117072.5517  MemCachedLatencyUs: 566.272
 ExpStart: 2015-08-05 18:43:36.360119  Task: memcached  RmemGb: 22.09  BwGbps: 40  LatencyUs: 10  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 979.193781137  MemCachedLatencyUs: 571.654
+
+
+
+
+
+
+execute.py.log1.temp
+
+
+
+
+ExpStart: 2015-08-05 21:42:02.117703  Task: graphlab  RmemGb: 26.505  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1701.75975394  MemCachedLatencyUs: -1.0  Reads: [64186310656,50769031168,56176513024,65226878976,59639185408]  Writes: [86490279936,68976799744,78625468416,87672139776,81741152256]
+ExpStart: 2015-08-05 22:12:12.153735  Task: graphlab  RmemGb: 23.56  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1616.89558601  MemCachedLatencyUs: -1.0  Reads: [26716573696,21802102784,26160508928,26105622528,22367821824]  Writes: [45164449792,36832526336,43826589696,45135495168,38597455872]
+ExpStart: 2015-08-05 22:40:41.957990  Task: graphlab  RmemGb: 20.615  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1539.45649385  MemCachedLatencyUs: -1.0  Reads: [20551053312,16144384000,19822911488,19497984000,17240817664]  Writes: [36310282240,30405795840,36151869440,35377750016,31810969600]
+ExpStart: 2015-08-05 23:07:39.671394  Task: graphlab  RmemGb: 17.67  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1455.55025506  MemCachedLatencyUs: -1.0  Reads: [5021474816,2264875008,3585953792,3562057728,5327052800]  Writes: [23491117056,19048476672,22241861632,22646616064,23665618944]
+ExpStart: 2015-08-05 23:33:03.816349  Task: graphlab  RmemGb: 14.725  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1442.48586297  MemCachedLatencyUs: -1.0  Reads: [954400768,501682176,1262125056,438099968,1201065984]  Writes: [16868413440,12998852608,16662069248,12789035008,17112592384]
+ExpStart: 2015-08-05 23:58:12.838683  Task: graphlab  RmemGb: 11.78  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1522.23483205  MemCachedLatencyUs: -1.0  Reads: [27713536,30572544,223010816,69238784,194404352]  Writes: [10306486272,10454065152,12980604928,11064270848,12771889152]
+ExpStart: 2015-08-06 00:24:31.514282  Task: graphlab  RmemGb: 8.835  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 2119.67133403  MemCachedLatencyUs: -1.0  Reads: [4325376,15011840,12754944,13537280,11055104]  Writes: [5069176832,7395196928,9305907200,9585405952,9535320064]
+ExpStart: 2015-08-06 01:00:45.913450  Task: graphlab  RmemGb: 5.89  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1669.60797691  MemCachedLatencyUs: -1.0  Reads: [1875968,6328320,7438336,9781248,9076736]  Writes: [6525984768,6046040064,6286950400,5930708992,6376927232]
+ExpStart: 2015-08-06 01:29:31.353591  Task: graphlab  RmemGb: 2.945  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 1529.054106  MemCachedLatencyUs: -1.0  Reads: [1171456,3805184,3895296,8339456,6901760]  Writes: [3162472448,581808128,2760581120,1650708480,3205545984]
