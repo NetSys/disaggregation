@@ -19,9 +19,9 @@ def get_master():
       master = content_file.read().replace("\n","")
   return master
 
-def log(str, level = 0):
-  f = open("/root/disaggregation/rmem/execute.py.log%d" % ("" if level == 0 else level), "a")
-  f.write(str + "\n")
+def log(msg, level = 0):
+  f = open("/root/disaggregation/rmem/execute.py.log%s" % ("" if level == 0 else str(level)), "a")
+  f.write(msg + "\n")
   f.close()
 
 def get_slaves():
