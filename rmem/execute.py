@@ -25,7 +25,7 @@ import threading
 from memcached_workload import *
 
 def parse_args():
-  parser = OptionParser(usage="ec2_run_exp_once.py [options]")
+  parser = OptionParser(usage="execute.py [options]")
  
   parser.add_option("--task", help="Task to be done")
   parser.add_option("-r", "--remote-memory", type="float", default=22.09, help="Remote memory size in GB")
@@ -35,6 +35,7 @@ def parse_args():
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
+  parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
@@ -306,6 +307,8 @@ class ExpResult:
   memcached_latency_us = -1.0
   task = ""
   exp_start = ""
+  reads = ""
+  writes = ""
   rmem_gb = -1
   bw_gbps = -1
   latency_us = -1
@@ -318,7 +321,7 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  Reads: %s  Writes: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.reads, self.writes)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -396,6 +399,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
     print reads
     print "Remote Writes:"
     print writes
+    result.reads = str(reads).replace(" ", "")
+    result.writes = str(writes).replace(" ", "")
 
   clean_existing_rmem(bw_gbps)
 
@@ -511,8 +516,8 @@ def graphlab_install():
   run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bash_profile; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bash_profile")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
 
-def graphlab_prepare():
-  cmd = '''
+def graphlab_prepare(size_gb = 25):
+  cmd = ('''
     cd /mnt2; 
     rm netflix_mm; 
     wget -q http://www.select.cs.cmu.edu/code/graphlab/datasets/netflix_mm;
@@ -520,12 +525,9 @@ def graphlab_prepare():
     mv temp.txt netflix_mm;
     rm -rf netflix_m; 
     mkdir netflix_m; 
-    cd netflix_m; 
-    for i in `seq 1 18`; 
-    do 
-      cat ../netflix_mm >> netflix_mm; 
-    done ; 
-  '''.replace("\n"," ")
+    cd netflix_m;
+    python /root/disaggregation/rmem/trim_file.py /mnt2/netflix_mm %s /mnt2/netflix_m/netflix_mm; 
+  ''' % size_gb).replace("\n"," ")
   slaves_run_parallel(cmd, master = True)
 
 def wordcount_prepare(size=125):
@@ -536,24 +538,25 @@ def wordcount_prepare(size=125):
 
 def execute(opts):
 
-  confs = []
+  log("\n\n\n", level = 1)
+  confs = [] #inject, latency_us, bw_gbps, rmem_gb 
   if opts.vary_latency:
-    confs.append((False, 0, 0))
-    confs.append((True, 1, 100))
-    confs.append((True, 1, 40))
-    confs.append((True, 1, 10))
-    confs.append((True, 5, 100))
-    confs.append((True, 5, 40))
-    confs.append((True, 5, 10))
-    confs.append((True, 10, 100))
-    confs.append((True, 10, 40))
-    confs.append((True, 10, 10))
+    confs.append((False, 0, 0, opts.remote_memory))
+    latencies = [1, 5, 10]
+    bws = [100, 40, 10]
+    for l in latencies:
+      for b in bws:
+        confs.append((True, l, b, opts.remote_memory))
   elif opts.vary_latency_40g:
     latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
     for l in latency_40g:
-      confs.append((True, l, 40))
+      confs.append((True, l, 40, opts.remote_memory))
+  elif opts.vary_remote_mem:
+    local_rams = map(lambda x: x/10.0, range(1,10))
+    for r in local_rams:
+      confs.append((True, 1, 40, (1-r) * 29.45))
   else:
-    confs.append((opts.inject, opts.latency, opts.bandwidth))
+    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory))
  
   results = {}
   for conf in confs:
@@ -562,7 +565,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, opts.remote_memory, conf[2], conf[1], conf[0], opts.trace).get()
+      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[0], opts.trace).get()
       results[conf].append(time)
 
 
@@ -571,7 +574,7 @@ def execute(opts):
   log('Argument %s' % str(sys.argv))
 
   for conf in results:
-    result_str = "Latency: %d BW: %d Result: %s" % (conf[1], conf[2], ",".join(map(str, results[conf])))
+    result_str = "Latency: %d BW: %d RMEM: %s Result: %s" % (conf[1], conf[2], conf[3], ",".join(map(str, results[conf])))
     log(result_str)
     print result_str
 

@@ -1075,3 +1075,18 @@ Conf: (True, 1, 40, 13, 0.69999999999999996) Result: 70.8086149693
 ================== Started exp at:2015-07-30 00:57:35.212948 ==================
 Argument ['execute.py', '--task', 'wordcount', '--disk-vary-size', '-i', '3']
 Conf: (False, -1, -1, 6, 0.69999999999999996) Result: 30.7521958351
+
+
+
+
+================== Started exp at:2015-08-06 01:55:55.977887 ==================
+Argument ['execute.py', '--task', 'graphlab', '--vary-remote-mem']
+Latency: 1 BW: 40 Result: 2119.67133403
+Latency: 1 BW: 40 Result: 1669.60797691
+Latency: 1 BW: 40 Result: 1701.75975394
+Latency: 1 BW: 40 Result: 1442.48586297
+Latency: 1 BW: 40 Result: 1529.054106
+Latency: 1 BW: 40 Result: 1522.23483205
+Latency: 1 BW: 40 Result: 1455.55025506
+Latency: 1 BW: 40 Result: 1616.89558601
+Latency: 1 BW: 40 Result: 1539.45649385
