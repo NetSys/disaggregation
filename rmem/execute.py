@@ -541,6 +541,12 @@ def wordcount_prepare(size=125):
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
   run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
 
+def reconfig_hdfs():
+  run("/root/ephemeral-hdfs/bin/stop-all.sh")
+  slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
+  slaves_run("rm -rf /mnt2/ephemeral-hdfs/*")
+  #.....need more work
+
 def execute(opts):
 
   log("\n\n\n", level = 1)
