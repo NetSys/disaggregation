@@ -38,7 +38,7 @@ def parse_args():
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
-  parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
+  parser.add_option("--teragen-size", type="float", default=150.0, help="Sort input data size (GB)")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -348,7 +348,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
   banner("Running app")
   if task == "wordcount":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount")
-    start_time = time.time()
+    start_time = time.time()  
     run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
     time_used = time.time() - start_time
 
@@ -371,7 +371,12 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
   elif task == "graphlab":
     all_run("rm -rf /mnt2/netflix_m/out")
     start_time = time.time()
+    if profile:
+      mem_monitor_start()  
     run("mpiexec -n 5 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt2/netflix_m/ --max_iter=3 --ncpus=6 --minval=1 --maxval=5 --predictions=/mnt2/netflix_m/out/out")
+    if profile: 
+      min_ram = mem_monitor_stop()
+      result.min_ram_gb = min_ram     
     time_used = time.time() - start_time
 
   elif task == "memcached":
@@ -516,7 +521,7 @@ def graphlab_install():
   run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bash_profile; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bash_profile")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
 
-def graphlab_prepare(size_gb = 25):
+def graphlab_prepare(size_gb = 20):
   cmd = ('''
     cd /mnt2; 
     rm netflix_mm; 
