@@ -1090,3 +1090,213 @@ Latency: 1 BW: 40 Result: 1522.23483205
 Latency: 1 BW: 40 Result: 1455.55025506
 Latency: 1 BW: 40 Result: 1616.89558601
 Latency: 1 BW: 40 Result: 1539.45649385
+
+
+
+
+================== Started exp at:2015-08-06 02:37:02.419578 ==================
+Argument ['execute.py', '--task', 'terasort']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 617.467427969
+
+
+
+
+================== Started exp at:2015-08-06 04:25:43.213905 ==================
+Argument ['execute.py', '--task', 'terasort']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 391.742576122
+
+
+
+
+================== Started exp at:2015-08-06 04:35:33.067888 ==================
+Argument ['execute.py', '--task', 'terasort']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 369.818529844
+
+
+
+
+================== Started exp at:2015-08-06 05:32:45.922649 ==================
+Argument ['execute.py', '--task', 'terasort']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 379.1434021
+
+
+
+
+================== Started exp at:2015-08-06 07:10:21.232976 ==================
+Argument ['execute.py', '--task', 'terasort']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 368.732481956
+
+
+
+
+================== Started exp at:2015-08-06 07:26:24.602453 ==================
+Argument ['execute.py', '--task', 'terasort']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 381.948516846
+
+
+
+
+================== Started exp at:2015-08-06 08:14:17.536765 ==================
+Argument ['execute.py', '--task', 'terasort']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 369.33524394
+
+
+
+
+================== Started exp at:2015-08-06 08:24:20.547507 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 372.901629925
+
+
+
+
+================== Started exp at:2015-08-06 18:15:07.404966 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 536.358929157
+
+
+
+
+================== Started exp at:2015-08-06 18:22:43.690443 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 249.250092983
+
+
+
+
+================== Started exp at:2015-08-06 19:06:51.490617 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 2505.70742512
+
+
+
+
+================== Started exp at:2015-08-06 19:54:40.666496 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 823.993263006:475.526
+
+
+
+
+================== Started exp at:2015-08-06 20:29:07.469179 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 0.465382099152
+
+
+
+
+================== Started exp at:2015-08-06 21:13:59.557519 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 2509.48586202
+
+
+
+
+================== Started exp at:2015-08-06 22:30:57.718110 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 1879.95653009
+
+
+
+
+================== Started exp at:2015-08-06 23:06:37.454152 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 833.813477039:483.702
+
+
+
+
+================== Started exp at:2015-08-07 00:13:23.162804 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 1913.13110113
+
+
+
+
+================== Started exp at:2015-08-07 01:39:43.396715 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 2403.35292888
+
+
+
+
+================== Started exp at:2015-08-07 04:35:22.586453 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 874.500133038:492.988
+
+
+
+
+================== Started exp at:2015-08-07 08:19:05.970977 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 2254.77424812
+
+
+
+
+================== Started exp at:2015-08-07 10:22:35.860700 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 1522.94223213
+
+
+
+
+================== Started exp at:2015-08-07 10:26:00.286219 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 25.7122969627
+
+
+
+
+================== Started exp at:2015-08-07 11:24:43.039049 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 3313.90412188
+
+
+
+
+================== Started exp at:2015-08-07 21:53:48.732251 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 833.894479036:487.034
+
+
+
+
+================== Started exp at:2015-08-08 02:32:04.799848 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 839.841228962:483.786
+
+
+
+
+================== Started exp at:2015-08-08 03:08:12.848227 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 849.500427961:490.76
+
+
+
+
+================== Started exp at:2015-08-08 03:43:27.707387 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 844.501424074:490.358
+
+
+
+
+================== Started exp at:2015-08-08 04:50:36.373273 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 2460.314219
+
+
+
+
+================== Started exp at:2015-08-08 05:33:33.581441 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 1892.49508595
+
+
+
+
+================== Started exp at:2015-08-11 01:06:25.453234 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 2199.83659291

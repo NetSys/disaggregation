@@ -167,29 +167,38 @@ def log_trace():
       rm .disk_io.blktrace.1
     fi
 
-    start_time=$(date +%s%N)
+    if [ -a .nic ]
+    then
+      rm .nic
+    fi
+
+    start_time=$(date +%%s%%N)
     echo ${start_time:0:${#start_time}-3} > .metadata
+    echo %s >> .metadata
     blktrace -d /dev/xvda1 -o .disk_io &
+
+    tcpdump -i eth0 2>&1 | python tcpdump2flow.py > .nic &
 
     count=0
     while true; do
       cat /proc/rmem_log >> rmem_log.txt
       count=$((count+1))
-      if [ $(( count % 10 )) -eq 0 ] && [ $(cat .app_running.tmp) -eq 1 ]; then
+      if [ $(( count %% 10 )) -eq 0 ] && [ $(cat .app_running.tmp) -eq 1 ]; then
         break
       fi
     done
 
+    killall -SIGINT tcpdump
     killall -SIGINT blktrace
-  '''
+  ''' % (" ".join(sys.argv))
   slaves_run_bash(get_disk_mem_log, silent = True, background = True)
 
 def collect_trace():
   banner("collect trace")
   slaves_run("echo 1 > /root/disaggregation/rmem/.app_running.tmp")
-  time.sleep(0.5)
+  time.sleep(3)
   
-  result_dir = "/root/disaggregation/rmem/results/%s" % run_and_get("date +%y%m%d%H%M%S")[1]
+  result_dir = "/mnt2/results/%s" % run_and_get("date +%y%m%d%H%M%S")[1]
   run("mkdir -p %s" % result_dir)
 
   count = 0
@@ -198,6 +207,7 @@ def collect_trace():
     scp_from("/root/disaggregation/rmem/rmem_log.txt", "%s/%d-mem-%s" % (result_dir, count, s), s)
     scp_from("/root/disaggregation/rmem/.disk_io.blktrace.0", "%s/%d-disk-%s.blktrace.0" % (result_dir, count, s), s)
     scp_from("/root/disaggregation/rmem/.disk_io.blktrace.1", "%s/%d-disk-%s.blktrace.1" % (result_dir, count, s), s)
+    scp_from("/root/disaggregation/rmem/.nic", "%s/%d-nic-%s" % (result_dir, count, s), s)
     scp_from("/root/disaggregation/rmem/.metadata", "%s/%d-meta-%s" % (result_dir, count, s), s)
     count += 1
     
@@ -352,20 +362,23 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
     run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
     time_used = time.time() - start_time
 
-  elif task == "terasort":
+  elif task == "terasort" or task == "wordcount-hadoop":
     run("/root/ephemeral-hdfs/bin/start-mapred.sh")
-    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
+    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /hadoopoutput")
     start_time = time.time()
     if profile:
       mem_monitor_start()
-    run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /sortoutput")
+    if task == "terasort":
+      run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /hadoopoutput")
+    else:
+      run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar wordcount -Dmapred.map.tasks=10 -Dmapred.reduce.tasks=5 -Dmapreduce.map.java.opts=-Xmx8000 -Dmapreduce.reduce.java.opts=-Xmx7000 -Dmapreduce.map.memory.mb=8000 -Dmapreduce.reduce.memory.mb=7000 -Dmapred.reduce.slowstart.completed.maps=1.0 /wiki /hadoopoutput")
     if profile:
       min_ram = mem_monitor_stop()
       result.min_ram_gb = min_ram
     time_used = time.time() - start_time
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
-    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
+    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /hadoopoutput")
     slaves_run("rm -rf /mnt/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt99/taskTracker/root/jobcache/*; rm -rf /mnt/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*;  rm -rf /mnt99/mapred/local/taskTracker/root/jobcache/*")
 
   elif task == "graphlab":
@@ -516,7 +529,7 @@ def graphlab_install():
   run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bash_profile; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bash_profile")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
 
-def graphlab_prepare(size_gb = 25):
+def graphlab_prepare(size_gb = 20):
   cmd = ('''
     cd /mnt2; 
     rm netflix_mm; 
@@ -530,7 +543,7 @@ def graphlab_prepare(size_gb = 25):
   ''' % size_gb).replace("\n"," ")
   slaves_run_parallel(cmd, master = True)
 
-def wordcount_prepare(size=125):
+def wordcount_prepare(size=150):
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
@@ -612,7 +625,7 @@ def prepare_all(opts):
 
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "terasort", "graphlab", "memcached"]
+  run_exp_tasks = ["wordcount", "wordcount-hadoop", "terasort", "graphlab", "memcached"]
   
 
   if opts.disk_vary_size:
