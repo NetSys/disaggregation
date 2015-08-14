@@ -205,8 +205,8 @@ def collect_trace():
   slaves = get_slaves()
   for s in slaves:
     scp_from("/root/disaggregation/rmem/rmem_log.txt", "%s/%d-mem-%s" % (result_dir, count, s), s)
-    scp_from("/root/disaggregation/rmem/.disk_io.blktrace.0", "%s/%d-disk-%s.blktrace.0" % (result_dir, count, s), s)
-    scp_from("/root/disaggregation/rmem/.disk_io.blktrace.1", "%s/%d-disk-%s.blktrace.1" % (result_dir, count, s), s)
+    for i in range(0,8):
+      scp_from("/root/disaggregation/rmem/.disk_io.blktrace.%d" % i, "%s/%d-disk-%s.blktrace.%d" % (result_dir, count, s, i), s)
     scp_from("/root/disaggregation/rmem/.nic", "%s/%d-nic-%s" % (result_dir, count, s), s)
     scp_from("/root/disaggregation/rmem/.metadata", "%s/%d-meta-%s" % (result_dir, count, s), s)
     count += 1
@@ -534,6 +534,31 @@ def graphlab_install():
   run("echo 'export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib/:$LD_LIBRARY_PATH' >> /root/.bash_profile; echo 'export PATH=/usr/lib64/openmpi/bin/:$PATH' >> /root/.bash_profile")
   run("/root/spark-ec2/copy-dir /root/disaggregation/apps/collaborative_filtering")
 
+def storm_install():
+  run("cd /root; wget http://mirror.metrocast.net/apache/zookeeper/stable/zookeeper-3.4.6.tar.gz; tar xzf zookeeper-3.4.6.tar.gz; rm zookeeper-3.4.6.tar.gz")
+  zoo_cfg = "tickTime=2000\ninitLimit=10\nsyncLimit=5\ndataDir=/mnt2/zookeeper\nclientPort=2181"
+  with open("/root/zookeeper-3.4.6/conf/zoo.cfg", "w") as zoo_cfg_file:
+    zoo_cfg_file.write(zoo_cfg)
+  
+  run("cd /root; wget http://mirrors.koehn.com/apache/storm/apache-storm-0.9.5/apache-storm-0.9.5.tar.gz; tar xzvf apache-storm-0.9.5.tar.gz; rm apache-storm-0.9.5.tar.gz")
+  master = get_master()
+  storm_cfg = '''storm.zookeeper.servers:
+       - "%s"
+storm.local.dir: "/mnt2/storm"
+nimbus.host: "%s"
+supervisor.slots.ports:
+      - 6700
+      - 6701
+      - 6702
+      - 6703
+ui.port: 8081''' % (master, master)
+  with open("/root/apache-storm-0.9.5/conf/storm.yaml", "w") as storm_cfg_file:
+    storm_cfg_file.write(storm_cfg)
+
+  run("/root/spark-ec2/copy-dir /root/zookeeper-3.4.6; /root/spark-ec2/copy-dir /root/apache-storm-0.9.5")
+
+
+
 def graphlab_prepare(size_gb = 20):
   cmd = ('''
     cd /mnt2; 
@@ -618,6 +643,7 @@ def install_all():
   install_blktrace()
   graphlab_install()
   memcached_install()
+  storm_install()
   install_mosh()
 
 def prepare_env():
@@ -662,7 +688,7 @@ def main():
   elif opts.task == "install-all":
     install_all()
   elif opts.task == "test":
-    wordcount_prepare(12.5)
+    storm_install()
   else:
     print "Unknown task %s" % opts.task
 
