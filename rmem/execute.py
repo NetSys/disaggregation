@@ -749,7 +749,7 @@ def main():
     storm_stop()
   elif opts.task == "storm-start":
     storm_start()
-  elif opts.task == "s3cmd-install"
+  elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
     storm_start()
