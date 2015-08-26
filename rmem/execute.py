@@ -23,7 +23,7 @@ import xml.etree.ElementTree as etree
 from xml.dom import minidom
 import threading
 from memcached_workload import *
-
+from inc import *
 def parse_args():
   parser = OptionParser(usage="execute.py [options]")
  
@@ -410,6 +410,16 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
     time_used = time.time() - start_time
     slaves_run("killall memcached")
 
+  elif task == "storm":
+    storm_start()
+    time.sleep(10)
+    start_time = time.time()
+    run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-0.9.5-SNAPSHOT-jar-with-dependencies.jar storm.starter.WordCountTopology test")
+    time.sleep(300)
+    run("/root/apache-storm-0.9.5/bin/storm kill test")
+    time_used = time.time() - start_time
+    storm_stop()
+
   if trace:
     result.trace_dir = collect_trace(task)
 
@@ -547,24 +557,22 @@ def storm_install():
   with open("/root/zookeeper-3.4.6/conf/zoo.cfg", "w") as zoo_cfg_file:
     zoo_cfg_file.write(zoo_cfg)
   
-  run("cd /root; wget http://mirrors.koehn.com/apache/storm/apache-storm-0.9.5/apache-storm-0.9.5.tar.gz; tar xzvf apache-storm-0.9.5.tar.gz; rm apache-storm-0.9.5.tar.gz")
-  master = get_master()
-  storm_cfg = '''storm.zookeeper.servers:
-       - "%s"
-storm.local.dir: "/mnt2/storm"
-nimbus.host: "%s"
-supervisor.slots.ports:
-      - 6700
-      - 6701
-      - 6702
-      - 6703
-ui.port: 8081''' % (master, master)
-  with open("/root/apache-storm-0.9.5/conf/storm.yaml", "w") as storm_cfg_file:
-    storm_cfg_file.write(storm_cfg)
+  run("cd /root; wget http://mirror.sdunix.com/apache/storm/apache-storm-0.9.5/apache-storm-0.9.5.tar.gz; tar xzvf apache-storm-0.9.5.tar.gz; rm apache-storm-0.9.5.tar.gz")
 
-  run("/root/spark-ec2/copy-dir /root/zookeeper-3.4.6; /root/spark-ec2/copy-dir /root/apache-storm-0.9.5")
-
-
+def storm_start():
+  run("/root/zookeeper-3.4.6/bin/zkServer.sh start")
+  time.sleep(4)
+  run("/root/apache-storm-0.9.5/bin/storm nimbus &")
+  time.sleep(4)
+  run("/root/apache-storm-0.9.5/bin/storm ui &")
+  time.sleep(4)
+  slaves_run("/root/apache-storm-0.9.5/bin/storm supervisor > /dev/null < /dev/null &")
+  
+def storm_stop():
+  slaves_run("pid=\$(jps | grep supervisor | cut -d ' ' -f 1);kill \$pid")
+  run("pid=$(jps | grep core | cut -d ' ' -f 1);kill $pid")
+  run("pid=$(jps | grep nimbus | cut -d ' ' -f 1);kill $pid")
+  run("/root/zookeeper-3.4.6/bin/zkServer.sh stop")
 
 def graphlab_prepare(size_gb = 20):
   cmd = ('''
@@ -585,6 +593,34 @@ def wordcount_prepare(size=150):
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
   run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
+
+
+def storm_prepare():
+  master = get_master()
+  storm_cfg = '''storm.zookeeper.servers:
+       - "%s"
+storm.local.dir: "/mnt2/storm"
+nimbus.host: "%s"
+supervisor.slots.ports:
+      - 6700
+      - 6701
+      - 6702
+      - 6703
+ui.port: 8081''' % (master, master)
+  with open("/root/apache-storm-0.9.5/conf/storm.yaml", "w") as storm_cfg_file:
+    storm_cfg_file.write(storm_cfg)
+
+  run("/root/spark-ec2/copy-dir /root/zookeeper-3.4.6; /root/spark-ec2/copy-dir /root/apache-storm-0.9.5")
+
+ 
+  run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
+  run("mkdir -p /mnt2/storm; cat /root/ssd/wiki/* > /mnt2/storm/input.txt")
+  run("/root/spark-ec2/copy-dir /mnt2/storm")
+
+def succinct_install():
+  run("cd /root; git clone git@github.com:pxgao/succinct-cpp.git")
+  run("/root/spark-ec2/copy-dir /root/succinct-cpp")
+  run("/root/spark/sbin/slaves.sh /root/succinct-cpp/ec2/install_thrift.sh")
 
 def reconfig_hdfs():
   run("/root/ephemeral-hdfs/bin/stop-all.sh")
@@ -648,6 +684,10 @@ def update_kernel():
 def install_mosh():
   run("sudo yum --enablerepo=epel install -y mosh")
 
+
+def install_s3cmd():
+  run("cd ~; git clone git@github.com:pxgao/s3cmd.git")
+
 def install_all():
   update_kernel()
   slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
@@ -673,7 +713,7 @@ def prepare_all(opts):
 
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "wordcount-hadoop", "terasort", "graphlab", "memcached"]
+  run_exp_tasks = ["wordcount", "wordcount-hadoop", "terasort", "graphlab", "memcached", "storm"]
   
 
   if opts.disk_vary_size:
@@ -692,6 +732,10 @@ def main():
     graphlab_prepare()
   elif opts.task == "memcached-install":
     memcached_install()
+  elif opts.task == "storm-install":
+    storm_install()
+  elif opts.task == "storm-prepare":
+    storm_prepare()
   elif opts.task == "prepare-env":
     prepare_env()
   elif opts.task == "prepare-all":
@@ -700,8 +744,15 @@ def main():
     install_all()
   elif opts.task == "reconfig-hdfs":
     reconfig_hdfs()
+
+  elif opts.task == "storm-stop":
+    storm_stop()
+  elif opts.task == "storm-start":
+    storm_start()
+  elif opts.task == "s3cmd-install"
+    install_s3cmd()
   elif opts.task == "test":
-    storm_install()
+    storm_start()
   else:
     print "Unknown task %s" % opts.task
 
