@@ -23,7 +23,7 @@ import xml.etree.ElementTree as etree
 from xml.dom import minidom
 import threading
 from memcached_workload import *
-
+from inc import *
 def parse_args():
   parser = OptionParser(usage="execute.py [options]")
  
@@ -637,6 +637,9 @@ def update_kernel():
 def install_mosh():
   run("sudo yum --enablerepo=epel install -y mosh")
 
+def install_s3cmd():
+  run("cd ~; git clone git@github.com:pxgao/s3cmd.git")
+
 def install_all():
   update_kernel()
   slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
@@ -688,7 +691,7 @@ def main():
   elif opts.task == "install-all":
     install_all()
   elif opts.task == "test":
-    storm_install()
+    install_s3cmd()
   else:
     print "Unknown task %s" % opts.task
 
