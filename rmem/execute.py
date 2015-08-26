@@ -579,6 +579,11 @@ def wordcount_prepare(size=150):
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
   run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
 
+def succinct_install():
+  run("cd /root; git clone git@github.com:pxgao/succinct-cpp.git")
+  run("/root/spark-ec2/copy-dir /root/succinct-cpp")
+  run("/root/spark/sbin/slaves.sh /root/succinct-cpp/ec2/install_thrift.sh")
+
 def reconfig_hdfs():
   run("/root/ephemeral-hdfs/bin/stop-all.sh")
   slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
