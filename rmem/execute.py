@@ -172,9 +172,8 @@ def log_trace():
       rm .nic
     fi
 
-    start_time=$(date +%%s%%N)
+    start_time=$(date +%s%N)
     echo ${start_time:0:${#start_time}-3} > .metadata
-    echo %s >> .metadata
     blktrace -d /dev/xvda1 -o .disk_io &
 
     tcpdump -i eth0 2>&1 | python tcpdump2flow.py > .nic &
@@ -183,22 +182,22 @@ def log_trace():
     while true; do
       cat /proc/rmem_log >> rmem_log.txt
       count=$((count+1))
-      if [ $(( count %% 10 )) -eq 0 ] && [ $(cat .app_running.tmp) -eq 1 ]; then
+      if [ $(( count % 10 )) -eq 0 ] && [ $(cat .app_running.tmp) -eq 1 ]; then
         break
       fi
     done
 
     killall -SIGINT tcpdump
     killall -SIGINT blktrace
-  ''' % (" ".join(sys.argv))
+  '''
   slaves_run_bash(get_disk_mem_log, silent = True, background = True)
 
-def collect_trace():
+def collect_trace(task):
   banner("collect trace")
   slaves_run("echo 1 > /root/disaggregation/rmem/.app_running.tmp")
   time.sleep(3)
   
-  result_dir = "/mnt2/results/%s" % run_and_get("date +%y%m%d%H%M%S")[1]
+  result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
 
   count = 0
@@ -210,6 +209,8 @@ def collect_trace():
     scp_from("/root/disaggregation/rmem/.nic", "%s/%d-nic-%s" % (result_dir, count, s), s)
     scp_from("/root/disaggregation/rmem/.metadata", "%s/%d-meta-%s" % (result_dir, count, s), s)
     count += 1
+
+  return result_dir
     
 def get_rw_bytes():
   reads = []
@@ -324,6 +325,7 @@ class ExpResult:
   latency_us = -1
   inject = -1
   trace = -1
+  trace_dir = ""
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us)
@@ -331,7 +333,7 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  Reads: %s  Writes: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.reads, self.writes)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.reads, self.writes, self.trace_dir)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -409,7 +411,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
     slaves_run("killall memcached")
 
   if trace:
-    collect_trace()
+    result.trace_dir = collect_trace(task)
 
   if bw_gbps >= 0:
     (reads, writes) = get_rw_bytes()
@@ -425,6 +427,11 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
   print "Execution time:" + str(time_used) + " Min Ram:" + str(min_ram)
   result.runtime = time_used
   log(str(result), level = 1)
+
+  if trace:
+    with open(result.trace_dir + "/traceinfo.txt", "w") as f:
+      f.write(" ".join(sys.argv) + "\n")
+      f.write(str(result) + "\n")
   return result
 
 def teragen(size):
@@ -583,6 +590,9 @@ def reconfig_hdfs():
   run("/root/ephemeral-hdfs/bin/stop-all.sh")
   slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
   slaves_run("rm -rf /mnt2/ephemeral-hdfs/*")
+  run("/root/spark-ec2/copy-dir /root/ephemeral-hdfs/conf")
+  run("/root/ephemeral-hdfs/bin/hadoop namenode -format")
+  run("/root/ephemeral-hdfs/bin/start-dfs.sh")
   #.....need more work
 
 def execute(opts):
@@ -602,6 +612,7 @@ def execute(opts):
       confs.append((True, l, 40, opts.remote_memory))
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
+    local_rams.append(0.99)
     for r in local_rams:
       confs.append((True, 1, 40, (1-r) * 29.45))
   else:
@@ -687,6 +698,8 @@ def main():
     prepare_all(opts)
   elif opts.task == "install-all":
     install_all()
+  elif opts.task == "reconfig-hdfs":
+    reconfig_hdfs()
   elif opts.task == "test":
     storm_install()
   else:
