@@ -686,7 +686,7 @@ def install_mosh():
 
 
 def install_s3cmd():
-  run("cd ~; git clone git@github.com:pxgao/s3cmd.git")
+  run("cd ~; git clone https://github.com/pxgao/s3cmd.git")
 
 def install_all():
   update_kernel()
