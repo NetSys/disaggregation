@@ -23,7 +23,7 @@ import xml.etree.ElementTree as etree
 from xml.dom import minidom
 import threading
 from memcached_workload import *
-
+from inc import *
 def parse_args():
   parser = OptionParser(usage="execute.py [options]")
  
@@ -587,6 +587,7 @@ def wordcount_prepare(size=150):
   run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
   run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
 
+
 def storm_prepare():
   master = get_master()
   storm_cfg = '''storm.zookeeper.servers:
@@ -608,6 +609,11 @@ ui.port: 8081''' % (master, master)
   run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("mkdir -p /mnt2/storm; cat /root/ssd/wiki/* > /mnt2/storm/input.txt")
   run("/root/spark-ec2/copy-dir /mnt2/storm")
+
+def succinct_install():
+  run("cd /root; git clone git@github.com:pxgao/succinct-cpp.git")
+  run("/root/spark-ec2/copy-dir /root/succinct-cpp")
+  run("/root/spark/sbin/slaves.sh /root/succinct-cpp/ec2/install_thrift.sh")
 
 def reconfig_hdfs():
   run("/root/ephemeral-hdfs/bin/stop-all.sh")
@@ -667,8 +673,13 @@ def update_kernel():
 def install_mosh():
   run("sudo yum --enablerepo=epel install -y mosh")
 
+<<<<<<< HEAD
 
 
+=======
+def install_s3cmd():
+  run("cd ~; git clone git@github.com:pxgao/s3cmd.git")
+>>>>>>> 12176e5d70375a88dc8b6c9464ecf14ffefa1aa5
 
 def install_all():
   update_kernel()
@@ -730,7 +741,11 @@ def main():
   elif opts.task == "storm-start":
     storm_start()
   elif opts.task == "test":
+<<<<<<< HEAD
     storm_start()
+=======
+    install_s3cmd()
+>>>>>>> 12176e5d70375a88dc8b6c9464ecf14ffefa1aa5
   else:
     print "Unknown task %s" % opts.task
 
