@@ -606,9 +606,16 @@ ui.port: 8081''' % (master, master)
   run("/root/spark-ec2/copy-dir /root/zookeeper-3.4.6; /root/spark-ec2/copy-dir /root/apache-storm-0.9.5")
 
  
-  run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
-  run("mkdir -p /mnt2/storm; cat /root/ssd/wiki/* > /mnt2/storm/input.txt")
-  run("/root/spark-ec2/copy-dir /mnt2/storm")
+  run("/root/spark-ec2/copy-dir /root/s3cmd; /root/spark-ec2/copy-dir /root/.s3cfg")
+  run("mkdir -p /mnt2/wikitmp")
+  slaves = get_slaves()
+  file_ids = [[] for s in slaves]
+  for i in range(0, 125):
+    file_ids[i%len(slaves)].append('{0:03}'.format(i))
+  cmds = [ " ".join(map(lambda id : "/root/s3cmd/s3cmd get s3://petergao/wiki_raw/w-part%s /mnt2/wikitmp/w-parts%s;" % (id, id)),ids) for ids in file_ids ]
+  print cmds
+  #run("mkdir -p /mnt2/storm; cat /root/ssd/wiki/* > /mnt2/storm/input.txt")
+  #run("/root/spark-ec2/copy-dir /mnt2/storm")
 
 def succinct_install():
   run("cd /root; git clone git@github.com:pxgao/succinct-cpp.git")
@@ -673,13 +680,10 @@ def update_kernel():
 def install_mosh():
   run("sudo yum --enablerepo=epel install -y mosh")
 
-<<<<<<< HEAD
 
 
-=======
 def install_s3cmd():
   run("cd ~; git clone git@github.com:pxgao/s3cmd.git")
->>>>>>> 12176e5d70375a88dc8b6c9464ecf14ffefa1aa5
 
 def install_all():
   update_kernel()
@@ -689,6 +693,7 @@ def install_all():
   memcached_install()
   storm_install()
   install_mosh()
+  install_s3cmd()
 
 def prepare_env():
   stop_tachyon()
@@ -740,12 +745,10 @@ def main():
     storm_stop()
   elif opts.task == "storm-start":
     storm_start()
-  elif opts.task == "test":
-<<<<<<< HEAD
-    storm_start()
-=======
+  elif opts.task == "s3cmd-install":
     install_s3cmd()
->>>>>>> 12176e5d70375a88dc8b6c9464ecf14ffefa1aa5
+  elif opts.task == "test":
+    slaves_run_parallel("/root/succinct-cpp/ec2/install_thrift.sh", master=True)
   else:
     print "Unknown task %s" % opts.task
 
