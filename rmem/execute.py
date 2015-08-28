@@ -23,7 +23,6 @@ import xml.etree.ElementTree as etree
 from xml.dom import minidom
 import threading
 from memcached_workload import *
-from inc import *
 def parse_args():
   parser = OptionParser(usage="execute.py [options]")
  
@@ -311,11 +310,47 @@ def slaves_get_memcached_avg_latency():
     total += float(r.replace("[GET] AverageLatency, ","").replace("us",""))
   return total / len(slaves)
 
+def get_storm_trace():
+  slaves = get_slaves()
+  for s in slaves:
+    size = run_and_get("ssh %s \"ls -la /mnt2/storm/log/metrics.log | awk '{ print \$5}'\"" % s)[1]
+    if(int(size) > 0):
+      run("rm -rf /mnt2/metrics.log")
+      scp_from("/mnt2/storm/log/metrics.log", "/mnt2/metrics.log", s)
+
+def get_storm_latency():
+  if os.path.isfile("/mnt2/metrics.log"):
+    f = open("/mnt2/metrics.log", "r")
+    split_sum = 0.0
+    split_count = 0
+    count_sum = 0.0
+    count_count = 0
+    for line in f:
+      arr = line.strip().split("\t")
+      if len(arr) < 5:
+        continue
+      entity = arr[2].strip()
+      key = arr[3].strip()
+      value = arr[4].strip()
+      bolt = entity.split(":")[1]
+      if key == "__execute-latency" and (bolt == "split" or bolt == "count") and "default=" in value:
+        latency = float(value.replace("}","").replace("{","").split(":")[1].replace("default=",""))
+        if bolt == "split":
+          split_sum += latency
+          split_count += 1
+        else:
+          count_sum += latency
+          count_count += 1
+    print split_sum, split_count, count_sum, count_count
+    return (split_sum/split_count if split_count > 0 else 0) + (count_sum/count_count if count_count > 0 else 0)
+  else:
+    return -1
 
 class ExpResult:
   runtime = 0.0
   min_ram_gb = -1.0
   memcached_latency_us = -1.0
+  storm_latency_us = -1
   task = ""
   exp_start = ""
   reads = ""
@@ -329,11 +364,13 @@ class ExpResult:
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us)
+    elif self.task == "storm":
+      return str(self.storm_latency_us)
     else:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.reads, self.writes, self.trace_dir)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -413,12 +450,18 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
   elif task == "storm":
     storm_start()
     time.sleep(10)
+    run("/root/apache-storm-0.9.5/bin/storm kill test")
+    time.sleep(15)
     start_time = time.time()
     run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-0.9.5-SNAPSHOT-jar-with-dependencies.jar storm.starter.WordCountTopology test")
-    time.sleep(300)
+    time.sleep(600)
     run("/root/apache-storm-0.9.5/bin/storm kill test")
     time_used = time.time() - start_time
+    time.sleep(20)
     storm_stop()
+    get_storm_trace()
+    slaves_run("rm -rf /root/apache-storm-0.9.5/logs/*")
+    result.storm_latency_us = get_storm_latency()
 
   if trace:
     result.trace_dir = collect_trace(task)
@@ -600,6 +643,7 @@ def storm_prepare():
   storm_cfg = '''storm.zookeeper.servers:
        - "%s"
 storm.local.dir: "/mnt2/storm"
+storm.log.dir: "/mnt2/storm/log"
 nimbus.host: "%s"
 supervisor.slots.ports:
       - 6700
@@ -614,15 +658,35 @@ ui.port: 8081''' % (master, master)
 
  
   run("/root/spark-ec2/copy-dir /root/s3cmd; /root/spark-ec2/copy-dir /root/.s3cfg")
-  run("mkdir -p /mnt2/wikitmp")
+  slaves_run("rm -rf /mnt2/wikitmp; mkdir -p /mnt2/wikitmp")
   slaves = get_slaves()
   file_ids = [[] for s in slaves]
-  for i in range(0, 125):
+  for i in range(0, 5):
     file_ids[i%len(slaves)].append('{0:03}'.format(i))
-  cmds = [ " ".join(map(lambda id : "/root/s3cmd/s3cmd get s3://petergao/wiki_raw/w-part%s /mnt2/wikitmp/w-parts%s;" % (id, id)),ids) for ids in file_ids ]
-  print cmds
-  #run("mkdir -p /mnt2/storm; cat /root/ssd/wiki/* > /mnt2/storm/input.txt")
-  #run("/root/spark-ec2/copy-dir /mnt2/storm")
+  cmds = [ " ".join(map(lambda id : "/root/s3cmd/s3cmd get s3://petergao/wiki_raw/w-part%s /mnt2/wikitmp/w-part%s;" % (id, id),ids)) for ids in file_ids ]
+  cmds = [ cmd + " mkdir -p /mnt2/storm; cat /mnt2/wikitmp/* > /mnt2/storm/input.txt; rm -rf /mnt2/wikitmp" for cmd in cmds]
+
+  global bash_run_counter
+
+  def ssh(machine, cmd, counter):
+    command = "ssh " + machine + " '" + cmd + "' &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
+    print "#######Running cmd:" + command
+    os.system(command)
+    print "#######Server " + machine + " command finished"
+
+  if not os.path.exists("/root/disaggregation/rmem/.local_commands"):
+    os.system("mkdir -p /root/disaggregation/rmem/.local_commands")
+
+  threads = []
+  for i in range(0, len(slaves)):
+    s = slaves[i]
+    t = threading.Thread(target=ssh, args=(s, cmds[i], bash_run_counter,))
+    threads.append(t)
+    bash_run_counter += 1
+  [t.start() for t in threads]
+  [t.join() for t in threads]
+  print "Finished loading data"
+
 
 def succinct_install():
   run("cd /root; git clone git@github.com:pxgao/succinct-cpp.git")
@@ -760,7 +824,7 @@ def main():
   elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
-    slaves_run_parallel("/root/succinct-cpp/ec2/install_thrift.sh", master=True)
+    get_storm_latency()
   else:
     print "Unknown task %s" % opts.task
 
