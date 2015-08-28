@@ -454,7 +454,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
     time.sleep(15)
     start_time = time.time()
     run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-0.9.5-SNAPSHOT-jar-with-dependencies.jar storm.starter.WordCountTopology test")
-    time.sleep(600)
+    time.sleep(900)
     run("/root/apache-storm-0.9.5/bin/storm kill test")
     time_used = time.time() - start_time
     time.sleep(20)

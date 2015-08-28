@@ -719,3 +719,18 @@ ExpStart: 2015-08-15 00:28:52.602559  Task: wordcount  RmemGb: 22.09  BwGbps: 10
 
 
 
+
+
+
+
+ExpStart: 2015-08-28 04:23:09.528497  Task: storm  RmemGb: 22.09  BwGbps: 10  LatencyUs: 1  Inject: False  Trace: False  MinRamGb: -1.0  Runtime: 610.971680164  MemCachedLatencyUs: -1.0  StormLatencyUs: 6.71929345102  Reads: [311296,57344,0,0,0]  Writes: [2977792,200704,0,0,0]  TraceDir: 
+
+
+
+
+ExpStart: 2015-08-28 17:35:17.271410  Task: storm  RmemGb: 22.09  BwGbps: 10  LatencyUs: 1  Inject: False  Trace: True  MinRamGb: -1.0  Runtime: 611.051486015  MemCachedLatencyUs: -1.0  StormLatencyUs: 8.25888461298  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,28672]  TraceDir: /mnt2/results/storm_150828174717
+
+
+
+
+ExpStart: 2015-08-28 18:02:24.499802  Task: storm  RmemGb: 22.09  BwGbps: 10  LatencyUs: 1  Inject: False  Trace: True  MinRamGb: -1.0  Runtime: 915.499299049  MemCachedLatencyUs: -1.0  StormLatencyUs: 11.3639891943  Reads: [737280,40960,1724416,53248,0]  Writes: [7815168,3395584,18026496,212992,0]  TraceDir: /mnt2/results/storm_150828181932
