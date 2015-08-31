@@ -317,14 +317,17 @@ def get_storm_trace():
     if(int(size) > 0):
       run("rm -rf /mnt2/metrics.log")
       scp_from("/mnt2/storm/log/metrics.log", "/mnt2/metrics.log", s)
+  slaves_run("rm -rf /mnt2/storm/log/*")
 
-def get_storm_latency():
+def get_storm_perf():
   if os.path.isfile("/mnt2/metrics.log"):
     f = open("/mnt2/metrics.log", "r")
     split_sum = 0.0
     split_count = 0
     count_sum = 0.0
     count_count = 0
+    record_sum = {}
+    record_count = {}
     for line in f:
       arr = line.strip().split("\t")
       if len(arr) < 5:
@@ -333,6 +336,7 @@ def get_storm_latency():
       key = arr[3].strip()
       value = arr[4].strip()
       bolt = entity.split(":")[1]
+      #get latency
       if key == "__execute-latency" and (bolt == "split" or bolt == "count") and "default=" in value:
         latency = float(value.replace("}","").replace("{","").split(":")[1].replace("default=",""))
         if bolt == "split":
@@ -341,16 +345,28 @@ def get_storm_latency():
         else:
           count_sum += latency
           count_count += 1
+      #get throughput
+      if key == "execute_count":
+        if entity not in record_sum:
+          record_sum[entity] = 0
+          record_count[entity] = 0
+        record_sum[entity] += int(value)
+        record_count[entity] += 1
     print split_sum, split_count, count_sum, count_count
-    return (split_sum/split_count if split_count > 0 else 0) + (count_sum/count_count if count_count > 0 else 0)
+    agg_throughput = 0
+    for e in record_sum.iterkeys():
+      agg_throughput += record_sum[e] / (record_count[e] * 6)
+    latency = (split_sum/split_count if split_count > 0 else 0) + (count_sum/count_count if count_count > 0 else 0)
+    return (latency, agg_throughput)
   else:
-    return -1
+    return (-1, -1)
 
 class ExpResult:
   runtime = 0.0
   min_ram_gb = -1.0
   memcached_latency_us = -1.0
   storm_latency_us = -1
+  storm_throughput = -1
   task = ""
   exp_start = ""
   reads = ""
@@ -365,12 +381,12 @@ class ExpResult:
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us)
     elif self.task == "storm":
-      return str(self.storm_latency_us)
+      return str(self.storm_latency_us) + ":" + str(self.storm_throughput)
     else:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -460,8 +476,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
     time.sleep(20)
     storm_stop()
     get_storm_trace()
-    slaves_run("rm -rf /root/apache-storm-0.9.5/logs/*")
-    result.storm_latency_us = get_storm_latency()
+    (latency, throughput) = get_storm_perf()
+    result.storm_latency_us = latency
+    result.storm_throughput = throughput
 
   if trace:
     result.trace_dir = collect_trace(task)
@@ -824,7 +841,7 @@ def main():
   elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
-    get_storm_latency()
+    print get_storm_perf()
   else:
     print "Unknown task %s" % opts.task
 
