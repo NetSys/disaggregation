@@ -414,7 +414,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, profile = False, 
   if task == "wordcount":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount")
     start_time = time.time()  
-    run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
+    run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki/\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
     time_used = time.time() - start_time
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -648,12 +648,16 @@ def graphlab_prepare(size_gb = 20):
   ''' % size_gb).replace("\n"," ")
   slaves_run_parallel(cmd, master = True)
 
-def wordcount_prepare(size=150):
-  run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
+def wordcount_prepare(size=125):
+# run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
   run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
-  run("/root/ephemeral-hdfs/bin/hadoop fs -rm /wiki")
-  run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
-
+  run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /wiki")
+# run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -mkdir /wiki")
+  run("/root/ephemeral-hdfs/bin/start-mapred.sh")
+  for i in range(0, size):
+    run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/wiki_raw/w-part{0:03} /wiki/".format(i))
+  run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def storm_prepare():
   master = get_master()
@@ -678,7 +682,7 @@ ui.port: 8081''' % (master, master)
   slaves_run("rm -rf /mnt2/wikitmp; mkdir -p /mnt2/wikitmp")
   slaves = get_slaves()
   file_ids = [[] for s in slaves]
-  for i in range(0, 5):
+  for i in range(0, 125):
     file_ids[i%len(slaves)].append('{0:03}'.format(i))
   cmds = [ " ".join(map(lambda id : "/root/s3cmd/s3cmd get s3://petergao/wiki_raw/w-part%s /mnt2/wikitmp/w-part%s;" % (id, id),ids)) for ids in file_ids ]
   cmds = [ cmd + " mkdir -p /mnt2/storm; cat /mnt2/wikitmp/* > /mnt2/storm/input.txt; rm -rf /mnt2/wikitmp" for cmd in cmds]
@@ -736,7 +740,7 @@ def execute(opts):
       confs.append((True, l, 40, opts.remote_memory))
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
-    local_rams.append(0.99)
+    local_rams.append(0.999)
     for r in local_rams:
       confs.append((True, 1, 40, (1-r) * 29.45))
   else:
