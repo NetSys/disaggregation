@@ -1490,6 +1490,18 @@ Latency: 1 BW: 10 RMEM: 22.09 Result: 11.3639891943
 ================== Started exp at:2015-09-01 00:16:06.768109 ==================
 Argument ['execute.py', '--task', 'wordcount']
 Latency: 1 BW: 10 RMEM: 22.09 Result: 1459.60146904
+================== Started exp at:2015-09-01 12:23:59.252163 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-remote-mem']
+Latency: 1 BW: 40 RMEM: 8.835 Result: 389.290576935:220.028
+Latency: 1 BW: 40 RMEM: 5.89 Result: 364.169373035:203.51
+Latency: 1 BW: 40 RMEM: 26.505 Result: 1040.4320569:606.446
+Latency: 1 BW: 40 RMEM: 14.725 Result: 529.425695181:304.106
+Latency: 1 BW: 40 RMEM: 2.945 Result: 338.651221991:188.838
+Latency: 1 BW: 40 RMEM: 11.78 Result: 448.450422049:255.244
+Latency: 1 BW: 40 RMEM: 17.67 Result: 654.032553911:371.502
+Latency: 1 BW: 40 RMEM: 23.56 Result: 884.562251091:515.73
+Latency: 1 BW: 40 RMEM: 20.615 Result: 778.324502945:443.61
+Latency: 1 BW: 40 RMEM: 0.2945 Result: 330.788150072:188.344
 
 
 
@@ -1520,3 +1532,7 @@ Latency: 1 BW: 40 RMEM: 0.02945 Result: 2562.19104409
 ================== Started exp at:2015-09-02 00:24:42.045714 ==================
 Argument ['execute.py', '--task', 'terasort', '--vary-remote-mem']
 Latency: 1 BW: 40 RMEM: 0.02945 Result: 197.51315999
+
+================== Started exp at:2015-09-01 23:38:10.840768 ==================
+Argument ['execute.py', '--task', 'graphlab', '--vary-remote-mem']
+Latency: 1 BW: 40 RMEM: 0.02945 Result: 2007.57732296

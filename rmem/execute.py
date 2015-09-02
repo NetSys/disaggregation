@@ -739,7 +739,7 @@ def execute(opts):
     for l in latency_40g:
       confs.append((True, l, 40, opts.remote_memory))
   elif opts.vary_remote_mem:
-    local_rams = [] #map(lambda x: x/10.0, range(1,10))
+    local_rams = map(lambda x: x/10.0, range(1,10))
     local_rams.append(0.999)
     for r in local_rams:
       confs.append((True, 1, 40, (1-r) * 29.45))
