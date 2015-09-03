@@ -18,7 +18,7 @@
 #include <linux/genhd.h>
 #include <linux/blkdev.h>
 #include <linux/hdreg.h>
-
+#include <linux/random.h>
 
 #include <linux/time.h>
 #include <linux/proc_fs.h>
@@ -95,12 +95,35 @@ int log_tail = 0;
 u64 overflow = 0;
 u64 version = 5;
 
+static u64 get_rand(void)
+{
+  u64 i;
+  get_random_bytes(&i, sizeof(i));
+  return i % 1000000;
+}
+
+static u64 get_slowdown(void)
+{
+  u64 r;
+  int i;
+
+  if (cdf_record_count == 0)
+    return 10000;
+
+  r = get_rand();
+  for(i = 0; i < cdf_record_count; i++)
+  {
+    if(slowdown_cdf[i].prob < r)
+      return slowdown_cdf[i].slowdown;
+  }
+  return slowdown_cdf[i].slowdown;
+}
 
 /*
  * Handle an I/O request.
  */
 static void rmem_transfer(struct rmem_device *dev, sector_t sector,
-		unsigned long nsect, char *buffer, int write) 
+		unsigned long nsect, char *buffer, int write, u64 slowdown) 
 {
 	int i;
 	int page;
@@ -122,7 +145,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		return;
 	}
 
-        if(get_record){
+  if(get_record){
 		do_gettimeofday(&tms);
 		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 	}
@@ -139,7 +162,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 
 		if(inject_latency){
 			while ((sched_clock() - begin) < 
-					((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) {
+					(((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) * slowdown / 10000) {
 				/* wait for transmission delay */
 				;
 			}
@@ -157,7 +180,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		
 		if (inject_latency){
 			while ((sched_clock() - begin) < 
-					((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) {
+					(((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) * slowdown / 10000) {
 				/* wait for transmission delay */
 				;
 			}
@@ -187,10 +210,12 @@ static void rmem_request(struct request_queue *q)
 {
 	struct request *req;
 	u64 begin = 0ULL;
+  u64 slowdown = 10000;
 
-	if(inject_latency){ 
+	if(inject_latency){
+    slowdown = get_slowdown();
 		begin = sched_clock();
-		while ((sched_clock() - begin) < latency_ns) {
+		while ((sched_clock() - begin) < latency_ns * slowdown / 10000) {
 			/* wait for RTT latency */
 			;
 		}
@@ -207,7 +232,7 @@ static void rmem_request(struct request_queue *q)
 			continue;
 		}
 		rmem_transfer(&device, blk_rq_pos(req), blk_rq_cur_sectors(req),
-				req->buffer, rq_data_dir(req));
+				req->buffer, rq_data_dir(req), slowdown);
 		if ( ! __blk_end_request_cur(req, 0) ) {
 			req = blk_fetch_request(q);
 		}
@@ -366,6 +391,7 @@ static int cdf_show(struct seq_file *m, void *v)
 {
   int i;
   printk(KERN_INFO "Print CDF\n");
+  //printk(KERN_INFO "%llu\n", get_rand());
   for (i = 0; i < cdf_record_count; i++)
   {
     seq_printf(m, "Slowdown: %llu  CDF: %llu\n", slowdown_cdf[i].slowdown, slowdown_cdf[i].prob);
@@ -382,18 +408,18 @@ static int cdf_open(struct inode * sp_inode, struct file *sp_file)
 
 static ssize_t cdf_write(struct file *sp_file, const char __user *buf, size_t size, loff_t *offset)
 {
-  //spin_lock(&cdf_lock);
-  printk(KERN_INFO "Writing CDF\n");
-  /*if(cdf_record_count < CDF_MAX_SIZE)
+  spin_lock(&cdf_lock);
+  //printk(KERN_INFO "Writing CDF\n");
+  if(cdf_record_count < CDF_MAX_SIZE)
   {
-    //sscanf(buf, "%llu %llu", &(slowdown_cdf[cdf_record_count].slowdown), &(slowdown_cdf[cdf_record_count].prob));
+    sscanf(buf, "%llu %llu", &(slowdown_cdf[cdf_record_count].slowdown), &(slowdown_cdf[cdf_record_count].prob));
     cdf_record_count++;
   }
   else
   {
     printk(KERN_INFO "Exceeding CDF_MAX_SIZE\n");
   }
-  spin_lock(&cdf_lock);*/
+  spin_unlock(&cdf_lock);
   return size;
 }
 
