@@ -60,9 +60,14 @@ typedef struct
 	int length;
 } access_record;
 
+typedef struct
+{
+  u64 slowdown;
+  u64 prob;
+} cdf_record;
 
 u64 inject_latency = 0;
-u64 get_record = 1;
+u64 get_record = 0;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
@@ -78,9 +83,13 @@ u64 line_count = 0;
 spinlock_t rx_lock;
 spinlock_t tx_lock;
 spinlock_t log_lock;
+spinlock_t cdf_lock;
 
 #define LOG_BATCH_SIZE	1048576
 access_record request_log[LOG_BATCH_SIZE];
+#define CDF_MAX_SIZE 4096
+cdf_record slowdown_cdf[CDF_MAX_SIZE];
+int cdf_record_count = 0;
 int log_head = 0;
 int log_tail = 0;
 u64 overflow = 0;
@@ -316,19 +325,23 @@ static ctl_table dev_root[] = {
 };
 
 static struct ctl_table_header *sysctl_header;
+
+
+
+//read log 
 static struct proc_dir_entry* log_file;
 
 static int log_show(struct seq_file *m, void *v)
 {
 	int i;
 	spin_lock(&log_lock);
-    for(i = 0; i < 10 && log_tail != log_head; i++){
-        seq_printf(m, "%d %ld %d %d %lu\n", log_tail, request_log[log_tail].timestamp, 
-        		request_log[log_tail].page, request_log[log_tail].length, PAGE_SIZE); 
-        log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
-    }
+  for(i = 0; i < 10 && log_tail != log_head; i++){
+    seq_printf(m, "%d %ld %d %d %lu\n", log_tail, request_log[log_tail].timestamp, 
+ 		request_log[log_tail].page, request_log[log_tail].length, PAGE_SIZE); 
+    log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
+  }
 	spin_unlock(&log_lock);
-    return 0;
+  return 0;
 } 
 
 static int log_open(struct inode *inode, struct file *file)
@@ -343,6 +356,56 @@ static const struct file_operations log_fops = {
 	.llseek	= seq_lseek,
 	.release= single_release,
 };
+//end read log
+
+
+//set cdf
+static struct proc_dir_entry* cdf_file;
+
+static int cdf_show(struct seq_file *m, void *v)
+{
+  int i;
+  printk(KERN_INFO "Print CDF\n");
+  for (i = 0; i < cdf_record_count; i++)
+  {
+    seq_printf(m, "Slowdown: %llu  CDF: %llu\n", slowdown_cdf[i].slowdown, slowdown_cdf[i].prob);
+  }
+  return 0;
+}
+
+static int cdf_open(struct inode * sp_inode, struct file *sp_file)
+{
+  return single_open(sp_file, cdf_show, NULL);
+}
+
+
+
+static ssize_t cdf_write(struct file *sp_file, const char __user *buf, size_t size, loff_t *offset)
+{
+  //spin_lock(&cdf_lock);
+  printk(KERN_INFO "Writing CDF\n");
+  /*if(cdf_record_count < CDF_MAX_SIZE)
+  {
+    //sscanf(buf, "%llu %llu", &(slowdown_cdf[cdf_record_count].slowdown), &(slowdown_cdf[cdf_record_count].prob));
+    cdf_record_count++;
+  }
+  else
+  {
+    printk(KERN_INFO "Exceeding CDF_MAX_SIZE\n");
+  }
+  spin_lock(&cdf_lock);*/
+  return size;
+}
+
+static struct file_operations cdf_fops = {
+  .open = cdf_open,
+  .read = seq_read,
+  .write = cdf_write,
+  .llseek = seq_lseek,
+  .release = single_release
+};
+//end set cdf
+
 
 static int __init rmem_init(void) {
 	int i;
@@ -352,12 +415,15 @@ static int __init rmem_init(void) {
 	spin_lock_init(&rx_lock);
 	spin_lock_init(&tx_lock);
 	spin_lock_init(&log_lock);
+  spin_lock_init(&cdf_lock);
 
-	log_file = proc_create("rmem_log", 0, NULL, &log_fops);
+	log_file = proc_create("rmem_log", 0644, NULL, &log_fops);
+  cdf_file = proc_create("rmem_cdf", 0644, NULL, &cdf_fops);
 
-	if (!log_file) {
+	if (!log_file || !cdf_file) {
 		return -ENOMEM;
 	}
+
 
 	/*
 	 * Set up our internal device.
@@ -432,7 +498,7 @@ out:
 
 static void __exit rmem_exit(void)
 {
-	int i;
+  int i;
 
 	del_gendisk(device.gd);
 	put_disk(device.gd);
@@ -445,6 +511,9 @@ static void __exit rmem_exit(void)
 	vfree(device.data);
 
 	unregister_sysctl_table(sysctl_header);
+
+  remove_proc_entry("rmem_log", NULL);
+  remove_proc_entry("rmem_cdf", NULL);
 
 	pr_info("rmem: bye!\n");
 }
