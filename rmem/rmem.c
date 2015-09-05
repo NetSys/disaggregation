@@ -113,7 +113,7 @@ static u64 get_slowdown(void)
   r = get_rand();
   for(i = 0; i < cdf_record_count; i++)
   {
-    if(slowdown_cdf[i].prob < r)
+    if(slowdown_cdf[i].prob > r)
       return slowdown_cdf[i].slowdown;
   }
   return slowdown_cdf[i].slowdown;
@@ -145,7 +145,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		return;
 	}
 
-  if(get_record){
+	if(get_record){
 		do_gettimeofday(&tms);
 		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 	}
@@ -210,10 +210,10 @@ static void rmem_request(struct request_queue *q)
 {
 	struct request *req;
 	u64 begin = 0ULL;
-  u64 slowdown = 10000;
+	u64 slowdown = 10000;
 
 	if(inject_latency){
-    slowdown = get_slowdown();
+		slowdown = get_slowdown();
 		begin = sched_clock();
 		while ((sched_clock() - begin) < latency_ns * slowdown / 10000) {
 			/* wait for RTT latency */
@@ -360,11 +360,11 @@ static int log_show(struct seq_file *m, void *v)
 {
 	int i;
 	spin_lock(&log_lock);
-  for(i = 0; i < 10 && log_tail != log_head; i++){
-    seq_printf(m, "%d %ld %d %d %lu\n", log_tail, request_log[log_tail].timestamp, 
- 		request_log[log_tail].page, request_log[log_tail].length, PAGE_SIZE); 
-    log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
-  }
+	for(i = 0; i < 10 && log_tail != log_head; i++){
+		seq_printf(m, "%d %ld %d %d %lu\n", log_tail, request_log[log_tail].timestamp, 
+		request_log[log_tail].page, request_log[log_tail].length, PAGE_SIZE); 
+		log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
+	}
 	spin_unlock(&log_lock);
   return 0;
 } 
@@ -443,8 +443,8 @@ static int __init rmem_init(void) {
 	spin_lock_init(&log_lock);
   spin_lock_init(&cdf_lock);
 
-	log_file = proc_create("rmem_log", 0644, NULL, &log_fops);
-  cdf_file = proc_create("rmem_cdf", 0644, NULL, &cdf_fops);
+	log_file = proc_create("rmem_log", 0666, NULL, &log_fops);
+  cdf_file = proc_create("rmem_cdf", 0666, NULL, &cdf_fops);
 
 	if (!log_file || !cdf_file) {
 		return -ENOMEM;
@@ -524,7 +524,7 @@ out:
 
 static void __exit rmem_exit(void)
 {
-  int i;
+	int i;
 
 	del_gendisk(device.gd);
 	put_disk(device.gd);
@@ -538,8 +538,8 @@ static void __exit rmem_exit(void)
 
 	unregister_sysctl_table(sysctl_header);
 
-  remove_proc_entry("rmem_log", NULL);
-  remove_proc_entry("rmem_cdf", NULL);
+	remove_proc_entry("rmem_log", NULL);
+	remove_proc_entry("rmem_cdf", NULL);
 
 	pr_info("rmem: bye!\n");
 }
