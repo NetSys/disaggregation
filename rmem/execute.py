@@ -31,11 +31,12 @@ def parse_args():
   parser.add_option("-b", "--bandwidth", type="float", default=10, help="Bandwidth in Gbps")
   parser.add_option("-l", "--latency", type="int", default=1, help="Latency in us")
   parser.add_option("-i", "--inject", action="store_true", default=False, help="Whether to inject latency")
-  parser.add_option("--cdf", action="store_true", default=False, help="Inject latency with slowdown")
+  parser.add_option("--cdf", type="string", default="", help="Inject latency with slowdown")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory")
+  parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--teragen-size", type="float", default=150.0, help="Sort input data size (GB)")
@@ -103,7 +104,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, task):
   remote_page = int(rmem_gb * 1024 * 1024 * 1024 / 4096)
   bandwidth_bps = int(bw_gbps * 1000 * 1000 * 1000)
   latency_ns = latency_us * 1000
-  inject_int = 1 if inject or slowdown_cdf else 0
+  inject_int = 1 if inject or slowdown_cdf != "" else 0
   trace_int = 1 if trace else 0
 
   if bw_gbps < 0:
@@ -141,9 +142,9 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, task):
       ''' % (remote_page, bandwidth_bps, latency_ns, inject_int, trace_int)
     slaves_run_bash(install_rmem)
 
-    if slowdown_cdf:
+    if slowdown_cdf != "":
       run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/slowdown_dist")
-      cdf_file = "./slowdown_dist/cdf_slowdowns_pfabric_%s.cdf" % task
+      cdf_file = "/root/disaggregation/rmem/slowdown_dist/cdf_slowdowns_pfabric_%s.cdf" % slowdown_cdf
       slaves_run("while read -r line; do echo \$line > /proc/rmem_cdf; done < %s; diff /proc/rmem_cdf %s" % (cdf_file, cdf_file))      
 
 def log_trace():
@@ -382,6 +383,7 @@ class ExpResult:
   inject = -1
   trace = -1
   trace_dir = ""
+  slowdown_cdf = ""
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us)
@@ -391,7 +393,7 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -403,6 +405,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, pro
   result.latency_us = latency_us
   result.inject = inject
   result.trace = trace
+  result.slowdown_cdf = slowdown_cdf
 
   min_ram = 0
 
@@ -731,25 +734,28 @@ def reconfig_hdfs():
 def execute(opts):
 
   log("\n\n\n", level = 1)
-  confs = [] #inject, latency_us, bw_gbps, rmem_gb 
+  confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf
   if opts.vary_latency:
-    confs.append((False, 0, 0, opts.remote_memory))
+    confs.append((False, 0, 0, opts.remote_memory, opts.cdf))
     latencies = [1, 5, 10]
     bws = [100, 40, 10]
     for l in latencies:
       for b in bws:
-        confs.append((True, l, b, opts.remote_memory))
+        confs.append((True, l, b, opts.remote_memory, opts.cdf))
   elif opts.vary_latency_40g:
     latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
     for l in latency_40g:
-      confs.append((True, l, 40, opts.remote_memory))
+      confs.append((True, l, 40, opts.remote_memory, opts.cdf))
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
     local_rams.append(0.999)
     for r in local_rams:
-      confs.append((True, 1, 40, (1-r) * 29.45))
+      confs.append((True, 1, 40, (1-r) * 29.45, opts.cdf))
+  elif opts.slowdown_cdf_exp:
+    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task))
+    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, ""))
   else:
-    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory))
+    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.task))
  
   results = {}
   for conf in confs:
@@ -758,7 +764,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[0], opts.trace, opt.cdf).get()
+      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[0], opts.trace, conf[4]).get()
       results[conf].append(time)
 
 
@@ -767,7 +773,7 @@ def execute(opts):
   log('Argument %s' % str(sys.argv))
 
   for conf in results:
-    result_str = "Latency: %d BW: %d RMEM: %s Result: %s" % (conf[1], conf[2], conf[3], ",".join(map(str, results[conf])))
+    result_str = "Conf: %s Result: %s" % (" ".join(map(str, conf)), " ".join(map(str, results[conf])))
     log(result_str)
     print result_str
 
@@ -844,7 +850,7 @@ def main():
     reconfig_hdfs()
 
   elif opts.task == "init-rmem":
-    setup_rmem(5, 40, 10, True, False, True, opts.task)
+    setup_rmem(5, 40, 10, True, False, "wordcount", opts.task)
   elif opts.task == "exit-rmem":
     clean_existing_rmem(40)  
 

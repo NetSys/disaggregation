@@ -1565,3 +1565,17 @@ Latency: 1 BW: 40 RMEM: 0.02945 Result: 197.51315999
 ================== Started exp at:2015-09-01 23:38:10.840768 ==================
 Argument ['execute.py', '--task', 'graphlab', '--vary-remote-mem']
 Latency: 1 BW: 40 RMEM: 0.02945 Result: 2007.57732296
+
+
+
+
+================== Started exp at:2015-09-06 07:33:14.935041 ==================
+Argument ['execute.py', '--task', 'wordcount', '--cdf', 'wordcount']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 4.01010799408
+
+
+
+
+================== Started exp at:2015-09-06 08:06:55.285389 ==================
+Argument ['execute.py', '--task', 'memcached', '--cdf', 'memcached']
+Latency: 1 BW: 10 RMEM: 22.09 Result: 930.412620068:544.056

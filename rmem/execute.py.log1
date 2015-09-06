@@ -1023,3 +1023,29 @@ ExpStart: 2015-09-02 00:20:49.519025  Task: terasort  RmemGb: 0.02945  BwGbps: 4
 
 ExpStart: 2015-09-01 23:04:16.563503  Task: graphlab  RmemGb: 0.02945  BwGbps: 40  LatencyUs: 1  Inject: True  Trace: False  MinRamGb: -1.0  Runtime: 2007.57732296  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
 >>>>>>> 06bde4b3ed3d5709fcb59f70fbec80d7a35b3726
+
+
+
+
+
+
+
+
+ExpStart: 2015-09-06 07:32:16.542994  Task: wordcount  RmemGb: 22.09  BwGbps: 10  LatencyUs: 1  Inject: False  Trace: False  MinRamGb: -1.0  Runtime: 4.01010799408  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+
+
+
+
+ExpStart: 2015-09-06 07:34:10.519974  Task: memcached  RmemGb: 22.09  BwGbps: 10  LatencyUs: 1  Inject: False  Trace: False  MinRamGb: -1.0  Runtime: 930.412620068  MemCachedLatencyUs: 544.056  StormLatencyUs: -1  StormThroughput: -1  Reads: [121983762432,121594580992,121608036352,121442263040,122694750208]  Writes: [144707919872,143615721472,143820869632,143681515520,144935755776]  TraceDir: 
+
+
+
+
+
+
+
+
+
+
+
+
