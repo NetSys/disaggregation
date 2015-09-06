@@ -394,7 +394,7 @@ static int cdf_show(struct seq_file *m, void *v)
   //printk(KERN_INFO "%llu\n", get_rand());
   for (i = 0; i < cdf_record_count; i++)
   {
-    seq_printf(m, "Slowdown: %llu  CDF: %llu\n", slowdown_cdf[i].slowdown, slowdown_cdf[i].prob);
+    seq_printf(m, "%llu %llu\n", slowdown_cdf[i].slowdown, slowdown_cdf[i].prob);
   }
   return 0;
 }
