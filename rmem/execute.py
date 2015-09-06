@@ -663,8 +663,8 @@ def wordcount_prepare(size=125):
 # run("/root/ephemeral-hdfs/bin/hadoop fs -put /root/ssd/wiki/f" + str(size) + "g.txt /wiki")
   run("/root/ephemeral-hdfs/bin/hadoop fs -mkdir /wiki")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
-  for i in range(0, size):
-    run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/wiki_raw/w-part{0:03} /wiki/".format(i))
+  src = " ".join( ["s3n://petergao/wiki_raw/w-part{0:03}".format(i) for i in range(0, size)])
+  run("/root/ephemeral-hdfs/bin/hadoop distcp %s /wiki/" % src)
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def storm_prepare():
