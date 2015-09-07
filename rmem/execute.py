@@ -29,7 +29,7 @@ def parse_args():
   parser.add_option("--task", help="Task to be done")
   parser.add_option("-r", "--remote-memory", type="float", default=22.09, help="Remote memory size in GB")
   parser.add_option("-b", "--bandwidth", type="float", default=40, help="Bandwidth in Gbps")
-  parser.add_option("-l", "--latency", type="int", default=1, help="Latency in us")
+  parser.add_option("-l", "--latency", type="int", default=5, help="Latency in us")
   parser.add_option("-i", "--inject", action="store_true", default=False, help="Whether to inject latency")
   parser.add_option("--cdf", type="string", default="", help="Inject latency with slowdown")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")

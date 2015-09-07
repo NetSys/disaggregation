@@ -213,8 +213,8 @@ static void rmem_request(struct request_queue *q)
 	u64 slowdown = 10000;
 
 	if(inject_latency){
-		slowdown = get_slowdown();
 		begin = sched_clock();
+		slowdown = get_slowdown();
 		while ((sched_clock() - begin) < latency_ns * slowdown / 10000) {
 			/* wait for RTT latency */
 			;
