@@ -180,7 +180,7 @@ def log_trace():
 
     start_time=$(date +%s%N)
     echo ${start_time:0:${#start_time}-3} > .metadata
-    blktrace -d /dev/xvda1 -o .disk_io &
+    blktrace -d /dev/xvda1 /dev/xvdb /dev/xvdc -o .disk_io &
 
     tcpdump -i eth0 2>&1 | python tcpdump2flow.py > .nic &
 

@@ -57,9 +57,12 @@ void read_flows_to_schedule(std::string filename, uint32_t num_lines,
     input >> temp; input >> temp;
     input >> s >> d;
 
-    std::cout << "Flow " << id << " " << start_time << " " << size << " " << s << " " << d << "\n";
+    //std::cout << "Flow " << id << " " << start_time << " " << size << " " << s << " " << d << "\n";
+
     flows_to_schedule.push_back(Factory::get_flow(id, start_time, size,
       topo->hosts[s], topo->hosts[d], params.flow_type));
+    if(flows_to_schedule.size() % 10000000 == 0)
+        std::cout << "Loaded " << flows_to_schedule.size() << " flows\n";
   }
   params.num_flows_to_run = flows_to_schedule.size();
   input.close();

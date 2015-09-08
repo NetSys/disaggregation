@@ -369,7 +369,7 @@ void run_fixedDistribution_experiment(int argc, char **argv, uint32_t exp_type) 
     flow_arrivals.push_back(new FlowArrivalEvent(f->start_time, f));
   }
 
-  add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
+  //add_to_event_queue(new LoggingEvent((flows_sorted.front())->start_time));
 
   std::cout << "Running " << num_flows << " Flows\nCDF_File " <<
     params.cdf_or_flow_trace << "\nBandwidth " << params.bandwidth/1e9 <<

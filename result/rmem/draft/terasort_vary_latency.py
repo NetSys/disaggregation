@@ -4,12 +4,12 @@ import sys
 
 import matplotlib.pyplot as plt
 
-x = ["Local", "1ns\n100Gbps", "1ns\n40Gbps", "1ns\n10Gbps",  "5ns\n100Gbps", "5ns\n40Gbps", "5ns\n10Gbps",  "10ns\n100Gbps", "10ns\n40Gbps", "10ns\n10Gbps"]
-y = [232.138, 236.012, 236.198, 250.504, 246.834, 247.654, 260.814, 258.63, 257.346, 274.16]
+x = ["1us\n40Gbps", "5us\n40Gbps", "10us\n40Gbps",  "20us\n40Gbps", "40us\n40Gbps", "60us\n40Gbps",  "80us\n40Gbps", "100us\n40Gbps"]
+y = [625.6844411, 731.286963, 680.853924, 719.8754759, 751.0070231, 871.270371, 922.1313169, 1010.919324]
 x_ticks = np.arange(0, len(y)) + 1
 
 
-fig = plt.figure(1, figsize=(16,12))
+fig = plt.figure(1, figsize=(8,6))
 ax = fig.add_subplot(111)
 bp = ax.bar(x_ticks, y, 0.5, align='center')
 ax.set_xticks(x_ticks)
