@@ -35,6 +35,7 @@ def parse_args():
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
+  parser.add_option("--vary-bw-5us", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory")
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
@@ -257,9 +258,9 @@ def memcached_kill_loadgen(deadline):
   while time.time() < deadline:
     time.sleep(30)
     if memcached_kill_loadgen_on == False:
-      print ">>>>>>>>>>>>>>>>>>>>memcached_kill_loadgen == False, return<<<<<<<<<<<<<<<<"
+      print "======memcached_kill_loadgen == False, return======"
       return
-  print ">>>>>>>>>>>>>>>>>>>>>Timeout, kill process loadgen<<<<<<<<<<<<<<<<<<<"
+  print "=======Timeout, kill process loadgen======"
   slaves_run("pid=\$(jps | grep LoadGenerator | cut -d ' ' -f 1);kill \$pid")
   memcached_kill_loadgen_on=False
 
@@ -713,7 +714,7 @@ def reconfig_hdfs():
   run("/root/spark-ec2/copy-dir /root/ephemeral-hdfs/conf")
   run("/root/ephemeral-hdfs/bin/hadoop namenode -format")
   run("/root/ephemeral-hdfs/bin/start-dfs.sh")
-  #.....need more work
+  #.....you need to manually modify the conf files
 
 def execute(opts):
 
@@ -730,6 +731,10 @@ def execute(opts):
     latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
     for l in latency_40g:
       confs.append((True, l, 40, opts.remote_memory, opts.cdf))
+  elif opts.vary_bw_5us:
+    bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    for b in bw_5us:
+      confs.append((True, 5, b, opts.remote_memory, opts.cdf))                  
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
     local_rams.append(0.999)
@@ -838,6 +843,8 @@ def main():
   elif opts.task == "exit-rmem":
     clean_existing_rmem(40)  
 
+  elif opts.task == "reconfig-hdfs":
+    reconfig_hdfs()
   elif opts.task == "storm-stop":
     storm_stop()
   elif opts.task == "storm-start":
