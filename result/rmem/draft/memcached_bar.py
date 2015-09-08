@@ -4,12 +4,25 @@ import sys
 
 import matplotlib.pyplot as plt
 
-x = ["Local", "1ns\n100Gbps", "1ns\n40Gbps", "1ns\n10Gbps",  "5ns\n100Gbps", "5ns\n40Gbps", "5ns\n10Gbps",  "10ns\n100Gbps", "10ns\n40Gbps", "10ns\n10Gbps"]
-y = [867.974607, 873.3635809, 868.2652509, 871.8477252, 871.0069981, 873.8679581, 894.576262, 881.1762719, 881.5000401, 883.06284]
+x = ["Local", "1us\n100Gbps", "1us\n40Gbps", "1us\n10Gbps",  "5us\n100Gbps", "5us\n40Gbps", "5us\n10Gbps",  "10us\n100Gbps", "10us\n40Gbps", "10us\n10Gbps"]
+y_data = '''
+481.258
+491.612
+490.928
+546.264
+529.2
+532.782
+594.376
+600.842
+592.848
+654.636
+'''
+print y_data.split("\n")
+y = map(float, filter(lambda x: x != '', y_data.split("\n")) )
 x_ticks = np.arange(0, len(y)) + 1
 
 
-fig = plt.figure(1, figsize=(16,12))
+fig = plt.figure(1, figsize=(12,6))
 ax = fig.add_subplot(111)
 bp = ax.bar(x_ticks, y, 0.5, align='center')
 ax.set_xticks(x_ticks)
@@ -20,4 +33,3 @@ plt.ylabel("Application Runtime (s)")
 plt.title(sys.argv[0])
 plt.savefig(sys.argv[0].replace(".py", ".png"))
 plt.show()
-

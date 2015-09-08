@@ -1129,6 +1129,13 @@ def real_main():
         subprocess.check_call(
             ssh_command(opts) + proxy_opt + ['-t', '-t', "%s@%s" % (opts.user, master)])
 
+    elif action == "mosh":
+        (master_nodes, slave_nodes) = get_existing_cluster(conn, opts, cluster_name)
+        master = master_nodes[0].public_dns_name
+        print "Logging into master " + master + "..."
+        os.system("mosh --ssh=\"ssh -i /home/peter/spark130823.pem\" root@%s" % master)
+
+
     elif action == "reboot-slaves":
         response = raw_input(
             "Are you sure you want to reboot the cluster " +
