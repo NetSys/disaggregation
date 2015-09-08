@@ -1579,3 +1579,19 @@ Latency: 1 BW: 10 RMEM: 22.09 Result: 4.01010799408
 ================== Started exp at:2015-09-06 08:06:55.285389 ==================
 Argument ['execute.py', '--task', 'memcached', '--cdf', 'memcached']
 Latency: 1 BW: 10 RMEM: 22.09 Result: 930.412620068:544.056
+
+
+
+
+================== Started exp at:2015-09-08 17:34:51.786174 ==================
+Argument ['execute.py', '--task', 'terasort', '--vary-bw-5us']
+Conf: True 5 90 22.09  Result: 4394.41638494
+Conf: True 5 20 22.09  Result: 4331.21219611
+Conf: True 5 40 22.09  Result: 4336.2053411
+Conf: True 5 60 22.09  Result: 4223.95884109
+Conf: True 5 80 22.09  Result: 4400.28192711
+Conf: True 5 10 22.09  Result: 5040.78035879
+Conf: True 5 100 22.09  Result: 4326.11862683
+Conf: True 5 30 22.09  Result: 4223.91641521
+Conf: True 5 50 22.09  Result: 4202.28598595
+Conf: True 5 70 22.09  Result: 4244.22363305
