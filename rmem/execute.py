@@ -298,7 +298,11 @@ def slaves_get_memcached_avg_latency():
   slaves = get_slaves()
   for s in slaves:
     r = run_and_get("ssh %s \"cat /root/disaggregation/apps/memcached/results.txt | grep AverageLatency\"" % s)[1]
-    total += float(r.replace("[GET] AverageLatency, ","").replace("us",""))
+    v = r.replace("[GET] AverageLatency, ","")
+    if "us" in v:
+      total += float(v.replace("us",""))
+    elif "ms" in v:
+      total += float(v.replace("ms","")) * 1000
   return total / len(slaves)
 
 def get_storm_trace():
