@@ -175,7 +175,7 @@ def log_trace():
         break
       fi
     done
-
+ 
     killall -SIGINT tcpdump
     killall -SIGINT blktrace
   '''
