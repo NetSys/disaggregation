@@ -1150,3 +1150,17 @@ ExpStart: 2015-09-08 12:40:27.685572  Task: terasort  RmemGb: 22.09  BwGbps: 70 
 ExpStart: 2015-09-08 13:52:33.428233  Task: terasort  RmemGb: 22.09  BwGbps: 80  LatencyUs: 5  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 4400.28192711  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,251765178368,523467284480,413629943808,425708408832]  Writes: [0,363788636160,669852979200,563661283328,554504327168]  TraceDir: 
 ExpStart: 2015-09-08 15:07:03.771891  Task: terasort  RmemGb: 22.09  BwGbps: 90  LatencyUs: 5  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 4394.41638494  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,300585082880,546806018048,407674617856,424148537344]  Writes: [0,398677442560,681617965056,561736630272,584650678272]  TraceDir: 
 ExpStart: 2015-09-08 16:21:32.711802  Task: terasort  RmemGb: 22.09  BwGbps: 100  LatencyUs: 5  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 4326.11862683  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,248102866944,525868851200,425072504832,422759051264]  Writes: [0,352750350336,670297124864,569323257856,554649284608]  TraceDir: 
+
+
+
+
+
+
+
+
+ExpStart: 2015-09-09 01:07:59.982726  Task: memcached  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: memcached  MinRamGb: -1.0  Runtime: 6502.01981902  MemCachedLatencyUs: 738.27  StormLatencyUs: -1  StormThroughput: -1  Reads: [291803340800,291490828288,292300947456,292106625024,291329556480]  Writes: [309744877568,310373298176,310837268480,310515060736,309235470336]  TraceDir: /mnt2/results/memcached_150909032236
+
+
+
+
+ExpStart: 2015-09-09 04:20:44.368923  Task: memcached  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: memcached  MinRamGb: -1.0  Runtime: 1319.68692279  MemCachedLatencyUs: 744.398  StormLatencyUs: -1  StormThroughput: -1  Reads: [29904216064,27977662464,28714496000,27982209024,28052647936]  Writes: [52036575232,50101428224,51000483840,49485242368,50043961344]  TraceDir: /mnt2/results/memcached_150909050852

@@ -1626,3 +1626,17 @@ Conf: True 5 100 22.09  Result: 4326.11862683
 Conf: True 5 30 22.09  Result: 4223.91641521
 Conf: True 5 50 22.09  Result: 4202.28598595
 Conf: True 5 70 22.09  Result: 4244.22363305
+
+
+
+
+================== Started exp at:2015-09-09 03:25:34.906798 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 6502.01981902:738.27
+
+
+
+
+================== Started exp at:2015-09-09 05:09:50.897780 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 1319.68692279:744.398
