@@ -151,38 +151,21 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, task):
 def log_trace():
   banner("log trace")
   get_disk_mem_log = '''
-    cd /root/disaggregation/rmem/
+    rm -rf /mnt2/rmem_log
+    mkdir -p /mnt2/rmem_log
+    cd /mnt2/rmem_log
     echo 0 > .app_running.tmp
-    if [ -a rmem_log.txt ]
-    then
-      rm rmem_log.txt
-    fi
 
     if [ -z "$(mount | grep /sys/kernel/debug)" ]
     then
       mount -t debugfs debugfs /sys/kernel/debug
     fi
 
-    if [ -a .disk_io.blktrace.0 ]
-    then
-      rm .disk_io.blktrace.0
-    fi
-
-    if [ -a .disk_io.blktrace.1 ]
-    then
-      rm .disk_io.blktrace.1
-    fi
-
-    if [ -a .nic ]
-    then
-      rm .nic
-    fi
-
     start_time=$(date +%s%N)
     echo ${start_time:0:${#start_time}-3} > .metadata
-    blktrace -d /dev/xvda1 /dev/xvdb /dev/xvdc -o .disk_io &
+    blktrace -a issue -d /dev/xvda1 /dev/xvdb /dev/xvdc -D . &
 
-    tcpdump -i eth0 2>&1 | python tcpdump2flow.py > .nic &
+    tcpdump -i eth0 2>&1 | python /root/disaggregation/rmem/tcpdump2flow.py > .nic &
 
     count=0
     while true; do
@@ -192,7 +175,7 @@ def log_trace():
         break
       fi
     done
-
+ 
     killall -SIGINT tcpdump
     killall -SIGINT blktrace
   '''
@@ -200,20 +183,21 @@ def log_trace():
 
 def collect_trace(task):
   banner("collect trace")
-  slaves_run("echo 1 > /root/disaggregation/rmem/.app_running.tmp")
+  slaves_run("echo 1 > /mnt2/rmem_log/.app_running.tmp")
   time.sleep(3)
   
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
 
+  slaves_run_parallel("for i in $(seq 0 7); do cat /mnt2/rmem_log/*.blktrace.$i > /mnt2/rmem_log/.disk_io.blktrace.$i; done; ")
   count = 0
   slaves = get_slaves()
   for s in slaves:
-    scp_from("/root/disaggregation/rmem/rmem_log.txt", "%s/%d-mem-%s" % (result_dir, count, s), s)
+    scp_from("/mnt2/rmem_log/rmem_log.txt", "%s/%d-mem-%s" % (result_dir, count, s), s)
     for i in range(0,8):
-      scp_from("/root/disaggregation/rmem/.disk_io.blktrace.%d" % i, "%s/%d-disk-%s.blktrace.%d" % (result_dir, count, s, i), s)
-    scp_from("/root/disaggregation/rmem/.nic", "%s/%d-nic-%s" % (result_dir, count, s), s)
-    scp_from("/root/disaggregation/rmem/.metadata", "%s/%d-meta-%s" % (result_dir, count, s), s)
+      scp_from("/mnt2/rmem_log/.disk_io.blktrace.%d" % i, "%s/%d-disk-%s.blktrace.%d" % (result_dir, count, s, i), s)
+    scp_from("/mnt2/rmem_log/.nic", "%s/%d-nic-%s" % (result_dir, count, s), s)
+    scp_from("/mnt2/rmem_log/.metadata", "%s/%d-meta-%s" % (result_dir, count, s), s)
     count += 1
 
   return result_dir
@@ -314,7 +298,11 @@ def slaves_get_memcached_avg_latency():
   slaves = get_slaves()
   for s in slaves:
     r = run_and_get("ssh %s \"cat /root/disaggregation/apps/memcached/results.txt | grep AverageLatency\"" % s)[1]
-    total += float(r.replace("[GET] AverageLatency, ","").replace("us",""))
+    v = r.replace("[GET] AverageLatency, ","")
+    if "us" in v:
+      total += float(v.replace("us",""))
+    elif "ms" in v:
+      total += float(v.replace("ms","")) * 1000
   return total / len(slaves)
 
 def get_storm_trace():
@@ -467,7 +455,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, pro
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
     start_time = time.time()
-    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
+    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
     result.memcached_latency_us = slaves_get_memcached_avg_latency()
     time_used = time.time() - start_time
     slaves_run("killall memcached")
@@ -518,7 +506,7 @@ def teragen(size):
   master = get_master()
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
-  run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar teragen %d hdfs://%s:9000/sortinput" % (num_record, master))
+  run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar teragen -Dmapred.map.tasks=20 %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
@@ -699,13 +687,13 @@ ui.port: 8081''' % (master, master)
   global bash_run_counter
 
   def ssh(machine, cmd, counter):
-    command = "ssh " + machine + " '" + cmd + "' &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
+    command = "ssh " + machine + " '" + cmd + "' &> /mnt/local_commands/cmd_" + str(counter) + ".log"
     print "#######Running cmd:" + command
     os.system(command)
     print "#######Server " + machine + " command finished"
 
-  if not os.path.exists("/root/disaggregation/rmem/.local_commands"):
-    os.system("mkdir -p /root/disaggregation/rmem/.local_commands")
+  if not os.path.exists("/mnt/local_commands"):
+    os.system("mkdir -p /mnt/local_commands")
 
   threads = []
   for i in range(0, len(slaves)):
@@ -812,6 +800,7 @@ def prepare_env():
   sync_rmem_code()
   update_hadoop_conf()
   mkfs_xvdc_ext4()
+  run("mkdir -p /mnt/local_commands")
 
 def prepare_all(opts):
   prepare_env()
