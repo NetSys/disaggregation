@@ -471,7 +471,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, pro
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
     start_time = time.time()
-    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
+    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
     result.memcached_latency_us = slaves_get_memcached_avg_latency()
     time_used = time.time() - start_time
     slaves_run("killall memcached")
@@ -703,13 +703,13 @@ ui.port: 8081''' % (master, master)
   global bash_run_counter
 
   def ssh(machine, cmd, counter):
-    command = "ssh " + machine + " '" + cmd + "' &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
+    command = "ssh " + machine + " '" + cmd + "' &> /mnt/local_commands/cmd_" + str(counter) + ".log"
     print "#######Running cmd:" + command
     os.system(command)
     print "#######Server " + machine + " command finished"
 
-  if not os.path.exists("/root/disaggregation/rmem/.local_commands"):
-    os.system("mkdir -p /root/disaggregation/rmem/.local_commands")
+  if not os.path.exists("/mnt/local_commands"):
+    os.system("mkdir -p /mnt/local_commands")
 
   threads = []
   for i in range(0, len(slaves)):
@@ -816,6 +816,7 @@ def prepare_env():
   sync_rmem_code()
   update_hadoop_conf()
   mkfs_xvdc_ext4()
+  run("mkdir -p /mnt/local_commands")
 
 def prepare_all(opts):
   prepare_env()
