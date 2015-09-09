@@ -1734,3 +1734,19 @@ Conf: False 5 40 22.09 memcached Result: 6502.01981902:738.27
 ================== Started exp at:2015-09-09 05:09:50.897780 ==================
 Argument ['execute.py', '--task', 'memcached', '-t']
 Conf: False 5 40 22.09 memcached Result: 1319.68692279:744.398
+
+
+
+
+================== Started exp at:2015-09-09 12:07:13.457925 ==================
+Argument ['execute.py', '--task', 'wordcount', '--vary-bw-5us']
+Conf: True 5 90 22.09  Result: 1812.55247283
+Conf: True 5 20 22.09  Result: 1746.55019093
+Conf: True 5 40 22.09  Result: 1820.55000997
+Conf: True 5 60 22.09  Result: 1825.9453671
+Conf: True 5 80 22.09  Result: 1811.8162961
+Conf: True 5 10 22.09  Result: 2222.24071789
+Conf: True 5 100 22.09  Result: 1811.22645688
+Conf: True 5 30 22.09  Result: 1804.21344495
+Conf: True 5 50 22.09  Result: 1814.36703992
+Conf: True 5 70 22.09  Result: 1815.97541904
