@@ -1583,6 +1583,9 @@ Latency: 1 BW: 10 RMEM: 22.09 Result: 930.412620068:544.056
 
 
 
+================== Started exp at:2015-09-08 07:36:44.117861 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2578.57992601
 ================== Started exp at:2015-09-06 09:56:27.956928 ==================
 Argument ['execute.py', '--task', 'memcached', '--slowdown-cdf-exp']
 Conf: True 1 10 22.09 memcached Result: 939.967947006:547.684
@@ -1591,6 +1594,9 @@ Conf: True 1 10 22.09  Result: 905.54441309:529.774
 
 
 
+================== Started exp at:2015-09-08 07:55:18.913013 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 4.00353693962
 ================== Started exp at:2015-09-06 21:12:42.602265 ==================
 Argument ['execute.py', '--task', 'memcached', '--slowdown-cdf-exp', '--iter', '10']
 Conf: True 1 10 22.09 memcached Result: 963.632524967:553.164 929.029053926:549.006 960.148571968:555.874 931.683642149:548.796 944.242669106:552.738 932.063598871:549.966 944.796818972:551.352 940.224621773:552.792 939.235168934:551.832 950.923270941:554.71
@@ -1599,12 +1605,92 @@ Conf: True 1 10 22.09  Result: 909.21406579:530.896 934.753127813:535.212 900.82
 
 
 
+================== Started exp at:2015-09-08 07:58:47.929629 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.31487298012
+
+
 ================== Started exp at:2015-09-07 09:05:51.109985 ==================
 Argument ['execute.py', '--task', 'memcached', '--slowdown-cdf-exp', '--iter', '10']
 Conf: True 1 40 22.09 memcached Result: 850.724375963:494.414 885.590529919:506.046 855.406712055:496.884 899.481890917:503.344 864.748466015:498.286 855.559185028:495.834 838.826001167:492.962 859.669053078:499.704 853.658176184:496.728 838.979804039:493.824
 Conf: True 1 40 22.09  Result: 835.972707033:481.978 835.405139923:483.688 828.912815094:480.296 824.371772051:480.32 825.976468086:483.478 825.275712967:478.552 820.144241095:480.17 809.708896875:475.974 828.9066329:479.302 819.736871958:476.462
 
 
+
+
+================== Started exp at:2015-09-08 08:40:14.818284 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.30839896202
+
+
+
+
+================== Started exp at:2015-09-08 08:43:02.887138 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.37198019028
+
+
+
+
+================== Started exp at:2015-09-08 08:47:00.437007 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.3465731144
+
+
+
+
+================== Started exp at:2015-09-08 08:48:34.903302 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.43439912796
+
+
+
+
+================== Started exp at:2015-09-08 08:52:37.106736 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.30919313431
+
+
+
+
+================== Started exp at:2015-09-08 08:54:41.814304 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.28834700584
+
+
+
+
+================== Started exp at:2015-09-08 09:42:10.078470 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2612.75160789
+
+
+
+
+================== Started exp at:2015-09-08 21:08:31.149216 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 3612.94009185
+
+
+
+
+================== Started exp at:2015-09-08 22:16:57.867157 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.37772679329
+
+
+
+
+================== Started exp at:2015-09-08 23:04:32.824316 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 1837.14998698
+
+
+
+
+================== Started exp at:2015-09-09 01:44:29.760271 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2115.54278588
 
 
 ================== Started exp at:2015-09-08 10:54:09.312492 ==================
