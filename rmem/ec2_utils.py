@@ -45,7 +45,7 @@ def slaves_run(cmd, background = False):
 def slaves_run_parallel(cmd, master=False):
   global bash_run_counter
   def ssh(machine, cmd, counter):
-    command = "ssh " + machine + " '" + cmd + "' &> /root/disaggregation/rmem/.local_commands/cmd_" + str(counter) + ".log"
+    command = "ssh " + machine + " '" + cmd + "' &> /mnt/local_commands/cmd_" + str(counter) + ".log"
     print "#######Running cmd:" + command
     os.system(command)
     print "#######Server " + machine + " command finished"
@@ -57,8 +57,8 @@ def slaves_run_parallel(cmd, master=False):
     print "#######Local cmd finished"
 
 
-  if not os.path.exists("/root/disaggregation/rmem/.local_commands"):
-    os.system("mkdir -p /root/disaggregation/rmem/.local_commands")
+  if not os.path.exists("/mnt/local_commands"):
+    os.system("mkdir -p /mnt/local_commands")
 
   threads = []
   for s in get_slaves():
