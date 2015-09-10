@@ -1768,3 +1768,10 @@ Conf: False 5 40 22.09 memcached Result: 6502.01981902:738.27
 ================== Started exp at:2015-09-09 05:09:50.897780 ==================
 Argument ['execute.py', '--task', 'memcached', '-t']
 Conf: False 5 40 22.09 memcached Result: 1319.68692279:744.398
+
+
+
+
+================== Started exp at:2015-09-09 23:48:20.155561 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop']
+Conf: False 5 40 22.09 wordcount-hadoop Result: 2596.9747808

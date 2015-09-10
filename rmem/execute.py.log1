@@ -1388,3 +1388,8 @@ ExpStart: 2015-09-09 01:07:59.982726  Task: memcached  RmemGb: 22.09  BwGbps: 40
 
 
 ExpStart: 2015-09-09 04:20:44.368923  Task: memcached  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: memcached  MinRamGb: -1.0  Runtime: 1319.68692279  MemCachedLatencyUs: 744.398  StormLatencyUs: -1  StormThroughput: -1  Reads: [29904216064,27977662464,28714496000,27982209024,28052647936]  Writes: [52036575232,50101428224,51000483840,49485242368,50043961344]  TraceDir: /mnt2/results/memcached_150909050852
+
+
+
+
+ExpStart: 2015-09-09 23:03:34.189982  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: False  SldCdf: wordcount-hadoop  MinRamGb: -1.0  Runtime: 2596.9747808  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [61332631552,52958851072,55737806848,62543396864,59154259968]  Writes: [439430320128,372789686272,439078289408,444374405120,475511660544]  TraceDir: 
