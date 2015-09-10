@@ -5,6 +5,7 @@ import time
 class Flow:
   size = 0
   start = ""
+  end = ""
   src = ""
   dst = ""
 
@@ -14,12 +15,13 @@ class Flow:
     self.start = start
 
   def __str__(self):
-    return "%s %s %s %s" % (self.start, self.src, self.dst, self.size)
+    return "%s %s %s %s %s" % (self.start, self.end, self.src, self.dst, self.size)
 
 flows = {}
 
 while True:
   line = sys.stdin.readline()
+  #22:43:17.320210 IP ip-10-142-244-82.ec2.internal.60001 > dhcp-44-37.EECS.Berkeley.EDU.56876: UDP, length 237
   #05:26:14.882269 IP ip-10-146-5-205.ec2.internal.36633 > ip-10-182-71-244.ec2.internal.etlservicemgr: Flags [.], ack 2770, win 274, options [nop,nop,TS val 6869822 ecr 6868305], length 0
   if line == "":
     break
@@ -29,11 +31,13 @@ while True:
     length_index = arr.index("length")
     if length_index + 1 < len(arr):
       src = arr[2]
-      dst = arr[4]
-      key = (src, dst)
+      dst = arr[4].replace(":","")
+      proto = "udp" if "UDP," in arr else "tcp"
+      key = (src, dst, proto)
       if key not in flows:
         flows[key] = Flow(src, dst, "%9f" % time.time())
       flows[key].size += int(arr[length_index+1])
+      flows[key].end = "%9f" % time.time()
       #print line
 
 for f in flows.itervalues():

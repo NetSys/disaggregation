@@ -1821,3 +1821,31 @@ Conf: True 5 100 22.09  Result: 1811.22645688
 Conf: True 5 30 22.09  Result: 1804.21344495
 Conf: True 5 50 22.09  Result: 1814.36703992
 Conf: True 5 70 22.09  Result: 1815.97541904
+
+
+
+
+================== Started exp at:2015-09-10 06:29:02.927169 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 1839.24465489
+
+
+
+
+================== Started exp at:2015-09-10 07:06:21.853259 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 1834.68199301
+
+
+
+
+================== Started exp at:2015-09-10 08:01:49.052280 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop', '-t']
+Conf: False 5 40 22.09 wordcount-hadoop Result: 2803.73646998
+
+
+
+
+================== Started exp at:2015-09-10 09:38:35.660975 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2613.8133049
