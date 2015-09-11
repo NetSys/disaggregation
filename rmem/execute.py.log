@@ -1825,6 +1825,12 @@ Conf: True 5 70 22.09  Result: 1815.97541904
 
 
 
+================== Started exp at:2015-09-10 07:41:28.342201 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2420.74630308
+================== Started exp at:2015-09-10 07:36:36.495177 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2412.37197995
 ================== Started exp at:2015-09-10 06:29:02.927169 ==================
 Argument ['execute.py', '--task', 'wordcount', '-t']
 Conf: False 5 40 22.09 wordcount Result: 1839.24465489
