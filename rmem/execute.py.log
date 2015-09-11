@@ -1828,3 +1828,72 @@ Conf: True 5 70 22.09  Result: 1815.97541904
 ================== Started exp at:2015-09-10 07:41:28.342201 ==================
 Argument ['execute.py', '--task', 'graphlab', '-t']
 Conf: False 5 40 22.09 graphlab Result: 2420.74630308
+================== Started exp at:2015-09-10 07:36:36.495177 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2412.37197995
+================== Started exp at:2015-09-10 06:29:02.927169 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 1839.24465489
+
+
+
+
+================== Started exp at:2015-09-10 07:06:21.853259 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 1834.68199301
+
+
+
+
+================== Started exp at:2015-09-10 08:01:49.052280 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop', '-t']
+Conf: False 5 40 22.09 wordcount-hadoop Result: 2803.73646998
+
+
+
+
+================== Started exp at:2015-09-10 09:38:35.660975 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2613.8133049
+
+
+
+
+================== Started exp at:2015-09-10 23:40:40.095566 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2523.40045118
+
+
+
+
+================== Started exp at:2015-09-11 04:32:35.122068 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 3380.23826909
+
+
+
+
+================== Started exp at:2015-09-11 05:23:12.788712 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.38778614998
+
+
+
+
+================== Started exp at:2015-09-11 05:28:27.389475 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.39639687538
+
+
+
+
+================== Started exp at:2015-09-11 06:10:30.464568 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2289.17053485
+
+
+
+
+================== Started exp at:2015-09-11 07:08:03.702054 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2346.3403821
