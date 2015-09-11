@@ -45,6 +45,20 @@ def parse_args():
   (opts, args) = parser.parse_args()
   return opts
 
+def get_id_name_addr():
+  def get_internal(name):
+    return "ip-%s.ec2.internal" % run_and_get("host %s" % name)[1].split(" ")[3].replace(".", "-")
+
+  master = get_master()
+  slaves = get_slaves()
+
+  result = [["-1", master, get_internal(master)]]
+  for i in range(0, len(slaves)):
+    result.append([str(i), slaves[i], get_internal(slaves[i])])
+
+  return "\n".join([ " ".join(l) for l in result])
+
+
 def install_blktrace():
   install_if_not_exist = '''
       blktrace 2> /dev/null
@@ -189,6 +203,8 @@ def collect_trace(task):
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
 
+  with open("%s/addr_mapping.txt" % result_dir, "w") as f:
+    f.write("%s\n" % get_id_name_addr())
   slaves_run_parallel("for i in $(seq 0 7); do cat /mnt2/rmem_log/*.blktrace.$i > /mnt2/rmem_log/.disk_io.blktrace.$i; done; ")
   count = 0
   slaves = get_slaves()
@@ -857,7 +873,7 @@ def main():
   elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
-    print get_storm_perf()
+    print get_id_name_addr()
   else:
     print "Unknown task %s" % opts.task
 
