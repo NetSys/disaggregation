@@ -1891,3 +1891,17 @@ Conf: False 5 40 22.09 terasort Result: 2289.17053485
 ================== Started exp at:2015-09-11 07:08:03.702054 ==================
 Argument ['execute.py', '--task', 'terasort', '-t']
 Conf: False 5 40 22.09 terasort Result: 2346.3403821
+
+
+
+
+================== Started exp at:2015-09-11 22:39:21.769586 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 2103.78833604
+
+
+
+
+================== Started exp at:2015-09-11 23:30:33.147923 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 1524.84322309:811.202
