@@ -1558,3 +1558,8 @@ ExpStart: 2015-09-11 06:26:30.410256  Task: terasort  RmemGb: 22.09  BwGbps: 40 
 
 
 
+
+
+
+
+ExpStart: 2015-09-11 22:35:39.842512  Task: graphlab  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: graphlab  MinRamGb: -1.0  Runtime: 2505.0031991  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [109861548032,109864382464,125975355392,109365157888,108217073664]  Writes: [121982509056,121355108352,142144237568,119960166400,122487214080]  TraceDir: /mnt2/results/graphlab_150911231822
