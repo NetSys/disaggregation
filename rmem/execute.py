@@ -767,7 +767,7 @@ def execute(opts):
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
-    e2e_latency = [1, 20]
+    e2e_latency = [1, 5, 10, 20, 30, 40, 50]
     for el in e2e_latency:
       confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
   else:
