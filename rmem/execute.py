@@ -870,7 +870,7 @@ def main():
     setup_rmem(5, 40, 10, 0, True, False, "wordcount", opts.task)
   elif opts.task == "exit-rmem":
     clean_existing_rmem(40) 
-  elfi opts.task == "sync-rmem-code":
+  elif opts.task == "sync-rmem-code":
     sync_rmem_code()
 
   elif opts.task == "reconfig-hdfs":
