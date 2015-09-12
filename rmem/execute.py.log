@@ -1911,3 +1911,11 @@ Conf: False 5 40 22.09 wordcount Result: 2103.78833604
 ================== Started exp at:2015-09-11 23:30:33.147923 ==================
 Argument ['execute.py', '--task', 'memcached', '-t']
 Conf: False 5 40 22.09 memcached Result: 1524.84322309:811.202
+
+
+
+
+================== Started exp at:2015-09-12 04:47:26.124019 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
+Conf: False 0 0 22.09  20 Result: 1350.69876194:418.094
+Conf: False 0 0 22.09  1 Result: 1366.13453984:430.67
