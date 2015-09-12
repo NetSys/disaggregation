@@ -1825,6 +1825,9 @@ Conf: True 5 70 22.09  Result: 1815.97541904
 
 
 
+================== Started exp at:2015-09-10 07:41:28.342201 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2420.74630308
 ================== Started exp at:2015-09-10 07:36:36.495177 ==================
 Argument ['execute.py', '--task', 'terasort', '-t']
 Conf: False 5 40 22.09 terasort Result: 2412.37197995
@@ -1901,3 +1904,13 @@ Conf: False 5 40 22.09 terasort Result: 2346.3403821
 ================== Started exp at:2015-09-11 23:19:17.535396 ==================
 Argument ['execute.py', '--task', 'graphlab', '-t']
 Conf: False 5 40 22.09 graphlab Result: 2505.0031991
+================== Started exp at:2015-09-11 22:39:21.769586 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 2103.78833604
+
+
+
+
+================== Started exp at:2015-09-11 23:30:33.147923 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 1524.84322309:811.202
