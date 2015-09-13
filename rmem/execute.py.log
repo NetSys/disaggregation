@@ -1922,3 +1922,28 @@ Conf: False 5 40 22.09 memcached Result: 1524.84322309:811.202
 Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
 Conf: False 0 0 22.09  20 Result: 1350.69876194:418.094
 Conf: False 0 0 22.09  1 Result: 1366.13453984:430.67
+
+
+
+
+================== Started exp at:2015-09-12 15:19:50.197796 ==================
+Argument ['execute.py', '--task', 'graphlab', '--vary-e2e-latency']
+Conf: False 0 0 22.09  1 Result: 2364.97361398
+Conf: False 0 0 22.09  10 Result: 2851.78575397
+Conf: False 0 0 22.09  5 Result: 2456.57886696
+Conf: False 0 0 22.09  20 Result: 3157.34772801
+Conf: False 0 0 22.09  40 Result: 4341.86688089
+Conf: False 0 0 22.09  30 Result: 3739.29189897
+Conf: False 0 0 22.09  50 Result: 4805.05014205
+
+
+
+
+================== Started exp at:2015-09-13 16:06:41.155047 ==================
+Argument ['execute.py', '--task', 'graphlab', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 7726.12725091
+Conf: False 0 0 22.09  60 Result: 5389.8940618
+Conf: False 0 0 22.09  80 Result: 6484.14691997
+Conf: False 0 0 22.09  70 Result: 6102.70685101
+Conf: False 0 0 22.09  90 Result: 7166.72071099
+Conf: False 0 0 22.09  0 Result: 2374.59942389
