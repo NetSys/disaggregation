@@ -1922,3 +1922,28 @@ Conf: False 5 40 22.09 memcached Result: 1524.84322309:811.202
 Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
 Conf: False 0 0 22.09  20 Result: 1350.69876194:418.094
 Conf: False 0 0 22.09  1 Result: 1366.13453984:430.67
+
+
+
+
+================== Started exp at:2015-09-12 13:27:58.693212 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
+Conf: False 0 0 22.09  1 Result: 1361.99126005:784.534
+Conf: False 0 0 22.09  10 Result: 1339.91944909:762.12
+Conf: False 0 0 22.09  5 Result: 1305.61505699:724.242
+Conf: False 0 0 22.09  20 Result: 1350.71124196:776.598
+Conf: False 0 0 22.09  40 Result: 1471.11811209:844.804
+Conf: False 0 0 22.09  30 Result: 1395.77893806:801.424
+Conf: False 0 0 22.09  50 Result: 1571.26801109:911.988
+
+
+
+
+================== Started exp at:2015-09-13 11:34:23.425522 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 2015.44729614:1158.0
+Conf: False 0 0 22.09  60 Result: 1655.73922801:961.618
+Conf: False 0 0 22.09  80 Result: 1815.828439:1040.0
+Conf: False 0 0 22.09  70 Result: 1726.55370498:1008.292
+Conf: False 0 0 22.09  90 Result: 1899.74436402:1100.0
+Conf: False 0 0 22.09  0 Result: 1338.69685292:764.82
