@@ -769,12 +769,7 @@ def execute(opts):
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
-<<<<<<< HEAD
-#    e2e_latency = [1, 5, 10, 20, 30, 40, 50]
-    e2e_latency = [0, 60, 70, 80, 90, 100]
-=======
-    e2e_latency = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
->>>>>>> 25869a17304727f87df197974495619d590503c1
+    e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
       confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
   else:
