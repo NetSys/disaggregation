@@ -388,6 +388,7 @@ class ExpResult:
   rmem_gb = -1
   bw_gbps = -1
   latency_us = -1
+  e2e_latency_us = 0
   inject = -1
   trace = -1
   trace_dir = ""
@@ -401,7 +402,7 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -411,6 +412,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   result.rmem_gb = rmem_gb
   result.bw_gbps = bw_gbps
   result.latency_us = latency_us
+  result.e2e_latency_us = e2e_latency_us
   result.inject = inject
   result.trace = trace
   result.slowdown_cdf = slowdown_cdf
@@ -767,7 +769,7 @@ def execute(opts):
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
-    e2e_latency = [1, 5, 10, 20, 30, 40, 50]
+    e2e_latency = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
       confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
   else:
