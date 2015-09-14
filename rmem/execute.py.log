@@ -1833,3 +1833,10 @@ Conf: True 5 100 22.09  Result: 1811.22645688
 Conf: True 5 30 22.09  Result: 1804.21344495
 Conf: True 5 50 22.09  Result: 1814.36703992
 Conf: True 5 70 22.09  Result: 1815.97541904
+
+
+
+
+================== Started exp at:2015-09-10 07:25:40.597932 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 1391.06782389:793.474
