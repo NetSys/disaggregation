@@ -1522,3 +1522,125 @@ ExpStart: 2015-09-09 11:35:39.314609  Task: wordcount  RmemGb: 22.09  BwGbps: 10
 
 
 ExpStart: 2015-09-10 06:44:49.200348  Task: memcached  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: memcached  MinRamGb: -1.0  Runtime: 1391.06782389  MemCachedLatencyUs: 793.474  StormLatencyUs: -1  StormThroughput: -1  Reads: [28454162432,28805132288,29072285696,27835858944,29443850240]  Writes: [49708707840,50728017920,51781206016,48972300288,51469676544]  TraceDir: /mnt2/results/memcached_150910072502
+ExpStart: 2015-09-10 06:59:10.331588  Task: graphlab  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: graphlab  MinRamGb: -1.0  Runtime: 2420.74630308  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [109670084608,107492782080,102986141696,108327596032,106641821696]  Writes: [121678479360,121415757824,112077746176,121391788032,120489418752]  TraceDir: /mnt2/results/graphlab_150910074031
+
+ExpStart: 2015-09-10 06:53:49.327011  Task: terasort  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: terasort  MinRamGb: -1.0  Runtime: 2412.37197995  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [203297046528,205263400960,212397387776,215484182528,226875973632]  Writes: [329384415232,340427407360,354246668288,343565299712,345992110080]  TraceDir: /mnt2/results/terasort_150910073532
+ExpStart: 2015-09-10 05:56:28.853920  Task: wordcount  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: wordcount  MinRamGb: -1.0  Runtime: 1839.24465489  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [506811383808,486075355136,509498134528,486689083392,502077239296]  Writes: [443688087552,425387208704,444902113280,425729163264,440041148416]  TraceDir: /mnt2/results/wordcount_150910062800
+
+
+
+
+ExpStart: 2015-09-10 06:33:52.627584  Task: wordcount  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: wordcount  MinRamGb: -1.0  Runtime: 1834.68199301  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [497725222912,473270775808,511400202240,492169404416,504380952576]  Writes: [436415725568,414569865216,449296936960,431531827200,444341141504]  TraceDir: /mnt2/results/wordcount_150910070528
+
+
+
+
+ExpStart: 2015-09-10 07:12:56.121802  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: wordcount-hadoop  MinRamGb: -1.0  Runtime: 2803.73646998  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [70642139136,62066552832,66263416832,63728152576,63526363136]  Writes: [470592081920,404336803840,445655093248,445705822208,482006716416]  TraceDir: /mnt2/results/wordcount-hadoop_150910080032
+
+
+
+
+ExpStart: 2015-09-10 08:52:49.987394  Task: graphlab  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: graphlab  MinRamGb: -1.0  Runtime: 2613.8133049  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [115113697280,109557645312,117463076864,113100492800,112624984064]  Writes: [128120279040,121123868672,135885991936,127420796928,127379423232]  TraceDir: /mnt2/results/graphlab_150910093725
+
+
+
+
+ExpStart: 2015-09-10 22:54:45.674273  Task: terasort  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: terasort  MinRamGb: -1.0  Runtime: 2523.40045118  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [212087136256,213272936448,215851548672,199898120192,205016498176]  Writes: [330199531520,348425412608,348849750016,339600166912,328509124608]  TraceDir: /mnt2/results/terasort_150910233912
+
+
+
+
+ExpStart: 2015-09-11 03:33:49.143555  Task: terasort  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: terasort  MinRamGb: -1.0  Runtime: 3380.23826909  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [364174635008,349283999744,364211564544,400587616256,403581595648]  Writes: [479006593024,489266814976,497000353792,501143130112,531699851264]  TraceDir: /mnt2/results/terasort_150911043112
+
+
+
+
+ExpStart: 2015-09-11 05:22:07.501449  Task: wordcount  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: wordcount  MinRamGb: -1.0  Runtime: 3.38778614998  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: /mnt2/results/wordcount_150911052255
+
+
+
+
+
+
+
+
+ExpStart: 2015-09-11 05:27:25.035384  Task: wordcount  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: wordcount  MinRamGb: -1.0  Runtime: 3.39639687538  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: /mnt2/results/wordcount_150911052810
+
+
+
+
+ExpStart: 2015-09-11 05:29:57.212278  Task: terasort  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: terasort  MinRamGb: -1.0  Runtime: 2289.17053485  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [196971544576,193046282240,204631986176,206312988672,209594478592]  Writes: [338815000576,336081723392,334193463296,337737031680,363331174400]  TraceDir: /mnt2/results/terasort_150911060903
+
+
+
+
+ExpStart: 2015-09-11 06:26:30.410256  Task: terasort  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: terasort  MinRamGb: -1.0  Runtime: 2346.3403821  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [210783211520,194777239552,212492763136,208213590016,191372214272]  Writes: [332021587968,333389795328,345977241600,330289381376,337865158656]  TraceDir: /mnt2/results/terasort_150911070643
+
+
+
+
+ExpStart: 2015-09-11 22:02:14.280121  Task: wordcount  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: wordcount  MinRamGb: -1.0  Runtime: 2103.78833604  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [581150425088,572562096128,649459548160,551396216832,634286268416]  Writes: [505333329920,499636244480,564174536704,481717215232,544929419264]  TraceDir: /mnt2/results/wordcount_150911223818
+
+
+
+
+ExpStart: 2015-09-11 22:35:39.842512  Task: graphlab  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: graphlab  MinRamGb: -1.0  Runtime: 2505.0031991  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [109861548032,109864382464,125975355392,109365157888,108217073664]  Writes: [121982509056,121355108352,142144237568,119960166400,122487214080]  TraceDir: /mnt2/results/graphlab_150911231822
+ExpStart: 2015-09-11 22:46:33.720090  Task: memcached  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  Inject: False  Trace: True  SldCdf: memcached  MinRamGb: -1.0  Runtime: 1524.84322309  MemCachedLatencyUs: 811.202  StormLatencyUs: -1  StormThroughput: -1  Reads: [27863060480,28191465472,29938442240,29420400640,28329119744]  Writes: [49067556864,49791086592,52202401792,52473159680,50125099008]  TraceDir: /mnt2/results/memcached_150911232927
+
+
+
+
+ExpStart: 2015-09-12 03:26:39.388553  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1366.13453984  MemCachedLatencyUs: 430.67  StormLatencyUs: -1  StormThroughput: -1  Reads: [27682807808,27025096704,27501596672,27794587648,27733233664]  Writes: [49620836352,48448929792,48810332160,49139318784,49246851072]  TraceDir: 
+ExpStart: 2015-09-12 04:08:26.978526  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1350.69876194  MemCachedLatencyUs: 418.094  StormLatencyUs: -1  StormThroughput: -1  Reads: [27459608576,27722567680,27350351872,27203133440,27436974080]  Writes: [48859123712,49500155904,48369709056,48432394240,48478924800]  TraceDir: 
+
+
+
+
+
+
+
+
+
+
+
+
+ExpStart: 2015-09-12 07:31:21.707827  Task: wordcount  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1826.80350304  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [613114667008,486752428032,668346593280,589841969152,663236087808]  Writes: [530494550016,566842224640,588786569216,510330572800,591313088512]  TraceDir: 
+
+
+
+
+ExpStart: 2015-09-12 08:35:40.878218  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1361.99126005  MemCachedLatencyUs: 784.534  StormLatencyUs: -1  StormThroughput: -1  Reads: [25682976768,26210566144,25763422208,25391202304,26181267456]  Writes: [45768437760,46268166144,46650433536,45431930880,47055900672]  TraceDir: 
+ExpStart: 2015-09-12 09:14:27.687750  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1305.61505699  MemCachedLatencyUs: 724.242  StormLatencyUs: -1  StormThroughput: -1  Reads: [27748478976,25603584000,25932988416,25643823104,26845007872]  Writes: [48065843200,45498494976,46120775680,45895462912,47052046336]  TraceDir: 
+ExpStart: 2015-09-12 09:54:38.159834  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1339.91944909  MemCachedLatencyUs: 762.12  StormLatencyUs: -1  StormThroughput: -1  Reads: [26314145792,25476624384,26024972288,25845932032,26511876096]  Writes: [46372028416,45739720704,46821523456,46028664832,47542046720]  TraceDir: 
+ExpStart: 2015-09-12 10:34:59.829320  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1350.71124196  MemCachedLatencyUs: 776.598  StormLatencyUs: -1  StormThroughput: -1  Reads: [26869592064,25861943296,27407781888,26132582400,26185445376]  Writes: [48485851136,46117683200,49206636544,47253147648,46424563712]  TraceDir: 
+ExpStart: 2015-09-12 11:14:26.624757  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1395.77893806  MemCachedLatencyUs: 801.424  StormLatencyUs: -1  StormThroughput: -1  Reads: [27040866304,25972228096,25983000576,26280865792,27291594752]  Writes: [47575752704,46451912704,46148943872,46598262784,49120137216]  TraceDir: 
+ExpStart: 2015-09-12 11:55:48.932111  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1471.11811209  MemCachedLatencyUs: 844.804  StormLatencyUs: -1  StormThroughput: -1  Reads: [26503864320,26133467136,26381594624,26281787392,27692421120]  Writes: [47047983104,46751350784,46839136256,46644760576,48315125760]  TraceDir: 
+ExpStart: 2015-09-12 12:40:03.159906  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1571.26801109  MemCachedLatencyUs: 911.988  StormLatencyUs: -1  StormThroughput: -1  Reads: [26687754240,26440372224,27058049024,26361135104,26977595392]  Writes: [47299538944,47031144448,48804507648,46741594112,47454892032]  TraceDir: 
+
+ExpStart: 2015-09-12 08:35:15.816881  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 2364.97361398  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [106058219520,103810469888,103492308992,105902190592,109072932864]  Writes: [115970564096,113853952000,111801421824,116246265856,120582533120]  TraceDir: 
+ExpStart: 2015-09-12 09:16:06.636276  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 2456.57886696  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [104079724544,104505315328,104646283264,103165812736,103787245568]  Writes: [112492490752,116313587712,112892141568,113181065216,113022005248]  TraceDir: 
+ExpStart: 2015-09-12 09:58:11.813179  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 2851.78575397  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [128412196864,104956612608,105684578304,104816816128,104629149696]  Writes: [140054396928,116772864000,114116534272,116130390016,115865935872]  TraceDir: 
+ExpStart: 2015-09-12 10:46:51.652786  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 3157.34772801  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [104051728384,103270600704,104242814976,104575082496,105796268032]  Writes: [114764288000,113789734912,112910729216,114950418432,116356423680]  TraceDir: 
+ExpStart: 2015-09-12 11:40:44.649570  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 3739.29189897  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [103846457344,106004156416,104798777344,103543365632,110796488704]  Writes: [112388636672,118168715264,113364127744,115600207872,120133689344]  TraceDir: 
+ExpStart: 2015-09-12 12:44:20.319486  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 4341.86688089  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [106584604672,102988980224,103807582208,103282728960,105338286080]  Writes: [118122545152,113541619712,112221315072,115971428352,116747505664]  TraceDir: 
+ExpStart: 2015-09-12 13:58:14.016327  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 4805.05014205  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [103271780352,102819528704,103642181632,103538987008,104447102976]  Writes: [112594776064,113267875840,112085381120,114682826752,114345566208]  TraceDir: 
+
+
+
+
+ExpStart: 2015-09-13 06:08:54.510426  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 2374.59942389  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [109384368128,109374734336,106462175232,103660236800,105307922432]  Writes: [122805411840,119795482624,116167057408,115712421888,114658447360]  TraceDir: 
+ExpStart: 2015-09-13 06:49:40.613767  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 5389.8940618  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [102299906048,105271279616,103032606720,105547493376,105199267840]  Writes: [114107711488,118785712128,111697305600,117795971072,114537705472]  TraceDir: 
+ExpStart: 2015-09-13 08:21:20.452355  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 6102.70685101  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [103220797440,106487803904,107362680832,102019727360,104680525824]  Writes: [114561343488,115825479680,118271369216,113604988928,116853006336]  TraceDir: 
+ExpStart: 2015-09-13 10:04:42.765925  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 6484.14691997  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [104576823296,104312233984,103360233472,103469248512,106444472320]  Writes: [115614466048,117260259328,111656632320,115745730560,119624986624]  TraceDir: 
+ExpStart: 2015-09-13 11:54:27.798495  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 7166.72071099  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [107161882624,104543842304,103244079104,106687160320,104244658176]  Writes: [119448428544,115493117952,111362682880,117579649024,114438709248]  TraceDir: 
+ExpStart: 2015-09-13 13:55:59.124943  Task: graphlab  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 7726.12725091  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [105494298624,104004300800,105054277632,107307876352,104781213696]  Writes: [117231685632,115474096128,115796496384,119601557504,115399983104]  TraceDir: 
+
+
+
+
+ExpStart: 2015-09-13 06:09:37.175378  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1338.69685292  MemCachedLatencyUs: 764.82  StormLatencyUs: -1  StormThroughput: -1  Reads: [26907078656,24983556096,26403692544,25586008064,26195316736]  Writes: [48849289216,45368532992,47291121664,45958402048,46341480448]  TraceDir: 
+ExpStart: 2015-09-13 06:58:32.556085  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1655.73922801  MemCachedLatencyUs: 961.618  StormLatencyUs: -1  StormThroughput: -1  Reads: [26413764608,26186907648,26972479488,27050860544,27823845376]  Writes: [46950907904,46532059136,47440691200,47463276544,48487124992]  TraceDir: 
+ExpStart: 2015-09-13 07:48:45.517719  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1726.55370498  MemCachedLatencyUs: 1008.292  StormLatencyUs: -1  StormThroughput: -1  Reads: [27760152576,26728890368,27000283136,26506518528,27608227840]  Writes: [48394006528,47026925568,47517487104,46846697472,48180645888]  TraceDir: 
+ExpStart: 2015-09-13 08:40:50.605150  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1815.828439  MemCachedLatencyUs: 1040.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [27673042944,26567098368,26583683072,26682245120,26583916544]  Writes: [49596444672,46918443008,46944120832,47107366912,46895988736]  TraceDir: 
+ExpStart: 2015-09-13 09:36:14.591350  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1899.74436402  MemCachedLatencyUs: 1100.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [28093087744,26324779008,26651918336,26759667712,27054682112]  Writes: [50016243712,46594420736,46857142272,47054462976,47490187264]  TraceDir: 
+ExpStart: 2015-09-13 10:34:16.988765  Task: memcached  RmemGb: 22.09  BwGbps: 0  LatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 2015.44729614  MemCachedLatencyUs: 1158.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [26537725952,24885952512,26478350336,28987060224,27141545984]  Writes: [46957330432,45067530240,46753882112,50444726272,47710969856]  TraceDir: 

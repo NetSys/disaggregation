@@ -1840,3 +1840,146 @@ Conf: True 5 70 22.09  Result: 1815.97541904
 ================== Started exp at:2015-09-10 07:25:40.597932 ==================
 Argument ['execute.py', '--task', 'memcached', '-t']
 Conf: False 5 40 22.09 memcached Result: 1391.06782389:793.474
+================== Started exp at:2015-09-10 07:41:28.342201 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2420.74630308
+================== Started exp at:2015-09-10 07:36:36.495177 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2412.37197995
+================== Started exp at:2015-09-10 06:29:02.927169 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 1839.24465489
+
+
+
+
+================== Started exp at:2015-09-10 07:06:21.853259 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 1834.68199301
+
+
+
+
+================== Started exp at:2015-09-10 08:01:49.052280 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop', '-t']
+Conf: False 5 40 22.09 wordcount-hadoop Result: 2803.73646998
+
+
+
+
+================== Started exp at:2015-09-10 09:38:35.660975 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2613.8133049
+
+
+
+
+================== Started exp at:2015-09-10 23:40:40.095566 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2523.40045118
+
+
+
+
+================== Started exp at:2015-09-11 04:32:35.122068 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 3380.23826909
+
+
+
+
+================== Started exp at:2015-09-11 05:23:12.788712 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.38778614998
+
+
+
+
+================== Started exp at:2015-09-11 05:28:27.389475 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 3.39639687538
+
+
+
+
+================== Started exp at:2015-09-11 06:10:30.464568 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2289.17053485
+
+
+
+
+================== Started exp at:2015-09-11 07:08:03.702054 ==================
+Argument ['execute.py', '--task', 'terasort', '-t']
+Conf: False 5 40 22.09 terasort Result: 2346.3403821
+
+
+
+
+================== Started exp at:2015-09-11 23:19:17.535396 ==================
+Argument ['execute.py', '--task', 'graphlab', '-t']
+Conf: False 5 40 22.09 graphlab Result: 2505.0031991
+================== Started exp at:2015-09-11 22:39:21.769586 ==================
+Argument ['execute.py', '--task', 'wordcount', '-t']
+Conf: False 5 40 22.09 wordcount Result: 2103.78833604
+
+
+
+
+================== Started exp at:2015-09-11 23:30:33.147923 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 1524.84322309:811.202
+
+
+
+
+================== Started exp at:2015-09-12 04:47:26.124019 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
+Conf: False 0 0 22.09  20 Result: 1350.69876194:418.094
+Conf: False 0 0 22.09  1 Result: 1366.13453984:430.67
+
+
+
+
+================== Started exp at:2015-09-12 13:27:58.693212 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
+Conf: False 0 0 22.09  1 Result: 1361.99126005:784.534
+Conf: False 0 0 22.09  10 Result: 1339.91944909:762.12
+Conf: False 0 0 22.09  5 Result: 1305.61505699:724.242
+Conf: False 0 0 22.09  20 Result: 1350.71124196:776.598
+Conf: False 0 0 22.09  40 Result: 1471.11811209:844.804
+Conf: False 0 0 22.09  30 Result: 1395.77893806:801.424
+Conf: False 0 0 22.09  50 Result: 1571.26801109:911.988
+
+
+
+
+================== Started exp at:2015-09-13 11:34:23.425522 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 2015.44729614:1158.0
+Conf: False 0 0 22.09  60 Result: 1655.73922801:961.618
+Conf: False 0 0 22.09  80 Result: 1815.828439:1040.0
+Conf: False 0 0 22.09  70 Result: 1726.55370498:1008.292
+Conf: False 0 0 22.09  90 Result: 1899.74436402:1100.0
+Conf: False 0 0 22.09  0 Result: 1338.69685292:764.82
+================== Started exp at:2015-09-12 15:19:50.197796 ==================
+Argument ['execute.py', '--task', 'graphlab', '--vary-e2e-latency']
+Conf: False 0 0 22.09  1 Result: 2364.97361398
+Conf: False 0 0 22.09  10 Result: 2851.78575397
+Conf: False 0 0 22.09  5 Result: 2456.57886696
+Conf: False 0 0 22.09  20 Result: 3157.34772801
+Conf: False 0 0 22.09  40 Result: 4341.86688089
+Conf: False 0 0 22.09  30 Result: 3739.29189897
+Conf: False 0 0 22.09  50 Result: 4805.05014205
+
+
+
+
+================== Started exp at:2015-09-13 16:06:41.155047 ==================
+Argument ['execute.py', '--task', 'graphlab', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 7726.12725091
+Conf: False 0 0 22.09  60 Result: 5389.8940618
+Conf: False 0 0 22.09  80 Result: 6484.14691997
+Conf: False 0 0 22.09  70 Result: 6102.70685101
+Conf: False 0 0 22.09  90 Result: 7166.72071099
+Conf: False 0 0 22.09  0 Result: 2374.59942389

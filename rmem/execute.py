@@ -34,6 +34,7 @@ def parse_args():
   parser.add_option("--cdf", type="string", default="", help="Inject latency with slowdown")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
+  parser.add_option("--vary-e2e-latency", action="store_true", default=False, help="Experiment on different end to end latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--vary-bw-5us", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory")
@@ -44,6 +45,20 @@ def parse_args():
 
   (opts, args) = parser.parse_args()
   return opts
+
+def get_id_name_addr():
+  def get_internal(name):
+    return "ip-%s.ec2.internal" % run_and_get("host %s" % name)[1].split(" ")[3].replace(".", "-")
+
+  master = get_master()
+  slaves = get_slaves()
+
+  result = [["-1", master, get_internal(master)]]
+  for i in range(0, len(slaves)):
+    result.append([str(i), slaves[i], get_internal(slaves[i])])
+
+  return "\n".join([ " ".join(l) for l in result])
+
 
 def install_blktrace():
   install_if_not_exist = '''
@@ -100,11 +115,12 @@ def clean_existing_rmem(bw_gbps):
 
   slaves_run_bash(close_rmem)
 
-def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, task):
+def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, task):
   banner("setting up rmem")
   remote_page = int(rmem_gb * 1024 * 1024 * 1024 / 4096)
   bandwidth_bps = int(bw_gbps * 1000 * 1000 * 1000)
   latency_ns = latency_us * 1000
+  e2e_latency_ns = e2e_latency_us * 1000
   inject_int = 1 if inject or slowdown_cdf != "" else 0
   trace_int = 1 if trace else 0
 
@@ -138,9 +154,10 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, task):
 
       echo %d > /proc/sys/fs/rmem/bandwidth_bps;
       echo %d > /proc/sys/fs/rmem/latency_ns;
+      echo %d > /proc/sys/fs/rmem/end_to_end_latency_ns;
       echo %d > /proc/sys/fs/rmem/inject_latency;
       echo %d > /proc/sys/fs/rmem/get_record;
-      ''' % (remote_page, bandwidth_bps, latency_ns, inject_int, trace_int)
+      ''' % (remote_page, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int, trace_int)
     slaves_run_bash(install_rmem)
 
     if slowdown_cdf != "":
@@ -189,6 +206,8 @@ def collect_trace(task):
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
 
+  with open("%s/addr_mapping.txt" % result_dir, "w") as f:
+    f.write("%s\n" % get_id_name_addr())
   slaves_run_parallel("for i in $(seq 0 7); do cat /mnt2/rmem_log/*.blktrace.$i > /mnt2/rmem_log/.disk_io.blktrace.$i; done; ")
   count = 0
   slaves = get_slaves()
@@ -369,6 +388,7 @@ class ExpResult:
   rmem_gb = -1
   bw_gbps = -1
   latency_us = -1
+  e2e_latency_us = 0
   inject = -1
   trace = -1
   trace_dir = ""
@@ -382,9 +402,9 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=25):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
@@ -392,6 +412,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, pro
   result.rmem_gb = rmem_gb
   result.bw_gbps = bw_gbps
   result.latency_us = latency_us
+  result.e2e_latency_us = e2e_latency_us
   result.inject = inject
   result.trace = trace
   result.slowdown_cdf = slowdown_cdf
@@ -400,7 +421,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, pro
 
   clean_existing_rmem(bw_gbps)
 
-  setup_rmem(rmem_gb, bw_gbps, latency_us, inject, trace, slowdown_cdf, task)
+  setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, task)
 
   if trace:
     log_trace()
@@ -514,7 +535,7 @@ def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
   teragen(opts.teragen_size)
-  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, inject, False, opt.cdf, profile = True)
+  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, 0, inject, False, opt.cdf, profile = True)
 
 def terasort_vary_size(opts):
   sizes = [180, 150, 120, 90, 60, 30]
@@ -584,7 +605,7 @@ def disk_vary_size(opts):
         all_run("rm /mnt2/netflix_m/netflix_mm; mkdir -p /mnt2/netflix_m; ln -s /mnt2/nf%d.txt /mnt2/netflix_m/netflix_mm" % (conf[3]))
       elif opts.task == "wordcount":
         wordcount_prepare(conf[3])
-      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], conf[0], False, opt.cdf, memcached_size = conf[3]).get()
+      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opt.cdf, memcached_size = conf[3]).get()
       results[conf].append(time)
 
 
@@ -723,32 +744,36 @@ def reconfig_hdfs():
 def execute(opts):
 
   log("\n\n\n", level = 1)
-  confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf
+  confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf, e2e_latency
   if opts.vary_latency:
-    confs.append((False, 0, 0, opts.remote_memory, opts.cdf))
+    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     latencies = [1, 5, 10]
     bws = [100, 40, 10]
     for l in latencies:
       for b in bws:
-        confs.append((True, l, b, opts.remote_memory, opts.cdf))
+        confs.append((True, l, b, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_latency_40g:
     latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
     for l in latency_40g:
-      confs.append((True, l, 40, opts.remote_memory, opts.cdf))
+      confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_bw_5us:
     bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for b in bw_5us:
-      confs.append((True, 5, b, opts.remote_memory, opts.cdf))                  
+      confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0))                  
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
     local_rams.append(0.999)
     for r in local_rams:
-      confs.append((True, 1, 40, (1-r) * 29.45, opts.cdf))
+      confs.append((True, 1, 40, (1-r) * 29.45, opts.cdf, 0))
   elif opts.slowdown_cdf_exp:
-    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task))
-    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, ""))
+    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
+    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
+  elif opts.vary_e2e_latency:
+    e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    for el in e2e_latency:
+      confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
   else:
-    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.task))
+    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
  
   results = {}
   for conf in confs:
@@ -757,7 +782,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[0], opts.trace, conf[4]).get()
+      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4]).get()
       results[conf].append(time)
 
 
@@ -844,9 +869,11 @@ def main():
     reconfig_hdfs()
 
   elif opts.task == "init-rmem":
-    setup_rmem(5, 40, 10, True, False, "wordcount", opts.task)
+    setup_rmem(5, 40, 10, 0, True, False, "wordcount", opts.task)
   elif opts.task == "exit-rmem":
-    clean_existing_rmem(40)  
+    clean_existing_rmem(40) 
+  elif opts.task == "sync-rmem-code":
+    sync_rmem_code()
 
   elif opts.task == "reconfig-hdfs":
     reconfig_hdfs()
@@ -857,7 +884,7 @@ def main():
   elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
-    print get_storm_perf()
+    print get_id_name_addr()
   else:
     print "Unknown task %s" % opts.task
 

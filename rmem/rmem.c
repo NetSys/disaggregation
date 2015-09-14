@@ -72,7 +72,9 @@ u64 get_record = 0;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
- 
+
+u64 end_to_end_latency_ns = 0ULL;
+
 /* bandwidth in bps: default 10 Gbps */
 u64 bandwidth_bps = 10000000000ULL;
 
@@ -151,7 +153,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 	}
 
-	if(inject_latency)
+	if(inject_latency || end_to_end_latency_ns)
 		begin = sched_clock();
 
 	if (write) {
@@ -168,6 +170,15 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 				;
 			}
 		}
+
+    if(end_to_end_latency_ns)
+    {
+      while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
+      {
+        /* wait for transmission delay */
+        ;
+      }
+    }
 
 		
 
@@ -186,6 +197,16 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 				;
 			}
 		}
+
+    if(end_to_end_latency_ns)
+    {
+      while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
+      {
+        /* wait for transmission delay */
+        ;
+      }
+    }
+
 
 		if(get_record)
 			record.timestamp = record.timestamp * -1;
@@ -273,6 +294,13 @@ static ctl_table rmem_table[] = {
 		.procname	= "latency_ns",
 		.data		= &latency_ns,
 		.maxlen		= sizeof(latency_ns),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "end_to_end_latency_ns",
+		.data		= &end_to_end_latency_ns,
+		.maxlen		= sizeof(end_to_end_latency_ns),
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
 	},
