@@ -1968,3 +1968,22 @@ Conf: False 0 0 22.09  80 Result: 6484.14691997
 Conf: False 0 0 22.09  70 Result: 6102.70685101
 Conf: False 0 0 22.09  90 Result: 7166.72071099
 Conf: False 0 0 22.09  0 Result: 2374.59942389
+
+
+
+
+================== Started exp at:2015-09-14 09:16:34.320598 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 1944.28392887:1098.0
+Conf: False 0 0 22.09  1 Result: 1454.90539098:793.86
+Conf: False 0 0 22.09  10 Result: 1454.01737404:799.39
+Conf: False 0 0 22.09  5 Result: 1410.65473485:787.87
+Conf: False 0 0 22.09  60 Result: 1631.03926897:958.88
+Conf: False 0 0 22.09  80 Result: 1815.27218103:1022.366
+Conf: False 0 0 22.09  20 Result: 1406.11999106:806.77
+Conf: False 0 0 22.09  70 Result: 1776.28460288:1005.688
+Conf: False 0 0 22.09  40 Result: 1581.96459603:893.184
+Conf: False 0 0 22.09  90 Result: 1879.43527794:1063.398
+Conf: False 0 0 22.09  30 Result: 1570.67982697:884.778
+Conf: False 0 0 22.09  0 Result: 1431.40927219:796.822
+Conf: False 0 0 22.09  50 Result: 1601.73159099:916.082
