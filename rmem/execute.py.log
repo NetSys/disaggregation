@@ -1806,6 +1806,18 @@ Conf: False 5 40 22.09 memcached Result: 1319.68692279:744.398
 
 
 
+================== Started exp at:2015-09-09 12:36:51.886197 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-bw-5us']
+Conf: True 5 90 22.09  Result: 1204.72502804:634.076
+Conf: True 5 20 22.09  Result: 1274.78568697:650.234
+Conf: True 5 40 22.09  Result: 1194.32435107:631.946
+Conf: True 5 60 22.09  Result: 1245.97495794:646.628
+Conf: True 5 80 22.09  Result: 1264.71732616:649.954
+Conf: True 5 10 22.09  Result: 1285.0806849:670.632
+Conf: True 5 100 22.09  Result: 1210.97929406:631.81
+Conf: True 5 30 22.09  Result: 1256.38565993:641.654
+Conf: True 5 50 22.09  Result: 1225.14702702:633.9
+Conf: True 5 70 22.09  Result: 1244.85940289:638.88
 ================== Started exp at:2015-09-09 23:48:20.155561 ==================
 Argument ['execute.py', '--task', 'wordcount-hadoop']
 Conf: False 5 40 22.09 wordcount-hadoop Result: 2596.9747808
@@ -1825,6 +1837,9 @@ Conf: True 5 70 22.09  Result: 1815.97541904
 
 
 
+================== Started exp at:2015-09-10 07:25:40.597932 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 1391.06782389:793.474
 ================== Started exp at:2015-09-10 07:41:28.342201 ==================
 Argument ['execute.py', '--task', 'graphlab', '-t']
 Conf: False 5 40 22.09 graphlab Result: 2420.74630308
