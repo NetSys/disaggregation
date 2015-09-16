@@ -58,6 +58,7 @@ typedef struct
 	long timestamp; 
 	int page;
 	int length;
+  int count;
 } access_record;
 
 typedef struct
@@ -71,7 +72,9 @@ u64 get_record = 0;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
- 
+
+u64 end_to_end_latency_ns = 0ULL;
+
 /* bandwidth in bps: default 10 Gbps */
 u64 bandwidth_bps = 10000000000ULL;
 
@@ -123,7 +126,7 @@ static u64 get_slowdown(void)
  * Handle an I/O request.
  */
 static void rmem_transfer(struct rmem_device *dev, sector_t sector,
-		unsigned long nsect, char *buffer, int write, u64 slowdown) 
+		unsigned long nsect, char *buffer, int write, u64 slowdown, int count) 
 {
 	int i;
 	int page;
@@ -150,7 +153,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 	}
 
-	if(inject_latency)
+	if(inject_latency || end_to_end_latency_ns)
 		begin = sched_clock();
 
 	if (write) {
@@ -167,6 +170,15 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 				;
 			}
 		}
+
+    if(end_to_end_latency_ns)
+    {
+      while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
+      {
+        /* wait for transmission delay */
+        ;
+      }
+    }
 
 		
 
@@ -186,6 +198,16 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
+    if(end_to_end_latency_ns)
+    {
+      while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
+      {
+        /* wait for transmission delay */
+        ;
+      }
+    }
+
+
 		if(get_record)
 			record.timestamp = record.timestamp * -1;
 
@@ -195,6 +217,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 	if(get_record){
 		record.page = page;
 		record.length = npage;
+    record.count = count;
 	
 		spin_lock(&log_lock);
 		request_log[log_head] = record;
@@ -211,6 +234,7 @@ static void rmem_request(struct request_queue *q)
 	struct request *req;
 	u64 begin = 0ULL;
 	u64 slowdown = 10000;
+  int count = 0;
 
 	if(inject_latency){
 		begin = sched_clock();
@@ -232,7 +256,8 @@ static void rmem_request(struct request_queue *q)
 			continue;
 		}
 		rmem_transfer(&device, blk_rq_pos(req), blk_rq_cur_sectors(req),
-				req->buffer, rq_data_dir(req), slowdown);
+				req->buffer, rq_data_dir(req), slowdown, count);
+    count++;
 		if ( ! __blk_end_request_cur(req, 0) ) {
 			req = blk_fetch_request(q);
 		}
@@ -269,6 +294,13 @@ static ctl_table rmem_table[] = {
 		.procname	= "latency_ns",
 		.data		= &latency_ns,
 		.maxlen		= sizeof(latency_ns),
+		.mode		= 0644,
+		.proc_handler	= proc_doulongvec_minmax,
+	},
+	{
+		.procname	= "end_to_end_latency_ns",
+		.data		= &end_to_end_latency_ns,
+		.maxlen		= sizeof(end_to_end_latency_ns),
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
 	},
@@ -361,8 +393,8 @@ static int log_show(struct seq_file *m, void *v)
 	int i;
 	spin_lock(&log_lock);
 	for(i = 0; i < 10 && log_tail != log_head; i++){
-		seq_printf(m, "%d %ld %d %d %lu\n", log_tail, request_log[log_tail].timestamp, 
-		request_log[log_tail].page, request_log[log_tail].length, PAGE_SIZE); 
+		seq_printf(m, "%d %ld %d %d %d\n", log_tail, request_log[log_tail].timestamp, 
+		request_log[log_tail].page, request_log[log_tail].length, request_log[log_tail].count); 
 		log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
 	}
 	spin_unlock(&log_lock);
