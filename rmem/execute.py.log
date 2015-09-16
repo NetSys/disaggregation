@@ -1983,3 +1983,19 @@ Conf: False 0 0 22.09  80 Result: 6484.14691997
 Conf: False 0 0 22.09  70 Result: 6102.70685101
 Conf: False 0 0 22.09  90 Result: 7166.72071099
 Conf: False 0 0 22.09  0 Result: 2374.59942389
+
+
+
+
+================== Started exp at:2015-09-14 10:58:40.956658 ==================
+Argument ['execute.py', '--task', 'terasort', '--vary-remote-mem', '-t']
+Conf: True 1 40 14.725  0 Result: 1683.6410079
+Conf: True 1 40 5.89  0 Result: 1654.6604929
+Conf: True 1 40 2.945  0 Result: 1689.43985891
+Conf: True 1 40 20.615  0 Result: 1935.89475679
+Conf: True 1 40 23.56  0 Result: 2400.68147302
+Conf: True 1 40 8.835  0 Result: 1646.51010394
+Conf: True 1 40 17.67  0 Result: 1803.77320099
+Conf: True 1 40 0.002945  0 Result: 1643.77646303
+Conf: True 1 40 11.78  0 Result: 1715.70993018
+Conf: True 1 40 26.505  0 Result: 3346.07666397
