@@ -1726,3 +1726,24 @@ Conf: False 5 40 22.09 memcached Result: 6502.01981902:738.27
 ================== Started exp at:2015-09-09 05:09:50.897780 ==================
 Argument ['execute.py', '--task', 'memcached', '-t']
 Conf: False 5 40 22.09 memcached Result: 1319.68692279:744.398
+
+
+
+
+================== Started exp at:2015-09-09 06:21:43.547703 ==================
+Argument ['execute.py', '--task', 'memcached', '-t']
+Conf: False 5 40 22.09 memcached Result: 1357.38665485:758.43
+
+
+
+
+================== Started exp at:2015-09-09 12:14:58.572840 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-latency-40g']
+Conf: True 60 40 22.09  Result: 1391.76404977:790.942
+Conf: True 10 40 22.09  Result: 1310.52470303:742.254
+Conf: True 5 40 22.09  Result: 1403.58353186:746.442
+Conf: True 100 40 22.09  Result: 1565.69515705:873.158
+Conf: True 1 40 22.09  Result: 1261.16520309:710.534
+Conf: True 40 40 22.09  Result: 1346.77546906:760.768
+Conf: True 20 40 22.09  Result: 1361.7421391:756.886
+Conf: True 80 40 22.09  Result: 1493.458009:834.528
