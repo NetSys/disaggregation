@@ -1968,3 +1968,22 @@ Conf: False 0 0 22.09  80 Result: 6484.14691997
 Conf: False 0 0 22.09  70 Result: 6102.70685101
 Conf: False 0 0 22.09  90 Result: 7166.72071099
 Conf: False 0 0 22.09  0 Result: 2374.59942389
+
+
+
+
+================== Started exp at:2015-09-14 17:08:38.319746 ==================
+Argument ['execute.py', '--task', 'terasort', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 8085.30897117
+Conf: False 0 0 22.09  1 Result: 2287.81662202
+Conf: False 0 0 22.09  10 Result: 2588.84742093
+Conf: False 0 0 22.09  5 Result: 2494.89441109
+Conf: False 0 0 22.09  60 Result: 5716.32824087
+Conf: False 0 0 22.09  80 Result: 6991.22035384
+Conf: False 0 0 22.09  20 Result: 3446.66283011
+Conf: False 0 0 22.09  70 Result: 6589.85156703
+Conf: False 0 0 22.09  40 Result: 4358.50184798
+Conf: False 0 0 22.09  90 Result: 9248.87733221
+Conf: False 0 0 22.09  30 Result: 3891.98972702
+Conf: False 0 0 22.09  0 Result: 3111.68134212
+Conf: False 0 0 22.09  50 Result: 5039.92452502
