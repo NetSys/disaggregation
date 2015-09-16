@@ -2023,3 +2023,30 @@ Conf: False 5 40 22.09 terasort 0 Result: 1768.86260986
 ================== Started exp at:2015-09-16 00:58:29.560719 ==================
 Argument ['execute.py', '--task', 'terasort']
 Conf: False 5 40 22.09 terasort 0 Result: 1940.96189117
+================== Started exp at:2015-09-14 10:58:40.956658 ==================
+Argument ['execute.py', '--task', 'terasort', '--vary-remote-mem', '-t']
+Conf: True 1 40 14.725  0 Result: 1683.6410079
+Conf: True 1 40 5.89  0 Result: 1654.6604929
+Conf: True 1 40 2.945  0 Result: 1689.43985891
+Conf: True 1 40 20.615  0 Result: 1935.89475679
+Conf: True 1 40 23.56  0 Result: 2400.68147302
+Conf: True 1 40 8.835  0 Result: 1646.51010394
+Conf: True 1 40 17.67  0 Result: 1803.77320099
+Conf: True 1 40 0.002945  0 Result: 1643.77646303
+Conf: True 1 40 11.78  0 Result: 1715.70993018
+Conf: True 1 40 26.505  0 Result: 3346.07666397
+================== Started exp at:2015-09-14 17:08:38.319746 ==================
+Argument ['execute.py', '--task', 'terasort', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 8085.30897117
+Conf: False 0 0 22.09  1 Result: 2287.81662202
+Conf: False 0 0 22.09  10 Result: 2588.84742093
+Conf: False 0 0 22.09  5 Result: 2494.89441109
+Conf: False 0 0 22.09  60 Result: 5716.32824087
+Conf: False 0 0 22.09  80 Result: 6991.22035384
+Conf: False 0 0 22.09  20 Result: 3446.66283011
+Conf: False 0 0 22.09  70 Result: 6589.85156703
+Conf: False 0 0 22.09  40 Result: 4358.50184798
+Conf: False 0 0 22.09  90 Result: 9248.87733221
+Conf: False 0 0 22.09  30 Result: 3891.98972702
+Conf: False 0 0 22.09  0 Result: 3111.68134212
+Conf: False 0 0 22.09  50 Result: 5039.92452502
