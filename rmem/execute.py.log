@@ -2002,3 +2002,24 @@ Conf: False 0 0 22.09  90 Result: 1879.43527794:1063.398
 Conf: False 0 0 22.09  30 Result: 1570.67982697:884.778
 Conf: False 0 0 22.09  0 Result: 1431.40927219:796.822
 Conf: False 0 0 22.09  50 Result: 1601.73159099:916.082
+
+
+
+
+================== Started exp at:2015-09-15 19:43:30.492814 ==================
+Argument ['execute.py', '--task', 'memcached']
+Conf: False 5 40 22.09 memcached 0 Result: 1335.604599:739.008
+
+
+
+
+================== Started exp at:2015-09-16 00:19:29.930186 ==================
+Argument ['execute.py', '--task', 'terasort']
+Conf: False 5 40 22.09 terasort 0 Result: 1768.86260986
+
+
+
+
+================== Started exp at:2015-09-16 00:58:29.560719 ==================
+Argument ['execute.py', '--task', 'terasort']
+Conf: False 5 40 22.09 terasort 0 Result: 1940.96189117

@@ -1,6 +1,6 @@
 
 def set_memcached_size(size_gb):
-  record = int(size_gb * 1024 * 1024 * 1024 / 1024)
+  record = int(size_gb * 1024 * 1024 * 1024 / 10240)
   workload = '''
 db=com.yahoo.ycsb.db.SpymemcachedClient
 memcached.address=/root/spark-ec2/slaves
@@ -22,7 +22,7 @@ scanproportion=0
 
 memgetproportion=0.100
 memupdateproportion=0.0
-valuelength=1024
+valuelength=10240
 
 workingset=%d
 churndelta=%d
@@ -33,7 +33,7 @@ requestdistribution=zipfian
 
 threadcount=8
 target=100000
-''' % (record, 5*record, int(1.0*record), int(1.0*record))
+''' % (record, 5*record, int(0.5*record), int(0.5*record))
   f = open("/root/disaggregation/apps/memcached/workloads/running","w")
   f.write(workload)
   f.close()
