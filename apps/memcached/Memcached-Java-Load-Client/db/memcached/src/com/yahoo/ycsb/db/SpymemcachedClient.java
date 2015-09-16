@@ -29,10 +29,12 @@ public class SpymemcachedClient extends Memcached {
 	Random random;
 	boolean verbose;
 	int todelay;
+  int err_count;
 
 	public SpymemcachedClient() {
 		random = new Random();
 		todelay = 0;
+    err_count = 0;
 	}
 	
 	/**
@@ -43,7 +45,7 @@ public class SpymemcachedClient extends Memcached {
 		int membaseport = Config.getConfig().memcached_port;
 		String addr_file = Config.getConfig().memcached_address;
 
-/*
+
     String[] lines = null;
     try{
       File file = new File(addr_file);
@@ -67,12 +69,13 @@ public class SpymemcachedClient extends Memcached {
     }
 		
     System.out.println("Addresses:" + sb.toString());
-*/
+
 		try {
-			//InetSocketAddress ia = new InetSocketAddress(InetAddress.getByName(addr), membaseport);
-			//client = new MemcachedClient(ia);
-      client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses("localhost:" + membaseport));
-      //client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses(sb.toString()));
+      //local mode
+      //client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses("localhost:" + membaseport));
+
+      //dist mode
+      client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses(sb.toString()));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e1) {
@@ -89,7 +92,10 @@ public class SpymemcachedClient extends Memcached {
 	public int add(String key, Object value) {
 		try {
 			if (!client.add(key, 0, value).get().booleanValue()) {
-				System.out.println("ADD: error getting data");
+        if(err_count < 100){
+				  System.out.println("ADD: error getting data");
+          err_count++;
+        }
 				return -1;
 			}
 		} catch (InterruptedException e) {
@@ -109,7 +115,10 @@ public class SpymemcachedClient extends Memcached {
 		//long time = System.nanoTime();
 		try {
 			if (f.get() == null) {
-				System.out.println("GET: error getting data");
+        if(err_count < 100){
+				  System.out.println("GET: error getting data");
+          err_count++;
+        }
 				return -1;
 			}
 		} catch (InterruptedException e) {
@@ -166,7 +175,10 @@ public class SpymemcachedClient extends Memcached {
 	public int set(String key, Object value) {
 		try {
 			if (!client.set(key, 0, value).get().booleanValue()) {
-				System.out.println("SET: error getting data");
+        if(err_count < 100){
+				  System.out.println("SET: error getting data");
+          err_count++;
+        }
 				return -1;
 			}
 		} catch (InterruptedException e) {
@@ -193,7 +205,10 @@ public class SpymemcachedClient extends Memcached {
 	public int append(String key, long cas, Object value) {
 		try {
 			if (!client.append(cas, key, value).get().booleanValue())
-				System.out.println("APPEND: error getting data");
+        if(err_count < 100){
+				  System.out.println("APPEND: error getting data");
+          err_count++;
+        }
 				return -1;
 		} catch (InterruptedException e) {
 			System.out.println("APPEND Interrupted");
@@ -208,7 +223,10 @@ public class SpymemcachedClient extends Memcached {
 	@Override
 	public int cas(String key, long cas, Object value) {
 		if (!client.cas(key, cas, value).equals(CASResponse.OK)) {
-			System.out.println("CAS: error getting data");
+      if(err_count < 100){
+			  System.out.println("CAS: error getting data");
+        err_count++;
+      }
 			return -1;
 		}
 		return 0;
@@ -233,7 +251,10 @@ public class SpymemcachedClient extends Memcached {
 	public long gets(String key) {
 		long cas = client.gets(key).getCas();
 		if (cas < 0) {
-			System.out.println("GETS: error getting data");
+      if(err_count < 100){
+			  System.out.println("GETS: error getting data");
+        err_count++;
+      }
 			return -1;
 		}
 		return cas;
@@ -258,7 +279,10 @@ public class SpymemcachedClient extends Memcached {
 	public int replace(String key, Object value) {
 		try {
 			if (!client.replace(key, 0, value).get().booleanValue()) {
-				System.out.println("REPLACE: error getting data");
+        if(err_count < 100){
+				  System.out.println("REPLACE: error getting data");
+          err_count++;
+        }
 				return -1;
 			}
 		} catch (InterruptedException e) {
