@@ -1947,3 +1947,57 @@ Conf: False 0 0 22.09  80 Result: 6484.14691997
 Conf: False 0 0 22.09  70 Result: 6102.70685101
 Conf: False 0 0 22.09  90 Result: 7166.72071099
 Conf: False 0 0 22.09  0 Result: 2374.59942389
+
+
+
+
+================== Started exp at:2015-09-14 15:26:51.952019 ==================
+Argument ['execute.py', '--task', 'graphlab', '--vary-e2e-latency']
+Conf: False 0 0 22.09  100 Result: 7530.45182395
+Conf: False 0 0 22.09  1 Result: 2424.77888489
+Conf: False 0 0 22.09  10 Result: 2849.60085416
+Conf: False 0 0 22.09  5 Result: 2631.6884582
+Conf: False 0 0 22.09  60 Result: 5269.34555912
+Conf: False 0 0 22.09  80 Result: 6439.05885506
+Conf: False 0 0 22.09  20 Result: 3305.39973593
+Conf: False 0 0 22.09  70 Result: 5879.62379599
+Conf: False 0 0 22.09  40 Result: 4404.4768548
+Conf: False 0 0 22.09  90 Result: 6898.3682301
+Conf: False 0 0 22.09  30 Result: 3786.31655908
+Conf: False 0 0 22.09  0 Result: 2373.95239305
+Conf: False 0 0 22.09  50 Result: 4810.98169208
+
+
+
+
+================== Started exp at:2015-09-15 23:56:23.957995 ==================
+Argument ['execute.py', '--task', 'wordcount']
+Conf: False 5 40 22.09 wordcount 0 Result: 1753.11308694
+
+
+
+
+================== Started exp at:2015-09-16 00:41:24.513493 ==================
+Argument ['execute.py', '--task', 'wordcount']
+Conf: False 5 40 22.09 wordcount 0 Result: 1732.62288404
+
+
+
+
+================== Started exp at:2015-09-16 01:15:17.108619 ==================
+Argument ['execute.py', '--task', 'wordcount', '-l', '0', '-b', '10000']
+Conf: False 0 10000.0 22.09 wordcount 0 Result: 1579.54901505
+
+
+
+
+================== Started exp at:2015-09-16 02:20:32.958981 ==================
+Argument ['execute.py', '--task', 'graphlab', '-l', '0', '-b', '10000']
+Conf: False 0 10000.0 22.09 graphlab 0 Result: 2298.35601783
+
+
+
+
+================== Started exp at:2015-09-16 03:43:06.888616 ==================
+Argument ['execute.py', '--task', 'memcached', '-l', '0', '-b', '10000']
+Conf: False 0 10000.0 22.09 memcached 0 Result: 1360.92514014:790.978
