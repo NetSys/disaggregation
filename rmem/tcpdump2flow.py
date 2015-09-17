@@ -8,14 +8,16 @@ class Flow:
   end = ""
   src = ""
   dst = ""
+  proto = ""
 
-  def __init__(self, src, dst, start):
+  def __init__(self, src, dst, start, proto):
     self.src = src
     self.dst = dst
     self.start = start
+    self.proto = proto
 
   def __str__(self):
-    return "%s %s %s %s %s" % (self.start, self.end, self.src, self.dst, self.size)
+    return "%s %s %s %s %s %s" % (self.start, self.end, self.src, self.dst, self.size, self.proto)
 
 flows = {}
 
@@ -33,12 +35,19 @@ while True:
       src = arr[2]
       dst = arr[4].replace(":","")
       proto = "udp" if "UDP," in arr else "tcp"
-      key = (src, dst, proto)
-      if key not in flows:
-        flows[key] = Flow(src, dst, "%9f" % time.time())
-      flows[key].size += int(arr[length_index+1])
-      flows[key].end = "%9f" % time.time()
-      #print line
+      if "memcache" in src or "memcache" in dst:
+        curr_time = "%9f" % time.time()
+        f = Flow(src, dst, curr_time, proto)
+        f.size = int(arr[length_index+1])
+        f.end = curr_time
+        print str(f)
+      else:
+        key = (src, dst, proto)
+        if key not in flows:
+          flows[key] = Flow(src, dst, "%9f" % time.time(), proto)
+        flows[key].size += int(arr[length_index+1])
+        flows[key].end = "%9f" % time.time()
+        #print line
 
 for f in flows.itervalues():
   print str(f)

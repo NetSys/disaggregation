@@ -41,7 +41,7 @@ def parse_args():
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
-  parser.add_option("--teragen-size", type="float", default=150.0, help="Sort input data size (GB)")
+  parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -388,6 +388,7 @@ class ExpResult:
   rmem_gb = -1
   bw_gbps = -1
   latency_us = -1
+  e2e_latency_us = 0
   inject = -1
   trace = -1
   trace_dir = ""
@@ -401,7 +402,7 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -411,6 +412,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   result.rmem_gb = rmem_gb
   result.bw_gbps = bw_gbps
   result.latency_us = latency_us
+  result.e2e_latency_us = e2e_latency_us
   result.inject = inject
   result.trace = trace
   result.slowdown_cdf = slowdown_cdf
@@ -464,12 +466,14 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     time_used = time.time() - start_time
 
   elif task == "memcached":
-    slaves_run("memcached -d -m 26000 -u root")
+    slaves_run("memcached -d -m 27000 -u root")
     set_memcached_size(memcached_size)
     run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
     thrd = threading.Thread(target=memcached_kill_loadgen, args=(time.time() + 25 * 60,))
     thrd.start()
+    print "Loadgen started at %s" % time.strftime("%c")
     slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -load -P workloads/running")
+    print "Loadgen finished at %s" % time.strftime("%c")
     memcached_kill_loadgen_on = False
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
@@ -752,23 +756,24 @@ def execute(opts):
         confs.append((True, l, b, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_latency_40g:
     latency_40g = [1, 5, 10, 20, 40, 60, 80, 100]
+    confs.append((False, 0, 40, opts.remote_memory, opts.cdf, 0))
     for l in latency_40g:
       confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_bw_5us:
     bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    confs.append((False, 5, 1000, opts.remote_memory, opts.cdf, 0))
     for b in bw_5us:
       confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0))                  
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
-    local_rams.append(0.999)
+    local_rams.append(0.9999)
     for r in local_rams:
       confs.append((True, 1, 40, (1-r) * 29.45, opts.cdf, 0))
   elif opts.slowdown_cdf_exp:
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
     confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
-#    e2e_latency = [1, 5, 10, 20, 30, 40, 50]
-    e2e_latency = [0, 60, 70, 80, 90, 100]
+    e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
       confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
   else:
@@ -883,7 +888,7 @@ def main():
   elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
-    print get_id_name_addr()
+    collect_trace("memcached")
   else:
     print "Unknown task %s" % opts.task
 
