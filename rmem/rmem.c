@@ -153,8 +153,6 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 	}
 
-	if(inject_latency || end_to_end_latency_ns)
-		begin = sched_clock();
 
 	if (write) {
 		spin_lock(&tx_lock);
@@ -164,6 +162,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		atomic64_add(npage * PAGE_SIZE, &counter_write);
 
 		if(inject_latency){
+		  begin = sched_clock();
 			while ((sched_clock() - begin) < 
 					(((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) * slowdown / 10000) {
 				/* wait for transmission delay */
@@ -173,6 +172,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 
     if(end_to_end_latency_ns)
     {
+		  begin = sched_clock();
       while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
       {
         /* wait for transmission delay */
@@ -191,6 +191,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		atomic64_add(npage * PAGE_SIZE, &counter_read);
 		
 		if (inject_latency){
+		  begin = sched_clock();
 			while ((sched_clock() - begin) < 
 					(((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) * slowdown / 10000) {
 				/* wait for transmission delay */
@@ -200,6 +201,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 
     if(end_to_end_latency_ns)
     {
+		  begin = sched_clock();
       while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
       {
         /* wait for transmission delay */

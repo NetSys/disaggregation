@@ -2147,3 +2147,20 @@ Conf: False 0 0 22.09  90 Result: 9248.87733221
 Conf: False 0 0 22.09  30 Result: 3891.98972702
 Conf: False 0 0 22.09  0 Result: 3111.68134212
 Conf: False 0 0 22.09  50 Result: 5039.92452502
+
+
+
+
+================== Started exp at:2015-09-18 05:49:25.294431 ==================
+Argument ['execute.py', '--task', 'memcached', '--vary-bw-5us']
+Conf: True 5 50 22.09  0 Result: 1264.740242:677.5
+Conf: True 5 100 22.09  0 Result: 1221.02515602:664.16
+Conf: True 5 90 22.09  0 Result: 1820.41832018:1034.908
+Conf: True 5 40 22.09  0 Result: 1294.56740212:684.028
+Conf: True 5 30 22.09  0 Result: 1864.72641397:1040.154
+Conf: True 5 80 22.09  0 Result: 1944.69540215:1056.716
+Conf: False 5 1000 22.09  0 Result: 2636.079566:1396.0
+Conf: True 5 70 22.09  0 Result: 1902.37208819:1046.564
+Conf: True 5 20 22.09  0 Result: 1989.25694394:1080.0
+Conf: True 5 10 22.09  0 Result: 2725.99755597:1502.0
+Conf: True 5 60 22.09  0 Result: 1845.87548804:1039.014

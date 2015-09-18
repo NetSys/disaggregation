@@ -760,7 +760,8 @@ def execute(opts):
     for l in latency_40g:
       confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_bw_5us:
-    bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+#    bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    bw_5us = [10, 20, 40, 60, 80, 100]
     confs.append((False, 5, 1000, opts.remote_memory, opts.cdf, 0))
     for b in bw_5us:
       confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0))                  

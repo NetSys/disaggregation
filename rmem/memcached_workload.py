@@ -33,7 +33,7 @@ requestdistribution=zipfian
 
 threadcount=8
 target=100000
-''' % (record, 5*record, int(0.5*record), int(0.5*record))
+''' % (record, 5*record, int(record), int(record))
   f = open("/root/disaggregation/apps/memcached/workloads/running","w")
   f.write(workload)
   f.close()
