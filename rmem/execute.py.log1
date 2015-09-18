@@ -1922,3 +1922,19 @@ ExpStart: 2015-09-18 05:10:42.759311  Task: memcached  RmemGb: 22.09  BwGbps: 10
 
 
 ExpStart: 2015-09-18 06:03:38.048065  Task: memcached  RmemGb: 22.09  BwGbps: 1000  LatencyUs: 5  E2eLatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 2600.8427  MemCachedLatencyUs: 1418.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [28967092224,29909921792,11978444800,10559115264,289810124800]  Writes: [51399421952,53307932672,35133300736,33634574336,319698800640]  TraceDir: 
+
+
+
+
+ExpStart: 2015-09-18 08:10:15.049236  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 1000  LatencyUs: 5  E2eLatencyUs: 0  Inject: False  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1601.68901396  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+ExpStart: 2015-09-18 08:38:12.899696  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 10  LatencyUs: 5  E2eLatencyUs: 0  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1604.42768002  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+ExpStart: 2015-09-18 09:05:59.231098  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 20  LatencyUs: 5  E2eLatencyUs: 0  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1600.45438099  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+ExpStart: 2015-09-18 09:33:32.163007  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  E2eLatencyUs: 0  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1600.39262009  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+ExpStart: 2015-09-18 10:01:08.848668  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 60  LatencyUs: 5  E2eLatencyUs: 0  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1605.47656798  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+ExpStart: 2015-09-18 10:29:13.524126  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 80  LatencyUs: 5  E2eLatencyUs: 0  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1603.51254416  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+ExpStart: 2015-09-18 10:56:54.165013  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 100  LatencyUs: 5  E2eLatencyUs: 0  Inject: True  Trace: False  SldCdf:   MinRamGb: -1.0  Runtime: 1600.4227519  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 
+
+
+
+
+ExpStart: 2015-09-18 17:56:45.679540  Task: wordcount-hadoop  RmemGb: 22.09  BwGbps: 40  LatencyUs: 5  E2eLatencyUs: 0  Inject: False  Trace: False  SldCdf: wordcount-hadoop  MinRamGb: -1.0  Runtime: 1603.41342783  MemCachedLatencyUs: -1.0  StormLatencyUs: -1  StormThroughput: -1  Reads: [0,0,0,0,0]  Writes: [0,0,0,0,0]  TraceDir: 

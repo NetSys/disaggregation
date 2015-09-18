@@ -2164,3 +2164,23 @@ Conf: True 5 70 22.09  0 Result: 1902.37208819:1046.564
 Conf: True 5 20 22.09  0 Result: 1989.25694394:1080.0
 Conf: True 5 10 22.09  0 Result: 2725.99755597:1502.0
 Conf: True 5 60 22.09  0 Result: 1845.87548804:1039.014
+
+
+
+
+================== Started exp at:2015-09-18 11:24:32.302314 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop', '--vary-bw-5us']
+Conf: True 5 100 22.09  0 Result: 1600.4227519
+Conf: True 5 40 22.09  0 Result: 1600.39262009
+Conf: True 5 80 22.09  0 Result: 1603.51254416
+Conf: False 5 1000 22.09  0 Result: 1601.68901396
+Conf: True 5 20 22.09  0 Result: 1600.45438099
+Conf: True 5 10 22.09  0 Result: 1604.42768002
+Conf: True 5 60 22.09  0 Result: 1605.47656798
+
+
+
+
+================== Started exp at:2015-09-18 18:24:42.467188 ==================
+Argument ['execute.py', '--task', 'wordcount-hadoop']
+Conf: False 5 40 22.09 wordcount-hadoop 0 Result: 1603.41342783

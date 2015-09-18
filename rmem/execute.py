@@ -734,7 +734,22 @@ def succinct_install():
   run("/root/spark-ec2/copy-dir /root/succinct-cpp")
   run("/root/spark/sbin/slaves.sh /root/succinct-cpp/ec2/install_thrift.sh")
 
+def update_hdfs_conf():
+  with open('/root/ephemeral-hdfs/conf/core-site.xml', 'r') as core_file:
+    core_file_content = core_file.read()
+  updated_core_file_content = core_file_content.replace("<value>/mnt/ephemeral-hdfs</value>","<value>/mnt/ephemeral-hdfs,/mnt2/ephemeral-hdfs</value>")
+  with open('/root/ephemeral-hdfs/conf/core-site.xml', 'w') as core_file:
+    core_file.write(updated_core_file_content)
+
+  with open('/root/ephemeral-hdfs/conf/hdfs-site.xml', 'r') as hdfs_file:
+    hdfs_file_content = hdfs_file.read()
+  updated_hdfs_file_content = hdfs_file_content.replace("<value>3</value>","<value>1</value>").replace("<value>/mnt/ephemeral-hdfs/data</value>","<value>/mnt/ephemeral-hdfs/data,/mnt2/ephemeral-hdfs/data</value>")
+  with open('/root/ephemeral-hdfs/conf/hdfs-site.xml', 'w') as hdfs_file:
+    hdfs_file.write(updated_hdfs_file_content)
+  
+
 def reconfig_hdfs():
+  update_hdfs_conf()
   run("/root/ephemeral-hdfs/bin/stop-all.sh")
   slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
   slaves_run("rm -rf /mnt2/ephemeral-hdfs/*")
@@ -831,6 +846,7 @@ def prepare_env():
   update_hadoop_conf()
   mkfs_xvdc_ext4()
   run("mkdir -p /mnt/local_commands")
+  reconfig_hdfs()
 
 def prepare_all(opts):
   prepare_env()
@@ -889,7 +905,7 @@ def main():
   elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
-    collect_trace("memcached")
+    update_hdfs_conf()
   else:
     print "Unknown task %s" % opts.task
 
