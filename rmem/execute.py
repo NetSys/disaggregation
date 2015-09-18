@@ -761,7 +761,7 @@ def execute(opts):
       confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_bw_5us:
 #    bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    bw_5us = [10, 20, 40, 60, 80, 100]
+    bw_5us = [10, 20, 40, 60, 80, 100, 200]
     confs.append((False, 5, 1000, opts.remote_memory, opts.cdf, 0))
     for b in bw_5us:
       confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0))                  
@@ -795,7 +795,7 @@ def execute(opts):
   log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
   log('Argument %s' % str(sys.argv))
 
-  for conf in results:
+  for conf in sorted(results.keys()):
     result_str = "Conf: %s Result: %s" % (" ".join(map(str, conf)), " ".join(map(str, results[conf])))
     log(result_str)
     print result_str
