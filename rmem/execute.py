@@ -157,6 +157,9 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       echo %d > /proc/sys/fs/rmem/end_to_end_latency_ns;
       echo %d > /proc/sys/fs/rmem/inject_latency;
       echo %d > /proc/sys/fs/rmem/get_record;
+
+      pid=$(ps aux | grep kswapd0 | grep -v grep | tr -s ' ' | cut -d ' ' -f 2)
+      taskset -cp 7 $pid
       ''' % (remote_page, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int, trace_int)
     slaves_run_bash(install_rmem)
 
