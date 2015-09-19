@@ -157,6 +157,9 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       echo %d > /proc/sys/fs/rmem/end_to_end_latency_ns;
       echo %d > /proc/sys/fs/rmem/inject_latency;
       echo %d > /proc/sys/fs/rmem/get_record;
+
+      pid=$(ps aux | grep kswapd0 | grep -v grep | tr -s ' ' | cut -d ' ' -f 2)
+      taskset -cp 7 $pid
       ''' % (remote_page, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int, trace_int)
     slaves_run_bash(install_rmem)
 
@@ -740,7 +743,22 @@ def succinct_install():
   run("/root/spark-ec2/copy-dir /root/succinct-cpp")
   run("/root/spark/sbin/slaves.sh /root/succinct-cpp/ec2/install_thrift.sh")
 
+def update_hdfs_conf():
+  with open('/root/ephemeral-hdfs/conf/core-site.xml', 'r') as core_file:
+    core_file_content = core_file.read()
+  updated_core_file_content = core_file_content.replace("<value>/mnt/ephemeral-hdfs</value>","<value>/mnt/ephemeral-hdfs,/mnt2/ephemeral-hdfs</value>")
+  with open('/root/ephemeral-hdfs/conf/core-site.xml', 'w') as core_file:
+    core_file.write(updated_core_file_content)
+
+  with open('/root/ephemeral-hdfs/conf/hdfs-site.xml', 'r') as hdfs_file:
+    hdfs_file_content = hdfs_file.read()
+  updated_hdfs_file_content = hdfs_file_content.replace("<value>3</value>","<value>1</value>").replace("<value>/mnt/ephemeral-hdfs/data</value>","<value>/mnt/ephemeral-hdfs/data,/mnt2/ephemeral-hdfs/data</value>")
+  with open('/root/ephemeral-hdfs/conf/hdfs-site.xml', 'w') as hdfs_file:
+    hdfs_file.write(updated_hdfs_file_content)
+  
+
 def reconfig_hdfs():
+  update_hdfs_conf()
   run("/root/ephemeral-hdfs/bin/stop-all.sh")
   slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
   slaves_run("rm -rf /mnt2/ephemeral-hdfs/*")
@@ -767,7 +785,7 @@ def execute(opts):
       confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_bw_5us:
 #    bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    bw_5us = [10, 20, 40, 60, 80, 100]
+    bw_5us = [10, 20, 40, 60, 80, 100, 200]
     confs.append((False, 5, 1000, opts.remote_memory, opts.cdf, 0))
     for b in bw_5us:
       confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0))                  
@@ -801,7 +819,7 @@ def execute(opts):
   log("================== Started exp at:%s ==================" % str(datetime.datetime.now()))
   log('Argument %s' % str(sys.argv))
 
-  for conf in results:
+  for conf in sorted(results.keys()):
     result_str = "Conf: %s Result: %s" % (" ".join(map(str, conf)), " ".join(map(str, results[conf])))
     log(result_str)
     print result_str
@@ -837,6 +855,7 @@ def prepare_env():
   update_hadoop_conf()
   mkfs_xvdc_ext4()
   run("mkdir -p /mnt/local_commands")
+  reconfig_hdfs()
 
 def prepare_all(opts):
   prepare_env()
@@ -895,7 +914,7 @@ def main():
   elif opts.task == "s3cmd-install":
     install_s3cmd()
   elif opts.task == "test":
-    collect_trace("memcached")
+    update_hdfs_conf()
   else:
     print "Unknown task %s" % opts.task
 
