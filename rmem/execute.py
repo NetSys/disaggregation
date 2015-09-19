@@ -312,17 +312,22 @@ def get_memcached_avg_latency():
   r = run_and_get("cat /root/disaggregation/apps/memcached/results.txt | grep AverageLatency")[1]
   return float(r.replace("[GET] AverageLatency, ","").replace("us",""))
 
+'''[OVERALL] Throughput(ops/sec), '''
 def slaves_get_memcached_avg_latency():
-  total = 0
+  total_latency = 0
+  total_throughput = 0
   slaves = get_slaves()
   for s in slaves:
     r = run_and_get("ssh %s \"cat /root/disaggregation/apps/memcached/results.txt | grep AverageLatency\"" % s)[1]
     v = r.replace("[GET] AverageLatency, ","")
     if "us" in v:
-      total += float(v.replace("us",""))
+      total_latency += float(v.replace("us",""))
     elif "ms" in v:
-      total += float(v.replace("ms","")) * 1000
-  return total / len(slaves)
+      total_latency += float(v.replace("ms","")) * 1000
+    rt = run_and_get("ssh %s \"cat /root/disaggregation/apps/memcached/results.txt | grep Throughput\"" % s)[1]
+    vt = rt.replace("[OVERALL] Throughput(ops/sec), ", "")
+    total_throughput += float(vt)
+  return (total_latency / len(slaves), total_throughput / len(slaves))
 
 def get_storm_trace():
   slaves = get_slaves()
@@ -379,6 +384,7 @@ class ExpResult:
   runtime = 0.0
   min_ram_gb = -1.0
   memcached_latency_us = -1.0
+  memcached_throughput = -1
   storm_latency_us = -1
   storm_throughput = -1
   task = ""
@@ -395,14 +401,14 @@ class ExpResult:
   slowdown_cdf = ""
   def get(self):
     if self.task == "memcached":
-      return str(self.runtime) + ":" + str(self.memcached_latency_us)
+      return str(self.runtime) + ":" + str(self.memcached_latency_us) + ":" + str(self.memcached_throughput)
     elif self.task == "storm":
       return str(self.storm_latency_us) + ":" + str(self.storm_throughput)
     else:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=25):
   global memcached_kill_loadgen_on
@@ -479,7 +485,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
     start_time = time.time()
     slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
-    result.memcached_latency_us = slaves_get_memcached_avg_latency()
+    (result.memcached_latency_us, result.memcached_throughput) = slaves_get_memcached_avg_latency()
     time_used = time.time() - start_time
     slaves_run("killall memcached")
 
