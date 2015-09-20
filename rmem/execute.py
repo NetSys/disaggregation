@@ -223,7 +223,25 @@ def collect_trace(task):
     count += 1
 
   return result_dir
-    
+  
+def cpuset():
+  cmd = '''umount /mnt/cpuset
+  rm -rf /mnt/cpuset
+  mkdir -p /mnt/cpuset
+  mount -t cpuset none /mnt/cpuset/
+  mkdir -p /mnt/cpuset/sw
+  mkdir -p /mnt/cpuset/other
+  echo 0 > /mnt/cpuset/sw/mems
+  echo 0 > /mnt/cpuset/other/mems
+  echo 7 > /mnt/cpuset/sw/cpus
+  echo 0-6 > /mnt/cpuset/other/cpus
+  echo 0 > /mnt/cpuset/other/sched_load_balance
+  for T in $(cat /mnt/cpuset/tasks)
+  do
+    /bin/echo $T | tee /mnt/cpuset/other/tasks
+  done'''
+  slaves_run_bash(cmd)
+
 def get_rw_bytes():
   reads = []
   writes = []
@@ -315,7 +333,6 @@ def get_memcached_avg_latency():
   r = run_and_get("cat /root/disaggregation/apps/memcached/results.txt | grep AverageLatency")[1]
   return float(r.replace("[GET] AverageLatency, ","").replace("us",""))
 
-'''[OVERALL] Throughput(ops/sec), '''
 def slaves_get_memcached_avg_latency():
   total_latency = 0
   total_throughput = 0
@@ -904,6 +921,8 @@ def main():
     clean_existing_rmem(40) 
   elif opts.task == "sync-rmem-code":
     sync_rmem_code()
+  elif opts.task == "cpuset":
+    cpuset()
 
   elif opts.task == "reconfig-hdfs":
     reconfig_hdfs()
