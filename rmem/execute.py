@@ -121,7 +121,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
   bandwidth_bps = int(bw_gbps * 1000 * 1000 * 1000)
   latency_ns = latency_us * 1000
   e2e_latency_ns = e2e_latency_us * 1000
-  inject_int = 1 if inject or slowdown_cdf != "" else 0
+  inject_int = 1 if inject and slowdown_cdf == "" else 0
   trace_int = 1 if trace else 0
 
   if bw_gbps < 0:
@@ -164,9 +164,9 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
     slaves_run_bash(install_rmem)
 
     if slowdown_cdf != "":
-      run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/slowdown_dist")
-      cdf_file = "/root/disaggregation/rmem/slowdown_dist/cdf_slowdowns_pfabric_%s.cdf" % slowdown_cdf
-      slaves_run("while read -r line; do echo \$line > /proc/rmem_cdf; done < %s; diff /proc/rmem_cdf %s" % (cdf_file, cdf_file))      
+      run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/fcts")
+      cdf_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % slowdown_cdf
+      slaves_run("cd /root/disaggregation/rmem; cat %s | python convert_fct_to_ns.py > fcts.txt ; cat fcts.txt | while read -r line; do echo \$line > /proc/rmem_cdf; done; diff /proc/rmem_cdf fcts.txt" % cdf_file) 
 
 def log_trace():
   banner("log trace")
@@ -812,8 +812,8 @@ def execute(opts):
     for r in local_rams:
       confs.append((True, 1, 40, (1-r) * 29.45, opts.cdf, 0))
   elif opts.slowdown_cdf_exp:
-    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
-    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
+#    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
     e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
