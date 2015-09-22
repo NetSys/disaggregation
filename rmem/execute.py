@@ -458,7 +458,12 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   if task == "wordcount":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount")
     start_time = time.time()  
+    if profile:
+      mem_monitor_start() 
     run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki/\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
+    if profile:
+      min_ram = mem_monitor_stop()
+      result.min_ram_gb = min_ram
     time_used = time.time() - start_time
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -563,7 +568,7 @@ def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
   teragen(opts.teragen_size)
-  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, 0, inject, False, opt.cdf, profile = True)
+  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, 0, inject, False, opts.cdf, profile = True)
 
 def terasort_vary_size(opts):
   sizes = [180, 150, 120, 90, 60, 30]
@@ -607,9 +612,9 @@ def disk_vary_size(opts):
     run("/root/spark/sbin/stop-all.sh")
 
 
-  #sizes = [3, 6, 9, 12, 15, 18, 21, 24, 27]
-  sizes = [6]
-  rmems = [0.7]
+  sizes = [3, 6, 9, 12, 15]
+  #sizes = [6]
+  rmems = [0.75]
 
   banner("Prepare input data")
   if opts.task == "graphlab":
@@ -620,7 +625,7 @@ def disk_vary_size(opts):
   for s in sizes:
     for rmem in rmems:
       confs.append((False, -1, -1, s, rmem))
-      #confs.append((True, 1, 40, s, rmem))
+      confs.append((True, 5, 40, s, rmem))
 
   results = {}
   for conf in confs:
@@ -633,7 +638,7 @@ def disk_vary_size(opts):
         all_run("rm /mnt2/netflix_m/netflix_mm; mkdir -p /mnt2/netflix_m; ln -s /mnt2/nf%d.txt /mnt2/netflix_m/netflix_mm" % (conf[3]))
       elif opts.task == "wordcount":
         wordcount_prepare(conf[3])
-      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opt.cdf, memcached_size = conf[3]).get()
+      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, memcached_size = conf[3], profile = True).get()
       results[conf].append(time)
 
 
@@ -693,6 +698,9 @@ def graphlab_prepare(size_gb = 20):
     python /root/disaggregation/rmem/trim_file.py /mnt2/netflix_mm %s /mnt2/netflix_m/netflix_mm; 
   ''' % size_gb).replace("\n"," ")
   slaves_run_parallel(cmd, master = True)
+
+def mount_disk():
+  slaves_run("rm -rf /mnt2/swapdisk/; mkdir -p /mnt2/swapdisk; mkfs.ext4 /dev/xvdg; mount /dev/xvdg /mnt2/swapdisk")
 
 def wordcount_prepare(size=125):
 # run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
@@ -935,7 +943,7 @@ def main():
   elif opts.task == "test":
     update_hdfs_conf()
   else:
-    print "Unknown task %s" % opts.task
+    globals()[opts.task.replace("-","_")]()
 
 if __name__ == "__main__":
   main()
