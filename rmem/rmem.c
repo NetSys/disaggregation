@@ -61,11 +61,6 @@ typedef struct
   int count;
 } access_record;
 
-typedef struct
-{
-  u64 slowdown;
-  u64 prob;
-} cdf_record;
 
 u64 inject_latency = 0;
 u64 get_record = 0;
@@ -90,36 +85,24 @@ spinlock_t cdf_lock;
 
 #define LOG_BATCH_SIZE	1048576
 access_record request_log[LOG_BATCH_SIZE];
-#define CDF_MAX_SIZE 4096
-cdf_record slowdown_cdf[CDF_MAX_SIZE];
-int cdf_record_count = 0;
+#define FCT_MAX_SIZE 4096
+u64 fct_by_size[FCT_MAX_SIZE];
+int fct_record_count = 0;
 int log_head = 0;
 int log_tail = 0;
 u64 overflow = 0;
 u64 version = 5;
 
-static u64 get_rand(void)
-{
-  u64 i;
-  get_random_bytes(&i, sizeof(i));
-  return i % 1000000;
-}
 
-static u64 get_slowdown(void)
+
+static u64 get_fct(int batch_size)
 {
-  u64 r;
   int i;
-
-  if (cdf_record_count == 0)
-    return 10000;
-
-  r = get_rand();
-  for(i = 0; i < cdf_record_count; i++)
-  {
-    if(slowdown_cdf[i].prob > r)
-      return slowdown_cdf[i].slowdown;
-  }
-  return slowdown_cdf[i].slowdown;
+  int start = batch_size < FCT_MAX_SIZE? batch_size:FCT_MAX_SIZE-1;
+  for(i = start; i >= 0; i--)
+    if (fct_by_size[i])
+      return fct_by_size[i];
+  return 0;
 }
 
 /*
@@ -173,17 +156,6 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
-    if(end_to_end_latency_ns)
-    {
-//      begin = sched_clock();
-      while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
-      {
-        /* wait for transmission delay */
-        ;
-      }
-    }
-
-		
 
 		spin_unlock(&tx_lock);
 	} else {
@@ -201,17 +173,6 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 				;
 			}
 		}
-
-    if(end_to_end_latency_ns)
-    {
-//      begin = sched_clock();
-      while ((sched_clock() - begin) < end_to_end_latency_ns * slowdown / 10000) 
-      {
-        /* wait for transmission delay */
-        ;
-      }
-    }
-
 
 		if(get_record)
 			record.timestamp = record.timestamp * -1;
@@ -243,8 +204,7 @@ static void rmem_request(struct request_queue *q)
 
 	if(inject_latency){
 		begin = sched_clock();
-		slowdown = get_slowdown();
-		while ((sched_clock() - begin) < latency_ns * slowdown / 10000) {
+		while ((sched_clock() - begin) < latency_ns) {
 			/* wait for RTT latency */
 			;
 		}
@@ -267,6 +227,16 @@ static void rmem_request(struct request_queue *q)
 			req = blk_fetch_request(q);
 		}
 	}
+
+  if(fct_record_count){
+    u64 fct = get_fct(count);
+    begin = sched_clock();
+    while ((sched_clock() - begin) < fct) {
+      /* wait for RTT latency */
+      ;
+    }
+
+  }
 }
 
 /*
@@ -427,11 +397,13 @@ static struct proc_dir_entry* cdf_file;
 static int cdf_show(struct seq_file *m, void *v)
 {
   int i;
-  printk(KERN_INFO "Print CDF\n");
+  printk(KERN_INFO "Print FCT\n");
   //printk(KERN_INFO "%llu\n", get_rand());
-  for (i = 0; i < cdf_record_count; i++)
+  seq_printf(m, "Total record count %d\n", fct_record_count);
+  for (i = 0; i < FCT_MAX_SIZE; i++)
   {
-    seq_printf(m, "%llu %llu\n", slowdown_cdf[i].slowdown, slowdown_cdf[i].prob);
+    if(fct_by_size[i])
+      seq_printf(m, "%d %llu\n", i, fct_by_size[i]);
   }
   return 0;
 }
@@ -445,16 +417,19 @@ static int cdf_open(struct inode * sp_inode, struct file *sp_file)
 
 static ssize_t cdf_write(struct file *sp_file, const char __user *buf, size_t size, loff_t *offset)
 {
+  u64 fct;
+  int sz;
   spin_lock(&cdf_lock);
+  sscanf(buf, "%d %llu", &sz, &fct);
   //printk(KERN_INFO "Writing CDF\n");
-  if(cdf_record_count < CDF_MAX_SIZE)
+  if(sz < FCT_MAX_SIZE && sz > 0)
   {
-    sscanf(buf, "%llu %llu", &(slowdown_cdf[cdf_record_count].slowdown), &(slowdown_cdf[cdf_record_count].prob));
-    cdf_record_count++;
+    fct_by_size[sz] = fct;
+    fct_record_count++;
   }
   else
   {
-    printk(KERN_INFO "Exceeding CDF_MAX_SIZE\n");
+    printk(KERN_INFO "Wrong size: %d, fct %llu\n", sz, fct);
   }
   spin_unlock(&cdf_lock);
   return size;
@@ -472,6 +447,10 @@ static struct file_operations cdf_fops = {
 
 static int __init rmem_init(void) {
 	int i;
+
+  for(i = 0; i < FCT_MAX_SIZE; i++)
+    fct_by_size[i] = 0;
+
 
 	pr_info("PAGE_SIZE: %lu", PAGE_SIZE);
 	

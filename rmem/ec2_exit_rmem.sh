@@ -6,6 +6,7 @@ done
 
 while [ -n "$(lsmod | grep rmem)" ]
 do
+  sleep 1
   rmmod rmem
 done
 

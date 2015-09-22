@@ -122,7 +122,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
   bandwidth_bps = int(bw_gbps * 1000 * 1000 * 1000)
   latency_ns = latency_us * 1000
   e2e_latency_ns = e2e_latency_us * 1000
-  inject_int = 1 if inject or slowdown_cdf != "" else 0
+  inject_int = 1 if inject and slowdown_cdf == "" else 0
   trace_int = 1 if trace else 0
 
   if bw_gbps < 0:
@@ -165,9 +165,9 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
     slaves_run_bash(install_rmem)
 
     if slowdown_cdf != "":
-      run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/slowdown_dist")
-      cdf_file = "/root/disaggregation/rmem/slowdown_dist/cdf_slowdowns_pfabric_%s.cdf" % slowdown_cdf
-      slaves_run("while read -r line; do echo \$line > /proc/rmem_cdf; done < %s; diff /proc/rmem_cdf %s" % (cdf_file, cdf_file))      
+      run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/fcts")
+      cdf_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % slowdown_cdf
+      slaves_run("cd /root/disaggregation/rmem; cat %s | python convert_fct_to_ns.py > fcts.txt ; cat fcts.txt | while read -r line; do echo \$line > /proc/rmem_cdf; done; diff /proc/rmem_cdf fcts.txt" % cdf_file) 
 
 def log_trace():
   banner("log trace")
@@ -459,7 +459,12 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   if task == "wordcount":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount")
     start_time = time.time()  
+    if profile:
+      mem_monitor_start() 
     run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki/\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
+    if profile:
+      min_ram = mem_monitor_stop()
+      result.min_ram_gb = min_ram
     time_used = time.time() - start_time
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -564,7 +569,7 @@ def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
   teragen(opts.teragen_size)
-  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, 0, inject, False, opt.cdf, profile = True)
+  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, 0, inject, False, opts.cdf, profile = True)
 
 def terasort_vary_size(opts):
   sizes = [180, 150, 120, 90, 60, 30]
@@ -608,9 +613,9 @@ def disk_vary_size(opts):
     run("/root/spark/sbin/stop-all.sh")
 
 
-  #sizes = [3, 6, 9, 12, 15, 18, 21, 24, 27]
-  sizes = [6]
-  rmems = [0.7]
+  sizes = [3, 6, 9, 12, 15]
+  #sizes = [6]
+  rmems = [0.75]
 
   banner("Prepare input data")
   if opts.task == "graphlab":
@@ -621,7 +626,7 @@ def disk_vary_size(opts):
   for s in sizes:
     for rmem in rmems:
       confs.append((False, -1, -1, s, rmem))
-      #confs.append((True, 1, 40, s, rmem))
+      confs.append((True, 5, 40, s, rmem))
 
   results = {}
   for conf in confs:
@@ -634,7 +639,7 @@ def disk_vary_size(opts):
         all_run("rm /mnt2/netflix_m/netflix_mm; mkdir -p /mnt2/netflix_m; ln -s /mnt2/nf%d.txt /mnt2/netflix_m/netflix_mm" % (conf[3]))
       elif opts.task == "wordcount":
         wordcount_prepare(conf[3])
-      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opt.cdf, memcached_size = conf[3]).get()
+      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, memcached_size = conf[3], profile = True).get()
       results[conf].append(time)
 
 
@@ -694,6 +699,9 @@ def graphlab_prepare(size_gb = 20):
     python /root/disaggregation/rmem/trim_file.py /mnt2/netflix_mm %s /mnt2/netflix_m/netflix_mm; 
   ''' % size_gb).replace("\n"," ")
   slaves_run_parallel(cmd, master = True)
+
+def mount_disk():
+  slaves_run("rm -rf /mnt2/swapdisk/; mkdir -p /mnt2/swapdisk; mkfs.ext4 /dev/xvdg; mount /dev/xvdg /mnt2/swapdisk")
 
 def wordcount_prepare(size=125):
 # run("mkdir -p /root/ssd; mount /dev/xvdg /root/ssd")
@@ -817,8 +825,8 @@ def execute(opts):
     for r in local_rams:
       confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0))
   elif opts.slowdown_cdf_exp:
-    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
-    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
+#    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
     e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
@@ -940,7 +948,7 @@ def main():
   elif opts.task == "test":
     update_hdfs_conf()
   else:
-    print "Unknown task %s" % opts.task
+    globals()[opts.task.replace("-","_")]()
 
 if __name__ == "__main__":
   main()
