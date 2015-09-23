@@ -820,8 +820,8 @@ def execute(opts):
       confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0))
       confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0))
   elif opts.slowdown_cdf_exp:
-    rack_sacle_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
-    dc_sacle_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
+    rack_scale_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
+    dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0))
 #    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0))
 #    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
