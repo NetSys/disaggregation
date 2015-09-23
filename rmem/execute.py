@@ -38,7 +38,6 @@ def parse_args():
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--vary-bw-5us", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
-  parser.add_option("--vary-remote-mem-baseline", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 0 latency injected")
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
@@ -820,9 +819,6 @@ def execute(opts):
     local_rams.append(0.9999)
     for r in local_rams:
       confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0))
-  elif opts.vary_remote_mem_baseline:
-    local_rams = [0.3, 0.2, 0.4, 0.1, 0.5, 0.6, 0.7, 0.8, 0.9]
-    for r in local_rams:
       confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0))
   elif opts.slowdown_cdf_exp:
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
