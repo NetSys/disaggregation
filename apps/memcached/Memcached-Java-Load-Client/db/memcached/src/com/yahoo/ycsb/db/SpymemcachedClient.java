@@ -72,10 +72,10 @@ public class SpymemcachedClient extends Memcached {
 
 		try {
       //local mode
-      //client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses("localhost:" + membaseport));
+      client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses("localhost:" + membaseport));
 
       //dist mode
-      client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses(sb.toString()));
+      //client = new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses(sb.toString()));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e1) {
@@ -84,6 +84,7 @@ public class SpymemcachedClient extends Memcached {
 	}
 	
 	public void cleanup() {
+    System.out.println("Err count: " + err_count);
 		if (client.isAlive())
 			client.shutdown();
 	}
@@ -92,7 +93,7 @@ public class SpymemcachedClient extends Memcached {
 	public int add(String key, Object value) {
 		try {
 			if (!client.add(key, 0, value).get().booleanValue()) {
-        if(err_count < 100){
+        if(err_count % 10000 == 0){
 				  System.out.println("ADD: error getting data");
           err_count++;
         }
@@ -115,8 +116,8 @@ public class SpymemcachedClient extends Memcached {
 		//long time = System.nanoTime();
 		try {
 			if (f.get() == null) {
-        if(err_count < 100){
-				  System.out.println("GET: error getting data");
+        if(err_count % 10000 == 0){
+				  System.out.println("GET: error getting data" + err_count);
           err_count++;
         }
 				return -1;
@@ -175,7 +176,7 @@ public class SpymemcachedClient extends Memcached {
 	public int set(String key, Object value) {
 		try {
 			if (!client.set(key, 0, value).get().booleanValue()) {
-        if(err_count < 100){
+        if(err_count % 10000 == 0){
 				  System.out.println("SET: error getting data");
           err_count++;
         }
@@ -205,7 +206,7 @@ public class SpymemcachedClient extends Memcached {
 	public int append(String key, long cas, Object value) {
 		try {
 			if (!client.append(cas, key, value).get().booleanValue())
-        if(err_count < 100){
+        if(err_count % 10000 == 0){
 				  System.out.println("APPEND: error getting data");
           err_count++;
         }
@@ -223,7 +224,7 @@ public class SpymemcachedClient extends Memcached {
 	@Override
 	public int cas(String key, long cas, Object value) {
 		if (!client.cas(key, cas, value).equals(CASResponse.OK)) {
-      if(err_count < 100){
+      if(err_count % 10000 == 0){
 			  System.out.println("CAS: error getting data");
         err_count++;
       }
@@ -251,8 +252,8 @@ public class SpymemcachedClient extends Memcached {
 	public long gets(String key) {
 		long cas = client.gets(key).getCas();
 		if (cas < 0) {
-      if(err_count < 100){
-			  System.out.println("GETS: error getting data");
+      if(err_count % 10000 == 0){
+			  System.out.println("GETS: error getting data" + err_count);
         err_count++;
       }
 			return -1;
@@ -279,7 +280,7 @@ public class SpymemcachedClient extends Memcached {
 	public int replace(String key, Object value) {
 		try {
 			if (!client.replace(key, 0, value).get().booleanValue()) {
-        if(err_count < 100){
+        if(err_count % 10000 == 0){
 				  System.out.println("REPLACE: error getting data");
           err_count++;
         }

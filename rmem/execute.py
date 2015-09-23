@@ -430,7 +430,7 @@ class ExpResult:
   def __str__(self):
     return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=25):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
@@ -497,7 +497,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     time_used = time.time() - start_time
 
   elif task == "memcached":
-    slaves_run("memcached -d -m 27000 -u root")
+    slaves_run("memcached -d -m 26000 -u root")
     set_memcached_size(memcached_size)
     run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
     thrd = threading.Thread(target=memcached_kill_loadgen, args=(time.time() + 25 * 60,))
@@ -828,7 +828,7 @@ def execute(opts):
     for el in e2e_latency:
       confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
   else:
-    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.task, 0))
+    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.cdf, 0))
  
   results = {}
   for conf in confs:
