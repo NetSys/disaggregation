@@ -15,6 +15,7 @@
 
 from optparse import OptionParser
 import os
+import os.path
 import time
 from ec2_utils import *
 import datetime
@@ -884,6 +885,14 @@ def prepare_env():
   mkfs_xvdc_ext4()
   run("mkdir -p /mnt/local_commands")
   reconfig_hdfs()
+  run("echo 1 > /mnt/env_prepared")
+
+def check_env():
+  if not os.path.exists("/mnt/env_prepared"):
+    print "You haven't run prepare_env. Run it now? (y/n)"
+    if sys.stdin.readline().strip() == "y":
+      prepare_env()
+  
 
 def prepare_all(opts):
   prepare_env()
@@ -896,6 +905,7 @@ def main():
   opts = parse_args()
   run_exp_tasks = ["wordcount", "wordcount-hadoop", "terasort", "graphlab", "memcached", "storm"]
   
+  check_env()
 
   if opts.disk_vary_size:
     disk_vary_size(opts) 
