@@ -15,6 +15,7 @@
 
 from optparse import OptionParser
 import os
+import os.path
 import time
 from ec2_utils import *
 import datetime
@@ -823,8 +824,8 @@ def execute(opts):
     rack_scale_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
     dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0))
-#    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0))
-#    confs.append((True, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
     e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
@@ -884,6 +885,14 @@ def prepare_env():
   mkfs_xvdc_ext4()
   run("mkdir -p /mnt/local_commands")
   reconfig_hdfs()
+  run("echo 1 > /mnt/env_prepared")
+
+def check_env():
+  if not os.path.exists("/mnt/env_prepared"):
+    print "You haven't run prepare_env. Run it now? (y/n)"
+    if sys.stdin.readline().strip() == "y":
+      prepare_env()
+  
 
 def prepare_all(opts):
   prepare_env()
@@ -896,6 +905,7 @@ def main():
   opts = parse_args()
   run_exp_tasks = ["wordcount", "wordcount-hadoop", "terasort", "graphlab", "memcached", "storm"]
   
+  check_env()
 
   if opts.disk_vary_size:
     disk_vary_size(opts) 
