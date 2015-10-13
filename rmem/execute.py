@@ -822,8 +822,13 @@ def execute(opts):
   elif opts.slowdown_cdf_exp:
     rack_scale_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
     dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
+<<<<<<< HEAD
     #confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0))
     #confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0))
+=======
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0))
+>>>>>>> e0ce2eff3e76e9583107df4325d0e4fd7ece0d20
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
   elif opts.vary_e2e_latency:
     e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
