@@ -951,8 +951,9 @@ def prepare_all(opts):
 def main():
   opts = parse_args()
   run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "graphlab", "memcached", "storm"]
-  
-  check_env()
+ 
+  if opts.task != "prepare-env":
+    check_env()
 
   if opts.disk_vary_size:
     disk_vary_size(opts) 
