@@ -756,8 +756,8 @@ def bdb_prepare():
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /uservisits")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /rankings")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://big-data-benchmark/pavlo/text/5nodes/uservisits/ /uservisits/")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://big-data-benchmark/pavlo/text/5nodes/rankings/ /rankings/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/uservisits/ /uservisits/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/rankings/ /rankings/")
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def storm_prepare():
