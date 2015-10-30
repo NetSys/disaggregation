@@ -1,0 +1,29 @@
+[0m[[0minfo[0m] [0mPackaging /root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar ...[0m
+[0m[[0mdebug[0m] [0mInput file mappings:[0m
+[0m[[0mdebug[0m] [0m	Visit.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/Visit.class[0m
+[0m[[0mdebug[0m] [0m	Visit$.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/Visit$.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$$typecreator1$1.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$$typecreator1$1.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$$anonfun$4.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$$anonfun$4.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$$anonfun$main$1.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$$anonfun$main$1.class[0m
+[0m[[0mdebug[0m] [0m	Ranking$.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/Ranking$.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$$anonfun$1.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$$anonfun$1.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$$anonfun$3.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$$anonfun$3.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$$anonfun$2.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$$anonfun$2.class[0m
+[0m[[0mdebug[0m] [0m	Ranking.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/Ranking.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql.class[0m
+[0m[[0mdebug[0m] [0m	SparkSql$$typecreator2$1.class[0m
+[0m[[0mdebug[0m] [0m	  /root/disaggregation/apps/Spark_Sql/target/scala-2.10/classes/SparkSql$$typecreator2$1.class[0m
+[0m[[0minfo[0m] [0mDone packaging.[0m

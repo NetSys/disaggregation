@@ -349,6 +349,31 @@ def slaves_get_memcached_avg_latency():
     total_throughput += float(vt)
   return (total_latency / len(slaves), total_throughput / len(slaves))
 
+def get_bdb_query(id):
+  QUERY_3a_HQL = """SELECT sourceIP,
+      sum(adRevenue) as totalRevenue,
+      avg(pageRank) as pageRank
+    FROM
+      rankings R JOIN
+      (SELECT sourceIP, destURL, adRevenue
+       FROM uservisits UV
+       WHERE UV.visitDate > '1980-01-01'
+       AND UV.visitDate < '1980-04-01')
+       NUV ON (R.pageURL = NUV.destURL)
+    GROUP BY sourceIP
+    ORDER BY totalRevenue DESC
+    LIMIT 1""".replace("\n", " ")
+
+  QUERY_2a_HQL = "SELECT SUBSTR(sourceIP, 1, 8), SUM(adRevenue) FROM uservisits GROUP BY SUBSTR(sourceIP, 1, 8)"
+
+  if id == "2a":
+    return QUERY_2a_HQL
+  elif id == "3a":
+    return QUERY_3a_HQL
+  else:
+    raise "invalid query id"
+
+
 def get_storm_trace():
   slaves = get_slaves()
   for s in slaves:
@@ -461,6 +486,18 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     if profile:
       mem_monitor_start() 
     run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/wikicount\"" % master )
+    if profile:
+      min_ram = mem_monitor_stop()
+      result.min_ram_gb = min_ram
+    time_used = time.time() - start_time
+
+  if task == "bdb":
+    run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /bdbresults")
+    start_time = time.time()  
+    if profile:
+      mem_monitor_start() 
+    query = get_bdb_query("3a") # 2a or 3a
+    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/bdbresults\" \"%s\"" % (master, query) )
     if profile:
       min_ram = mem_monitor_stop()
       result.min_ram_gb = min_ram
@@ -713,6 +750,16 @@ def wordcount_prepare(size=125):
   run("/root/ephemeral-hdfs/bin/hadoop distcp %s /wiki/" % src)
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
+
+def bdb_prepare():
+  run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /uservisits")
+  run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /rankings")
+  run("/root/ephemeral-hdfs/bin/start-mapred.sh")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/uservisits/ /uservisits/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/rankings/ /rankings/")
+  run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
+
 def storm_prepare():
   master = get_master()
   storm_cfg = '''storm.zookeeper.servers:
@@ -903,9 +950,10 @@ def prepare_all(opts):
 
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "wordcount-hadoop", "terasort", "graphlab", "memcached", "storm"]
-  
-  check_env()
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "graphlab", "memcached", "storm"]
+ 
+  if opts.task != "prepare-env":
+    check_env()
 
   if opts.disk_vary_size:
     disk_vary_size(opts) 
