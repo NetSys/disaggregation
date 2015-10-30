@@ -460,7 +460,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     start_time = time.time()  
     if profile:
       mem_monitor_start() 
-    run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://%s:9000/wiki/\" \"hdfs://%s:9000/wikicount\"" % (master, master, master) )
+    run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/wikicount\"" % master )
     if profile:
       min_ram = mem_monitor_stop()
       result.min_ram_gb = min_ram
