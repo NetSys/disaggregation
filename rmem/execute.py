@@ -39,6 +39,7 @@ def parse_args():
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--vary-bw-5us", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
+  parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
@@ -480,24 +481,27 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   master = get_master()
 
   banner("Running app")
-  if task == "wordcount":
-    run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /wikicount")
+  if task == "wordcount" or task == "terasort-spark":
+    run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresult")
     start_time = time.time()  
     if profile:
       mem_monitor_start() 
-    run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/wikicount\"" % master )
+    if task == "wordcount":
+      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % master )
+    elif task == "terasort-spark":
+      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % master )
     if profile:
       min_ram = mem_monitor_stop()
       result.min_ram_gb = min_ram
     time_used = time.time() - start_time
 
-  if task == "bdb":
-    run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /bdbresults")
+  elif task == "bdb":
+    run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresults")
     start_time = time.time()  
     if profile:
       mem_monitor_start() 
     query = get_bdb_query("3a") # 2a or 3a
-    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/bdbresults\" \"%s\"" % (master, query) )
+    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
     if profile:
       min_ram = mem_monitor_stop()
       result.min_ram_gb = min_ram
@@ -505,14 +509,14 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
 
   elif task == "terasort" or task == "wordcount-hadoop":
     run("/root/ephemeral-hdfs/bin/start-mapred.sh")
-    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /hadoopoutput")
+    run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /dfsresult")
     start_time = time.time()
     if profile:
       mem_monitor_start()
     if task == "terasort":
-      run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /hadoopoutput")
+      run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /dfsresult")
     else:
-      run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar wordcount -Dmapred.map.tasks=10 -Dmapred.reduce.tasks=5 -Dmapreduce.map.java.opts=-Xmx8000 -Dmapreduce.reduce.java.opts=-Xmx7000 -Dmapreduce.map.memory.mb=8000 -Dmapreduce.reduce.memory.mb=7000 -Dmapred.reduce.slowstart.completed.maps=1.0 /wiki /hadoopoutput")
+      run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar wordcount -Dmapred.map.tasks=10 -Dmapred.reduce.tasks=5 -Dmapreduce.map.java.opts=-Xmx8000 -Dmapreduce.reduce.java.opts=-Xmx7000 -Dmapreduce.map.memory.mb=8000 -Dmapreduce.reduce.memory.mb=7000 -Dmapred.reduce.slowstart.completed.maps=1.0 /wiki /dfsresult")
     if profile:
       min_ram = mem_monitor_stop()
       result.min_ram_gb = min_ram
@@ -599,6 +603,11 @@ def teragen(size):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
   run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar teragen -Dmapred.map.tasks=20 %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
+
+def terasort_spark_prepare(size):
+  master = get_master()
+  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
+  run("/root/spark/bin/spark-submit --class \"TeraGen\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" %sg \"/sortinput\"" % (master, int(size)))
 
 def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
@@ -843,7 +852,10 @@ def execute(opts):
 
   log("\n\n\n", level = 1)
   confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf, e2e_latency
-  if opts.vary_latency:
+  if opts.inject_test:
+    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
+    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
+  elif opts.vary_latency:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     latencies = [1, 5, 10]
     bws = [100, 40, 10]
@@ -950,7 +962,7 @@ def prepare_all(opts):
 
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "graphlab", "memcached", "storm"]
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "storm"]
  
   if opts.task != "prepare-env":
     check_env()
@@ -965,6 +977,8 @@ def main():
     wordcount_prepare()
   elif opts.task == "terasort-prepare":
     teragen(opts.teragen_size)
+  elif opts.task == "terasort-spark-prepare":
+    terasort_spark_prepare(opts.teragen_size)
   elif opts.task == "graphlab-install":
     graphlab_install()
   elif opts.task == "graphlab-prepare":
