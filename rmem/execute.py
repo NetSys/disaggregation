@@ -23,6 +23,7 @@ import sys
 import xml.etree.ElementTree as etree
 from xml.dom import minidom
 import threading
+import numpy as np
 from memcached_workload import *
 def parse_args():
   parser = OptionParser(usage="execute.py [options]")
@@ -34,6 +35,7 @@ def parse_args():
   parser.add_option("-i", "--inject", action="store_true", default=False, help="Whether to inject latency")
   parser.add_option("--cdf", type="string", default="", help="Inject latency with slowdown")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
+  parser.add_option("--profile-io", action="store_true", default=False, help="Get an IO trace")
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-e2e-latency", action="store_true", default=False, help="Experiment on different end to end latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
@@ -254,6 +256,36 @@ def get_rw_bytes():
     writes.append(write_bytes)
   return (reads, writes)
 
+exp_finished = False
+io_trace = []
+def profile_io():
+  global exp_finished
+  global io_trace
+  next_log_time = time.time()
+  while not exp_finished:
+    if time.time() > next_log_time:
+      (r, w) = get_rw_bytes()
+      io = np.mean(r + w)
+      print "====================io %s=================" % io
+      io_trace.append(io)
+      next_log_time += 20
+
+def profile_io_start():
+  global exp_finished
+  global io_trace
+  exp_finished = False
+  io_trace = []
+  thrd = threading.Thread(target=profile_io)
+  thrd.start()
+
+def profile_io_end():
+  global exp_finished
+  global io_trace
+  exp_finished = True
+  time.sleep(1)
+  return io_trace
+
+
 def sync_rmem_code():
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
@@ -445,6 +477,7 @@ class ExpResult:
   trace = -1
   trace_dir = ""
   slowdown_cdf = ""
+  io_trace = ""
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us) + ":" + str(self.memcached_throughput)
@@ -454,9 +487,9 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace)
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile = False, memcached_size=22):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
@@ -477,6 +510,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
 
   if trace:
     log_trace()
+
+  if profile_io:
+    profile_io_start()
 
   master = get_master()
 
@@ -571,6 +607,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     (latency, throughput) = get_storm_perf()
     result.storm_latency_us = latency
     result.storm_throughput = throughput
+
+  if profile_io:
+    result.io_trace = str(profile_io_end())
 
   if trace:
     result.trace_dir = collect_trace(task)
@@ -899,7 +938,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4]).get()
+      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4], opts.profile_io).get()
       results[conf].append(time)
 
 
