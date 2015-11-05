@@ -366,11 +366,12 @@ static struct proc_dir_entry* log_file;
 static int log_show(struct seq_file *m, void *v)
 {
 	int i;
+	pr_info("h%d t%d\n", log_head, log_tail);
 	spin_lock(&log_lock);
 	for(i = 0; i < 10 && log_tail != log_head; i++){
 		//seq_printf(m, "%d %ld %d %d %d\n", log_tail, request_log[log_tail].timestamp, 
 		//request_log[log_tail].page, request_log[log_tail].length, request_log[log_tail].count);
-    seq_write(m, &(request_log[log_tail]), 20);
+		seq_write(m, &(request_log[log_tail]), 20);
 		log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
 	}
 	spin_unlock(&log_lock);
