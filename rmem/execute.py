@@ -381,7 +381,7 @@ def get_storm_trace():
     if(int(size) > 0):
       run("rm -rf /mnt2/metrics.log")
       scp_from("/mnt2/storm/log/metrics.log", "/mnt2/metrics.log", s)
-  slaves_run("rm -rf /mnt2/storm/log/*")
+  slaves_run("rm -rf /mnt2/storm/log/metrics.log")
 
 def get_storm_perf():
   if os.path.isfile("/mnt2/metrics.log"):
@@ -557,8 +557,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/apache-storm-0.9.5/bin/storm kill test")
     time.sleep(90)
     start_time = time.time()
-    run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-0.9.5-SNAPSHOT-jar-with-dependencies.jar storm.starter.WordCountTopology test")
-    time.sleep(900)
+    run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-topologies-0.9.5.jar storm.starter.WordCountTopology test")
+    time.sleep(1800)
     run("/root/apache-storm-0.9.5/bin/storm kill test")
     time_used = time.time() - start_time
     time.sleep(20)
@@ -772,6 +772,10 @@ supervisor.slots.ports:
       - 6701
       - 6702
       - 6703
+      - 6704
+      - 6705
+      - 6706
+      - 6707
 ui.port: 8081''' % (master, master)
   with open("/root/apache-storm-0.9.5/conf/storm.yaml", "w") as storm_cfg_file:
     storm_cfg_file.write(storm_cfg)
