@@ -37,6 +37,7 @@ def parse_args():
   parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
   parser.add_option("--vary-e2e-latency", action="store_true", default=False, help="Experiment on different end to end latency")
   parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
+  parser.add_option("--disk-vs-ram", action="store_true", default=False, help="Compare performance between disk and ram")
   parser.add_option("--vary-bw-5us", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
@@ -134,9 +135,9 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       mount -t tmpfs -o size=%dm tmpfs ./tmpfs/
       fallocate -l %dm ./tmpfs/a.img
 
-      mkdir -p /mnt2/swapdisk
       swapoff /mnt2/swapdisk/swap
-      rm /mnt2/swapdisk/swap
+      rm -rf /mnt2/swapdisk/swap
+      mkdir -p /mnt2/swapdisk
       fallocate -l %dM /mnt2/swapdisk/swap
       chmod 0600 /mnt2/swapdisk/swap
       mkswap /mnt2/swapdisk/swap
@@ -224,7 +225,9 @@ def collect_trace(task):
     count += 1
 
   return result_dir
-  
+
+
+
 def cpuset():
   cmd = '''umount /mnt/cpuset
   rm -rf /mnt/cpuset
@@ -889,6 +892,10 @@ def execute(opts):
     e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
       confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
+  elif opts.disk_vs_ram:
+    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
+    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
+    confs.append((True, -1, -1, opts.remote_memory, opts.cdf, 0))
   else:
     confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.cdf, 0))
  
