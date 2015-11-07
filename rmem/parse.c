@@ -4,11 +4,11 @@ typedef struct
 {
         long timestamp;
         int page;
-        int length;
-	int count;
+//        int length;
+        int count;
 } __attribute__((packed)) access_record;
 
-
+#define RECORD_SIZE 16
 
 int main(int argc, char ** argv)
 {
@@ -23,9 +23,9 @@ int main(int argc, char ** argv)
   log = fopen(argv[2], "w");
   access_record rec;
  
-  while(fread(&rec, 20, 1, dump))
+  while(fread(&rec, RECORD_SIZE, 1, dump))
   {
-    fprintf(log, "%ld %d %d %d\n", rec.timestamp, rec.page, rec.length, rec.count);
+    fprintf(log, "%ld %d %d %d\n", rec.timestamp, rec.page, 1, rec.count);
   }
   fclose(log);
   fclose(dump);

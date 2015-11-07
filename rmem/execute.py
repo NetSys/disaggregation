@@ -177,7 +177,6 @@ def log_trace():
     rm -rf /mnt2/rmem_log
     mkdir -p /mnt2/rmem_log
     cd /mnt2/rmem_log
-    echo 0 > .app_running.tmp
 
     if [ -z "$(mount | grep /sys/kernel/debug)" ]
     then
@@ -186,28 +185,23 @@ def log_trace():
 
     start_time=$(date +%s%N)
     echo ${start_time:0:${#start_time}-3} > .metadata
+  
     blktrace -a issue -d /dev/xvda1 /dev/xvdb /dev/xvdc -D . &
-
+  
     tcpdump -i eth0 2>&1 | python /root/disaggregation/rmem/tcpdump2flow.py > .nic &
 
-    count=0
-    while true; do
-      cat /proc/rmem_log >> rmem_log.txt
-      count=$((count+1))
-      if [ $(( count % 10 )) -eq 0 ] && [ $(cat .app_running.tmp) -eq 1 ]; then
-        break
-      fi
-    done
- 
-    killall -SIGINT tcpdump
-    killall -SIGINT blktrace
+    /root/disaggregation/rmem/fetch /proc/rmem_log /mnt2/rmem_log/rmem_dump &
+
+    pid=$(ps aux | grep fetch | grep -v grep | tr -s ' ' | cut -d ' ' -f 2)
+    taskset -cp 6 $pid
   '''
   slaves_run_bash(get_disk_mem_log, silent = True, background = True)
 
 def collect_trace(task):
   banner("collect trace")
-  slaves_run("echo 1 > /mnt2/rmem_log/.app_running.tmp")
+  slaves_run("killall -SIGINT fetch;killall -SIGINT tcpdump;killall -SIGINT blktrace")
   time.sleep(3)
+  slaves_run_parallel("/root/disaggregation/rmem/parse /mnt2/rmem_log/rmem_dump /mnt2/rmem_log/rmem_log.txt")
   
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
@@ -237,7 +231,7 @@ def cpuset():
   echo 0 > /mnt/cpuset/sw/mems
   echo 0 > /mnt/cpuset/other/mems
   echo 7 > /mnt/cpuset/sw/cpus
-  echo 0-6 > /mnt/cpuset/other/cpus
+  echo 0-5 > /mnt/cpuset/other/cpus
   echo 0 > /mnt/cpuset/other/sched_load_balance
   for T in $(cat /mnt/cpuset/tasks)
   do
@@ -255,6 +249,14 @@ def get_rw_bytes():
     reads.append(read_bytes)
     writes.append(write_bytes)
   return (reads, writes)
+
+def get_overflow():
+  overflows = []
+  slaves = get_slaves()
+  for s in slaves:
+    of = int(run_and_get("ssh root@%s \"cat /proc/sys/fs/rmem/overflow\"" % s)[1].replace("\n",""))
+    overflows.append(of)
+  return overflows
 
 exp_finished = False
 io_trace = []
@@ -478,6 +480,7 @@ class ExpResult:
   trace_dir = ""
   slowdown_cdf = ""
   io_trace = ""
+  overflow = ""
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us) + ":" + str(self.memcached_throughput)
@@ -487,7 +490,7 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
@@ -613,6 +616,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
 
   if trace:
     result.trace_dir = collect_trace(task)
+    result.overflow = str(get_overflow())
+    print "Overflow: %s" % result.overflow
 
   if bw_gbps >= 0:
     (reads, writes) = get_rw_bytes()
@@ -633,6 +638,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     with open(result.trace_dir + "/traceinfo.txt", "w") as f:
       f.write(" ".join(sys.argv) + "\n")
       f.write(str(result) + "\n")
+    print "TraceDir: %s" % result.trace_dir
   return result
 
 def teragen(size):

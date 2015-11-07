@@ -32,6 +32,9 @@ module_param(major_num, int, 0);
 static int npages = 2048 * 1024; 
 module_param(npages, int, 0); 
 
+static u64 get_record = 0;
+module_param(get_record, u64, 0);
+
 /*
  * We can tweak our hardware sector size, but the kernel talks to us
  * in terms of small sectors, always.
@@ -58,12 +61,12 @@ typedef struct
 	long timestamp; 
 	int page;
 	int length;
-  int count;
+  int batch;
 } __attribute__((packed)) access_record;
 
+#define RECORD_SIZE 20
 
 u64 inject_latency = 0;
-u64 get_record = 0;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
@@ -83,8 +86,8 @@ spinlock_t tx_lock;
 spinlock_t log_lock;
 spinlock_t cdf_lock;
 
-#define LOG_BATCH_SIZE	1048576
-access_record request_log[LOG_BATCH_SIZE];
+#define LOG_BATCH_SIZE	50000000
+access_record request_log* = NULL;
 #define FCT_MAX_SIZE 4096
 u64 fct_by_size[FCT_MAX_SIZE];
 int fct_record_count = 0;
@@ -131,10 +134,10 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		return;
 	}
 
-	if(get_record){
-		do_gettimeofday(&tms);
-		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
-	}
+//	if(get_record){
+//		do_gettimeofday(&tms);
+//		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
+//	}
 
   if(inject_latency)
 		begin = sched_clock();
@@ -174,25 +177,26 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
-		if(get_record)
-			record.timestamp = record.timestamp * -1;
+//		if(get_record)
+//			record.timestamp = record.timestamp * -1;
 
 		spin_unlock(&rx_lock);
 	}
-	
+  /*
 	if(get_record){
 		record.page = page;
-		record.length = npage;
+		//record.length = npage;
     record.count = count;
 	
 		spin_lock(&log_lock);
 		request_log[log_head] = record;
-		line_count += record.length;
+		line_count += npage;
 		log_head = (log_head + 1)%LOG_BATCH_SIZE;
 		if(log_head == log_tail)
 			overflow = 1;
 		spin_unlock(&log_lock);	
 	}
+  */
 }
 
 static void rmem_request(struct request_queue *q) 
@@ -368,10 +372,10 @@ static int log_show(struct seq_file *m, void *v)
 	int i;
 	pr_info("h%d t%d\n", log_head, log_tail);
 	spin_lock(&log_lock);
-	for(i = 0; i < 10 && log_tail != log_head; i++){
+	for(i = 0; i < 200 && log_tail != log_head; i++){
 		//seq_printf(m, "%d %ld %d %d %d\n", log_tail, request_log[log_tail].timestamp, 
 		//request_log[log_tail].page, request_log[log_tail].length, request_log[log_tail].count);
-		seq_write(m, &(request_log[log_tail]), 20);
+		seq_write(m, &(request_log[log_tail]), RECORD_SIZE);
 		log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
 	}
 	spin_unlock(&log_lock);
@@ -450,10 +454,14 @@ static struct file_operations cdf_fops = {
 static int __init rmem_init(void) {
 	int i;
 
+  if(get_record && request_log == NULL)
+  {
+    request_log = (access_record*)malloc(sizeof(access_record) * LOG_BATCH_SIZE);
+  }
   for(i = 0; i < FCT_MAX_SIZE; i++)
     fct_by_size[i] = 0;
 
-  if(sizeof(access_record) != 20)
+  if(sizeof(access_record) != RECORD_SIZE)
     return -ENOMEM;
   
 	pr_info("PAGE_SIZE: %lu", PAGE_SIZE);
@@ -545,6 +553,12 @@ out:
 static void __exit rmem_exit(void)
 {
 	int i;
+
+  if(get_record && request_log)
+  {
+    free(request_log);
+  }
+
 
 	del_gendisk(device.gd);
 	put_disk(device.gd);

@@ -2,6 +2,8 @@
 #include<signal.h>
 #include<unistd.h>
 
+#define RECORD_SIZE 20
+
 FILE* dump;
 int stop = 0;
 
@@ -27,13 +29,13 @@ int main(int argc, char ** argv)
     return -1;
   }
   FILE *fp;
-  char rec[20];
+  char rec[RECORD_SIZE];
   dump = fopen(argv[2], "w");
   while(!stop){
     fp = fopen(argv[1], "rb");
-    while(fread(&rec, 20, 1, fp))
+    while(fread(&rec, RECORD_SIZE, 1, fp))
     {
-      fwrite(&rec, 20, 1, dump);
+      fwrite(&rec, RECORD_SIZE, 1, dump);
       //printf("%ld %d %d %d\n", rec.timestamp, rec.page, rec.length, rec.count);
     }
     fclose(fp);
