@@ -151,7 +151,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       cd /root/disaggregation/rmem
 
       mkdir -p swap;
-      insmod rmem.ko npages=%d;
+      insmod rmem.ko npages=%d get_record=%d;
       mkswap /dev/rmem0;
       swapon /dev/rmem0;
       echo 0 > /proc/sys/fs/rmem/read_bytes;
@@ -161,11 +161,10 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       echo %d > /proc/sys/fs/rmem/latency_ns;
       echo %d > /proc/sys/fs/rmem/end_to_end_latency_ns;
       echo %d > /proc/sys/fs/rmem/inject_latency;
-      echo %d > /proc/sys/fs/rmem/get_record;
 
       pid=$(ps aux | grep kswapd0 | grep -v grep | tr -s ' ' | cut -d ' ' -f 2)
       taskset -cp 7 $pid
-      ''' % (remote_page, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int, trace_int)
+      ''' % (remote_page, trace_int, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int)
     slaves_run_bash(install_rmem)
 
     if slowdown_cdf != "":
@@ -201,7 +200,7 @@ def log_trace():
 def collect_trace(task):
   banner("collect trace")
   slaves_run("killall -SIGINT fetch;killall -SIGINT tcpdump;killall -SIGINT blktrace")
-  time.sleep(3)
+  time.sleep(5)
   slaves_run_parallel("/root/disaggregation/rmem/parse /mnt2/rmem_log/rmem_dump /mnt2/rmem_log/rmem_log.txt")
   
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])

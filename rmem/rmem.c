@@ -87,7 +87,7 @@ spinlock_t tx_lock;
 spinlock_t log_lock;
 spinlock_t cdf_lock;
 
-#define LOG_BATCH_SIZE	50000000
+#define LOG_BATCH_SIZE	2000000
 access_record* request_log = NULL;
 #define FCT_MAX_SIZE 4096
 u64 fct_by_size[FCT_MAX_SIZE];
@@ -419,7 +419,7 @@ static struct proc_dir_entry* log_file;
 static int log_show(struct seq_file *m, void *v)
 {
 	int i;
-	pr_info("h%d t%d\n", log_head, log_tail);
+	//pr_info("h%d t%d\n", log_head, log_tail);
 	spin_lock(&log_lock);
 	for(i = 0; i < 200 && log_tail != log_head; i++){
 		//seq_printf(m, "%d %ld %d %d %d\n", log_tail, request_log[log_tail].timestamp, 

@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
  
   while(fread(&rec, RECORD_SIZE, 1, dump))
   {
-    fprintf(log, "%ld %d %d %d\n", rec.batch, rec.timestamp, rec.page, rec.length);
+    fprintf(log, "%d %ld %d %d\n", rec.batch, rec.timestamp, rec.page, rec.length);
   }
   fclose(log);
   fclose(dump);
