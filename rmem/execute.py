@@ -36,11 +36,11 @@ def parse_args():
   parser.add_option("--cdf", type="string", default="", help="Inject latency with slowdown")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--profile-io", action="store_true", default=False, help="Get an IO trace")
-  parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
+  parser.add_option("--vary-both-latency-bw", action="store_true", default=False, help="Experiment on different latency bandwidth combinations")
   parser.add_option("--vary-e2e-latency", action="store_true", default=False, help="Experiment on different end to end latency")
-  parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
+  parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
   parser.add_option("--disk-vs-ram", action="store_true", default=False, help="Compare performance between disk and ram")
-  parser.add_option("--vary-bw-5us", action="store_true", default=False, help="Experiment on different bw with 5us latency")
+  parser.add_option("--vary-bw", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
@@ -906,19 +906,19 @@ def execute(opts):
   if opts.inject_test:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
-  elif opts.vary_latency:
+  elif opts.vary_both_latency_bw:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     latencies = [1, 5, 10]
     bws = [100, 40, 10]
     for l in latencies:
       for b in bws:
         confs.append((True, l, b, opts.remote_memory, opts.cdf, 0))
-  elif opts.vary_latency_40g:
+  elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
     confs.append((False, 0, 40, opts.remote_memory, opts.cdf, 0))
     for l in latency_40g:
       confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
-  elif opts.vary_bw_5us:
+  elif opts.vary_bw:
 #    bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     bw_5us = [10, 20, 40, 60, 80, 100]
     confs.append((False, 5, 1000, opts.remote_memory, opts.cdf, 0))
