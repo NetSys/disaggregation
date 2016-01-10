@@ -1057,6 +1057,7 @@ def install_all():
   storm_install()
   install_mosh()
   install_s3cmd()
+  install_timely()
 
 def prepare_env():
   stop_tachyon()
@@ -1075,11 +1076,11 @@ def check_env():
       prepare_env()
   
 
-def prepare_all(opts):
-  prepare_env()
-  teragen(opts.teragen_size)
-  graphlab_prepare()
-  wordcount_prepare()
+#def prepare_all(opts):
+#  prepare_env()
+#  teragen(opts.teragen_size)
+#  graphlab_prepare()
+#  wordcount_prepare()
 
 
 def main():
@@ -1113,8 +1114,6 @@ def main():
     storm_prepare()
   elif opts.task == "prepare-env":
     prepare_env()
-  elif opts.task == "prepare-all":
-    prepare_all(opts)
   elif opts.task == "install-all":
     install_all()
   elif opts.task == "reconfig-hdfs":
