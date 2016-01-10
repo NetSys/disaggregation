@@ -613,6 +613,11 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     result.storm_latency_us = latency
     result.storm_throughput = throughput
 
+  elif task == "timely":
+    start_time = time.time()
+    timely_run()
+    time_used = time.time() - start_time
+
   if profile_io:
     result.io_trace = str(profile_io_end())
 
@@ -981,6 +986,68 @@ def install_mosh():
 def install_s3cmd():
   run("cd ~; git clone https://github.com/pxgao/s3cmd.git")
 
+def install_timely():
+  cmd = "wget https://static.rust-lang.org/rustup.sh; sh rustup.sh -y; rm rustup.sh"
+  slaves_run(cmd, tt = True)
+  run(cmd)
+  run("cd /root; git clone https://github.com/frankmcsherry/pagerank.git; /root/spark-ec2/copy-dir /root/pagerank")
+
+def timely_prepare():
+  cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
+  slaves_run_parallel(cmd, master = True)
+
+  run("rm -rf /mnt2/friendster; mkdir -p /mnt2/friendster")
+  def get_offsets():
+    for i in "abcd":
+      run("~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.offset_a%s /mnt2/friendster" % i)
+    run("cat /mnt2/friendster/friendster.offset* > /mnt2/timely/my-graph.offsets")
+  
+  def get_targets():
+    for i in "abc":
+      run("~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.target_a%s /mnt2/friendster" % i)
+    run("cat /mnt2/friendster/friendster.target* > /mnt2/timely/my-graph.targets")
+
+  threads = [ threading.Thread(target=f) for f in [get_offsets, get_targets]]
+  [t.start() for t in threads]
+  [t.join() for t in threads]
+
+  run("rm -rf /mnt2/friendster")
+  
+
+  hosts_file = open("/mnt2/timely/hosts.txt","w")
+  for s in get_slaves():
+    for i in range(0,4):
+      hosts_file.write(s + ":1988" + str(i) + "\n")
+  hosts_file.close()
+  run("/root/spark-ec2/copy-dir /mnt2/timely/")
+
+
+def timely_run():
+  global bash_run_counter
+  def ssh(machine, cmd, counter):
+    command = "ssh " + machine + " '" + cmd + "' &> /mnt/local_commands/cmd_" + str(counter) + ".log"
+    print "#######Running cmd:" + command
+    os.system(command)
+    print "#######Server " + machine + " command finished"
+
+  if not os.path.exists("/mnt/local_commands"):
+    os.system("mkdir -p /mnt/local_commands")
+
+  threads = []
+  count = 0
+  with open("/mnt2/timely/hosts.txt") as hosts_file:
+    hosts = hosts_file.readlines()
+  for line in hosts:
+    s = line.split(":")[0]
+    cmd = "cd /root/pagerank; cargo run --release --bin pagerank -- /mnt2/timely/my-graph -h /mnt2/timely/hosts.txt -n %s -p %s" % (len(hosts), count)
+    threads.append(threading.Thread(target=ssh, args=(s, cmd, bash_run_counter,)))
+    bash_run_counter += 1
+    count += 1
+
+  [t.start() for t in threads]
+  [t.join() for t in threads]
+  print "Finished parallel run: " + cmd
+
 def install_all():
   update_kernel()
   slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
@@ -1017,7 +1084,7 @@ def prepare_all(opts):
 
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "storm"]
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "storm", "timely"]
  
   if opts.task != "prepare-env":
     check_env()
