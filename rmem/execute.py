@@ -867,6 +867,32 @@ def succinct_install():
   run("/root/spark-ec2/copy-dir /root/succinct-cpp")
   run("/root/spark/sbin/slaves.sh /root/succinct-cpp/ec2/install_thrift.sh")
 
+
+def install_elasticsearch():
+  all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
+
+def elasticsearch_prepare():
+  def get_elastic_conf(id):
+    all = get_slaves()
+    all.append(get_master())
+    slaves = str([ s + ":9300" for s in all]).replace("'", "\"")
+    conf = '''cluster.name: ddc
+node.name: ddc%s
+node.master: %s
+node.data: %s
+discovery.zen.ping.multicast.enabled: false
+discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", slaves)
+    return conf
+
+  with open("/etc/elasticsearch/elasticsearch.yml", "w") as f:
+    f.write(get_elastic_conf(0))
+
+  for i in range(1, 6):
+    with open("/mnt/elasticsearch.yml", "w") as f:
+      f.write(get_elastic_conf(i))
+    scp_to("/mnt/elasticsearch.yml", "/etc/elasticsearch/elasticsearch.yml", get_slaves()[i-1])
+  run("rm /mnt/elasticsearch.yml")
+
 def update_hdfs_conf():
   with open('/root/ephemeral-hdfs/conf/core-site.xml', 'r') as core_file:
     core_file_content = core_file.read()
@@ -917,8 +943,8 @@ def execute(opts):
     for b in bw_5us:
       confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0))                  
   elif opts.vary_remote_mem:
-    local_rams = map(lambda x: x/10.0, range(1,10))
-    local_rams.append(0.9999)
+    local_rams = map(lambda x: x/10.0, range(7,9))
+    #local_rams.append(0.9999)
     for r in local_rams:
       confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0))
       confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0))
@@ -1016,48 +1042,18 @@ def main():
     execute(opts)
   elif opts.task == "terasort-vary-size":
     terasort_vary_size(opts)
-  elif opts.task == "wordcount-prepare":
-    wordcount_prepare()
   elif opts.task == "terasort-prepare":
     teragen(opts.teragen_size)
   elif opts.task == "terasort-spark-prepare":
     terasort_spark_prepare(opts.teragen_size)
-  elif opts.task == "graphlab-install":
-    graphlab_install()
-  elif opts.task == "graphlab-prepare":
-    graphlab_prepare()
-  elif opts.task == "memcached-install":
-    memcached_install()
-  elif opts.task == "storm-install":
-    storm_install()
-  elif opts.task == "storm-prepare":
-    storm_prepare()
-  elif opts.task == "prepare-env":
-    prepare_env()
   elif opts.task == "prepare-all":
     prepare_all(opts)
-  elif opts.task == "install-all":
-    install_all()
-  elif opts.task == "reconfig-hdfs":
-    reconfig_hdfs()
 
   elif opts.task == "init-rmem":
     setup_rmem(5, 40, 10, 0, True, False, "wordcount", opts.task)
   elif opts.task == "exit-rmem":
     clean_existing_rmem(40) 
-  elif opts.task == "sync-rmem-code":
-    sync_rmem_code()
-  elif opts.task == "cpuset":
-    cpuset()
 
-  elif opts.task == "reconfig-hdfs":
-    reconfig_hdfs()
-  elif opts.task == "storm-stop":
-    storm_stop()
-  elif opts.task == "storm-start":
-    storm_start()
-  elif opts.task == "s3cmd-install":
-    install_s3cmd()
   elif opts.task == "test":
     update_hdfs_conf()
   else:
