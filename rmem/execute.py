@@ -991,6 +991,7 @@ def install_timely():
   slaves_run(cmd, tt = True)
   run(cmd)
   run("cd /root; git clone https://github.com/frankmcsherry/pagerank.git; /root/spark-ec2/copy-dir /root/pagerank")
+  all_run("cd /root/pagerank; cargo build --release --bin pagerank")
 
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
