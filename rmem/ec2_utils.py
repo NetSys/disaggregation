@@ -35,10 +35,10 @@ def scp_to(local_file, remote_file, remote_machine):
   scp_cmd = "scp -q %s %s:%s" % (local_file, remote_machine, remote_file)
   os.system(scp_cmd)
 
-def slaves_run(cmd, background = False):
+def slaves_run(cmd, background = False, tt = False):
   lines = get_slaves()
   for s in lines:
-    command = "ssh " + s + " \"" + cmd + "\"" + (" &> /dev/null &" if background else "")
+    command = "ssh " + ("-tt " if tt else "") + s + " \"" + cmd + "\"" + (" &> /dev/null &" if background else "")
     print "#####Running cmd:" + command
     os.system(command)
 

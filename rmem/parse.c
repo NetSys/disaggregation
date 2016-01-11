@@ -1,14 +1,15 @@
 #include <stdio.h>
 
+
 typedef struct
 {
         long timestamp;
         int page;
         int length;
-	int count;
+        int batch;
 } __attribute__((packed)) access_record;
 
-
+#define RECORD_SIZE 20
 
 int main(int argc, char ** argv)
 {
@@ -23,9 +24,9 @@ int main(int argc, char ** argv)
   log = fopen(argv[2], "w");
   access_record rec;
  
-  while(fread(&rec, 20, 1, dump))
+  while(fread(&rec, RECORD_SIZE, 1, dump))
   {
-    fprintf(log, "%ld %d %d %d\n", rec.timestamp, rec.page, rec.length, rec.count);
+    fprintf(log, "%d %ld %d %d\n", rec.batch, rec.timestamp, rec.page, rec.length);
   }
   fclose(log);
   fclose(dump);

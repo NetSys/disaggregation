@@ -36,10 +36,11 @@ def parse_args():
   parser.add_option("--cdf", type="string", default="", help="Inject latency with slowdown")
   parser.add_option("-t", "--trace", action="store_true", default=False, help="Whether to get trace")
   parser.add_option("--profile-io", action="store_true", default=False, help="Get an IO trace")
-  parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency")
+  parser.add_option("--vary-both-latency-bw", action="store_true", default=False, help="Experiment on different latency bandwidth combinations")
   parser.add_option("--vary-e2e-latency", action="store_true", default=False, help="Experiment on different end to end latency")
-  parser.add_option("--vary-latency-40g", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
-  parser.add_option("--vary-bw-5us", action="store_true", default=False, help="Experiment on different bw with 5us latency")
+  parser.add_option("--vary-latency", action="store_true", default=False, help="Experiment on different latency with 40G bandwidth")
+  parser.add_option("--disk-vs-ram", action="store_true", default=False, help="Compare performance between disk and ram")
+  parser.add_option("--vary-bw", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
@@ -136,9 +137,9 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       mount -t tmpfs -o size=%dm tmpfs ./tmpfs/
       fallocate -l %dm ./tmpfs/a.img
 
-      mkdir -p /mnt2/swapdisk
       swapoff /mnt2/swapdisk/swap
-      rm /mnt2/swapdisk/swap
+      rm -rf /mnt2/swapdisk/swap
+      mkdir -p /mnt2/swapdisk
       fallocate -l %dM /mnt2/swapdisk/swap
       chmod 0600 /mnt2/swapdisk/swap
       mkswap /mnt2/swapdisk/swap
@@ -150,7 +151,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       cd /root/disaggregation/rmem
 
       mkdir -p swap;
-      insmod rmem.ko npages=%d;
+      insmod rmem.ko npages=%d get_record=%d;
       mkswap /dev/rmem0;
       swapon /dev/rmem0;
       echo 0 > /proc/sys/fs/rmem/read_bytes;
@@ -160,11 +161,10 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       echo %d > /proc/sys/fs/rmem/latency_ns;
       echo %d > /proc/sys/fs/rmem/end_to_end_latency_ns;
       echo %d > /proc/sys/fs/rmem/inject_latency;
-      echo %d > /proc/sys/fs/rmem/get_record;
 
       pid=$(ps aux | grep kswapd0 | grep -v grep | tr -s ' ' | cut -d ' ' -f 2)
       taskset -cp 7 $pid
-      ''' % (remote_page, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int, trace_int)
+      ''' % (remote_page, trace_int, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int)
     slaves_run_bash(install_rmem)
 
     if slowdown_cdf != "":
@@ -177,7 +177,6 @@ def log_trace():
     rm -rf /mnt2/rmem_log
     mkdir -p /mnt2/rmem_log
     cd /mnt2/rmem_log
-    echo 0 > .app_running.tmp
 
     if [ -z "$(mount | grep /sys/kernel/debug)" ]
     then
@@ -186,28 +185,23 @@ def log_trace():
 
     start_time=$(date +%s%N)
     echo ${start_time:0:${#start_time}-3} > .metadata
+  
     blktrace -a issue -d /dev/xvda1 /dev/xvdb /dev/xvdc -D . &
-
+  
     tcpdump -i eth0 2>&1 | python /root/disaggregation/rmem/tcpdump2flow.py > .nic &
 
-    count=0
-    while true; do
-      cat /proc/rmem_log >> rmem_log.txt
-      count=$((count+1))
-      if [ $(( count % 10 )) -eq 0 ] && [ $(cat .app_running.tmp) -eq 1 ]; then
-        break
-      fi
-    done
- 
-    killall -SIGINT tcpdump
-    killall -SIGINT blktrace
+    /root/disaggregation/rmem/fetch /proc/rmem_log /mnt2/rmem_log/rmem_dump &
+
+    pid=$(ps aux | grep fetch | grep -v grep | tr -s ' ' | cut -d ' ' -f 2)
+    taskset -cp 6 $pid
   '''
   slaves_run_bash(get_disk_mem_log, silent = True, background = True)
 
 def collect_trace(task):
   banner("collect trace")
-  slaves_run("echo 1 > /mnt2/rmem_log/.app_running.tmp")
-  time.sleep(3)
+  slaves_run("killall -SIGINT fetch;killall -SIGINT tcpdump;killall -SIGINT blktrace")
+  time.sleep(5)
+  slaves_run_parallel("/root/disaggregation/rmem/parse /mnt2/rmem_log/rmem_dump /mnt2/rmem_log/rmem_log.txt")
   
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
@@ -226,7 +220,9 @@ def collect_trace(task):
     count += 1
 
   return result_dir
-  
+
+
+
 def cpuset():
   cmd = '''umount /mnt/cpuset
   rm -rf /mnt/cpuset
@@ -237,7 +233,7 @@ def cpuset():
   echo 0 > /mnt/cpuset/sw/mems
   echo 0 > /mnt/cpuset/other/mems
   echo 7 > /mnt/cpuset/sw/cpus
-  echo 0-6 > /mnt/cpuset/other/cpus
+  echo 0-5 > /mnt/cpuset/other/cpus
   echo 0 > /mnt/cpuset/other/sched_load_balance
   for T in $(cat /mnt/cpuset/tasks)
   do
@@ -255,6 +251,14 @@ def get_rw_bytes():
     reads.append(read_bytes)
     writes.append(write_bytes)
   return (reads, writes)
+
+def get_overflow():
+  overflows = []
+  slaves = get_slaves()
+  for s in slaves:
+    of = int(run_and_get("ssh root@%s \"cat /proc/sys/fs/rmem/overflow\"" % s)[1].replace("\n",""))
+    overflows.append(of)
+  return overflows
 
 exp_finished = False
 io_trace = []
@@ -478,6 +482,7 @@ class ExpResult:
   trace_dir = ""
   slowdown_cdf = ""
   io_trace = ""
+  overflow = ""
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us) + ":" + str(self.memcached_throughput)
@@ -487,7 +492,7 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
@@ -608,11 +613,18 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     result.storm_latency_us = latency
     result.storm_throughput = throughput
 
+  elif task == "timely":
+    start_time = time.time()
+    timely_run()
+    time_used = time.time() - start_time
+
   if profile_io:
     result.io_trace = str(profile_io_end())
 
   if trace:
     result.trace_dir = collect_trace(task)
+    result.overflow = str(get_overflow())
+    print "Overflow: %s" % result.overflow
 
   if bw_gbps >= 0:
     (reads, writes) = get_rw_bytes()
@@ -633,6 +645,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     with open(result.trace_dir + "/traceinfo.txt", "w") as f:
       f.write(" ".join(sys.argv) + "\n")
       f.write(str(result) + "\n")
+    print "TraceDir: %s" % result.trace_dir
   return result
 
 def teragen(size):
@@ -924,19 +937,19 @@ def execute(opts):
   if opts.inject_test:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
-  elif opts.vary_latency:
+  elif opts.vary_both_latency_bw:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     latencies = [1, 5, 10]
     bws = [100, 40, 10]
     for l in latencies:
       for b in bws:
         confs.append((True, l, b, opts.remote_memory, opts.cdf, 0))
-  elif opts.vary_latency_40g:
+  elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
     confs.append((False, 0, 40, opts.remote_memory, opts.cdf, 0))
     for l in latency_40g:
       confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
-  elif opts.vary_bw_5us:
+  elif opts.vary_bw:
 #    bw_5us = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     bw_5us = [10, 20, 40, 60, 80, 100]
     confs.append((False, 5, 1000, opts.remote_memory, opts.cdf, 0))
@@ -958,6 +971,10 @@ def execute(opts):
     e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     for el in e2e_latency:
       confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
+  elif opts.disk_vs_ram:
+    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
+    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
+    confs.append((True, -1, -1, opts.remote_memory, opts.cdf, 0))
   else:
     confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.cdf, 0))
  
@@ -995,6 +1012,69 @@ def install_mosh():
 def install_s3cmd():
   run("cd ~; git clone https://github.com/pxgao/s3cmd.git")
 
+def install_timely():
+  cmd = "wget https://static.rust-lang.org/rustup.sh; sh rustup.sh -y; rm rustup.sh"
+  slaves_run(cmd, tt = True)
+  run(cmd)
+  run("cd /root; git clone https://github.com/frankmcsherry/pagerank.git; /root/spark-ec2/copy-dir /root/pagerank")
+  all_run("cd /root/pagerank; cargo build --release --bin pagerank")
+
+def timely_prepare():
+  cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
+  slaves_run_parallel(cmd, master = True)
+
+  run("rm -rf /mnt2/friendster; mkdir -p /mnt2/friendster")
+  def get_offsets():
+    for i in "abcd":
+      run("~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.offset_a%s /mnt2/friendster" % i)
+    run("cat /mnt2/friendster/friendster.offset* > /mnt2/timely/my-graph.offsets")
+  
+  def get_targets():
+    for i in "abc":
+      run("~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.target_a%s /mnt2/friendster" % i)
+    run("cat /mnt2/friendster/friendster.target* > /mnt2/timely/my-graph.targets")
+
+  threads = [ threading.Thread(target=f) for f in [get_offsets, get_targets]]
+  [t.start() for t in threads]
+  [t.join() for t in threads]
+
+  run("rm -rf /mnt2/friendster")
+  
+
+  hosts_file = open("/mnt2/timely/hosts.txt","w")
+  for s in get_slaves():
+    for i in range(0,4):
+      hosts_file.write(s + ":1988" + str(i) + "\n")
+  hosts_file.close()
+  run("/root/spark-ec2/copy-dir /mnt2/timely/")
+
+
+def timely_run():
+  global bash_run_counter
+  def ssh(machine, cmd, counter):
+    command = "ssh " + machine + " '" + cmd + "' &> /mnt/local_commands/cmd_" + str(counter) + ".log"
+    print "#######Running cmd:" + command
+    os.system(command)
+    print "#######Server " + machine + " command finished"
+
+  if not os.path.exists("/mnt/local_commands"):
+    os.system("mkdir -p /mnt/local_commands")
+
+  threads = []
+  count = 0
+  with open("/mnt2/timely/hosts.txt") as hosts_file:
+    hosts = hosts_file.readlines()
+  for line in hosts:
+    s = line.split(":")[0]
+    cmd = "cd /root/pagerank; cargo run --release --bin pagerank -- /mnt2/timely/my-graph -h /mnt2/timely/hosts.txt -n %s -p %s" % (len(hosts), count)
+    threads.append(threading.Thread(target=ssh, args=(s, cmd, bash_run_counter,)))
+    bash_run_counter += 1
+    count += 1
+
+  [t.start() for t in threads]
+  [t.join() for t in threads]
+  print "Finished parallel run: " + cmd
+
 def install_all():
   update_kernel()
   slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
@@ -1004,6 +1084,7 @@ def install_all():
   storm_install()
   install_mosh()
   install_s3cmd()
+  install_timely()
 
 def prepare_env():
   stop_tachyon()
@@ -1022,16 +1103,16 @@ def check_env():
       prepare_env()
   
 
-def prepare_all(opts):
-  prepare_env()
-  teragen(opts.teragen_size)
-  graphlab_prepare()
-  wordcount_prepare()
+#def prepare_all(opts):
+#  prepare_env()
+#  teragen(opts.teragen_size)
+#  graphlab_prepare()
+#  wordcount_prepare()
 
 
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "storm"]
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "storm", "timely"]
  
   if opts.task != "prepare-env":
     check_env()

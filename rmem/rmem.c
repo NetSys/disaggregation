@@ -32,6 +32,9 @@ module_param(major_num, int, 0);
 static int npages = 2048 * 1024; 
 module_param(npages, int, 0); 
 
+static int get_record = 0;
+module_param(get_record, int, 0);
+
 /*
  * We can tweak our hardware sector size, but the kernel talks to us
  * in terms of small sectors, always.
@@ -58,12 +61,12 @@ typedef struct
 	long timestamp; 
 	int page;
 	int length;
-  int count;
+	int batch;
 } __attribute__((packed)) access_record;
 
+#define RECORD_SIZE 20
 
 u64 inject_latency = 0;
-u64 get_record = 0;
 
 /* latency in ns: default 1 us */
 u64 latency_ns = 1000ULL;
@@ -77,14 +80,15 @@ u64 bandwidth_bps = 10000000000ULL;
 atomic64_t counter_read;
 atomic64_t counter_write;
 u64 line_count = 0; 
+int batch_count = 0;
 
 spinlock_t rx_lock;
 spinlock_t tx_lock;
 spinlock_t log_lock;
 spinlock_t cdf_lock;
 
-#define LOG_BATCH_SIZE	1048576
-access_record request_log[LOG_BATCH_SIZE];
+#define LOG_BATCH_SIZE	2000000
+access_record* request_log = NULL;
 #define FCT_MAX_SIZE 4096
 u64 fct_by_size[FCT_MAX_SIZE];
 int fct_record_count = 0;
@@ -109,14 +113,14 @@ static u64 get_fct(int batch_size)
  * Handle an I/O request.
  */
 static void rmem_transfer(struct rmem_device *dev, sector_t sector,
-		unsigned long nsect, char *buffer, int write, u64 slowdown, int count) 
+		unsigned long nsect, char *buffer, int write, u64 slowdown) 
 {
 	int i;
 	int page;
 	int npage;
 	u64 begin = 0ULL;
-	struct timeval tms;
-	access_record record;
+//	struct timeval tms;
+//	access_record record;
 
 	if (sector % SECTORS_PER_PAGE != 0 || nsect % SECTORS_PER_PAGE != 0) {
 		pr_err("incorrect align: %lu %lu %d\n", sector, nsect, write);
@@ -131,12 +135,12 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		return;
 	}
 
-	if(get_record){
-		do_gettimeofday(&tms);
-		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
-	}
+//	if(get_record){
+//		do_gettimeofday(&tms);
+//		record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
+//	}
 
-  if(inject_latency)
+	if(inject_latency)
 		begin = sched_clock();
 
 	if (write) {
@@ -166,7 +170,7 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 		atomic64_add(npage * PAGE_SIZE, &counter_read);
 		
 		if (inject_latency){
-//      begin = sched_clock();
+//			begin = sched_clock();
 			while ((sched_clock() - begin) < 
 					(((npage * PAGE_SIZE * 8ULL) * 1000000000) / bandwidth_bps) * slowdown / 10000) {
 				/* wait for transmission delay */
@@ -174,33 +178,40 @@ static void rmem_transfer(struct rmem_device *dev, sector_t sector,
 			}
 		}
 
-		if(get_record)
-			record.timestamp = record.timestamp * -1;
+//		if(get_record)
+//			record.timestamp = record.timestamp * -1;
 
 		spin_unlock(&rx_lock);
 	}
-	
+  /*
 	if(get_record){
 		record.page = page;
-		record.length = npage;
-    record.count = count;
+		//record.length = npage;
+		record.count = count;
 	
 		spin_lock(&log_lock);
 		request_log[log_head] = record;
-		line_count += record.length;
+		line_count += npage;
 		log_head = (log_head + 1)%LOG_BATCH_SIZE;
 		if(log_head == log_tail)
 			overflow = 1;
 		spin_unlock(&log_lock);	
 	}
+  */
 }
+
+
 
 static void rmem_request(struct request_queue *q) 
 {
 	struct request *req;
 	u64 begin = 0ULL;
 	u64 slowdown = 10000;
-  int count = 0;
+	access_record record;
+	struct timeval tms;
+	int count = 0;
+	int last_page = -2;
+	int last_dir = -1;
 
 	if(inject_latency){
 		begin = sched_clock();
@@ -211,32 +222,74 @@ static void rmem_request(struct request_queue *q)
 	}
 
 	req = blk_fetch_request(q);
-	while (req != NULL) {
-		// blk_fs_request() was removed in 2.6.36 - many thanks to
-		// Christian Paro for the heads up and fix...
-		//if (!blk_fs_request(req)) {
-		if (req == NULL || (req->cmd_type != REQ_TYPE_FS)) {
-			printk (KERN_NOTICE "Skip non-CMD request\n");
-			__blk_end_request_all(req, -EIO);
-			continue;
+	if(req){
+		if(get_record){
+			spin_lock(&log_lock);
+			record.batch = batch_count++;
+			spin_unlock(&log_lock);
+			do_gettimeofday(&tms);
+			record.timestamp = tms.tv_sec * 1000 * 1000 + tms.tv_usec;
 		}
-		rmem_transfer(&device, blk_rq_pos(req), blk_rq_cur_sectors(req),
-				req->buffer, rq_data_dir(req), slowdown, count);
-    count++;
-		if ( ! __blk_end_request_cur(req, 0) ) {
-			req = blk_fetch_request(q);
+		while (req != NULL) {
+			// blk_fs_request() was removed in 2.6.36 - many thanks to
+			// Christian Paro for the heads up and fix...
+			//if (!blk_fs_request(req)) {
+			if (req == NULL || (req->cmd_type != REQ_TYPE_FS)) {
+				printk (KERN_NOTICE "Skip non-CMD request\n");
+				__blk_end_request_all(req, -EIO);
+				continue;
+			}
+			if(get_record)
+			{
+				if(rq_data_dir(req) == last_dir && last_page + 1 == blk_rq_pos(req) / SECTORS_PER_PAGE)
+				{
+					record.length++;
+				}
+				else
+				{
+					if(last_dir != -1 || last_page != -2)
+					{
+						spin_lock(&log_lock);
+				                request_log[log_head] = record;
+				                log_head = (log_head + 1)%LOG_BATCH_SIZE;
+				                if(log_head == log_tail)
+                        				overflow = 1;
+						spin_unlock(&log_lock);
+					}
+					record.length = 1;
+					record.page = blk_rq_pos(req) / SECTORS_PER_PAGE * (rq_data_dir(req)?1:-1);
+				}
+			}
+			rmem_transfer(&device, blk_rq_pos(req), blk_rq_cur_sectors(req),
+					req->buffer, rq_data_dir(req), slowdown);
+			if(get_record)
+			{
+				last_dir = rq_data_dir(req);
+				last_page = blk_rq_pos(req) / SECTORS_PER_PAGE;
+			}
+			count++;
+			if ( ! __blk_end_request_cur(req, 0) ) {
+				req = blk_fetch_request(q);
+			}
+		}
+		if(get_record)
+		{
+			spin_lock(&log_lock);
+	                request_log[log_head] = record;
+	                log_head = (log_head + 1)%LOG_BATCH_SIZE;
+	                if(log_head == log_tail)
+				overflow = 1;
+			spin_unlock(&log_lock);
 		}
 	}
-
-  if(fct_record_count){
-    u64 fct = get_fct(count);
-    begin = sched_clock();
-    while ((sched_clock() - begin) < fct) {
-      /* wait for RTT latency */
-      ;
-    }
-
-  }
+	if(fct_record_count){
+		u64 fct = get_fct(count);
+		begin = sched_clock();
+		while ((sched_clock() - begin) < fct) {
+			// wait for RTT latency */
+			;
+		}
+	}
 }
 
 /*
@@ -326,7 +379,7 @@ static ctl_table rmem_table[] = {
 		.data		= &get_record,
 		.maxlen		= sizeof(get_record),
 		.mode		= 0644,
-		.proc_handler	= proc_doulongvec_minmax,
+		.proc_handler	= proc_dointvec_minmax,
 	},
 	{
 		.procname	= "version",
@@ -366,12 +419,12 @@ static struct proc_dir_entry* log_file;
 static int log_show(struct seq_file *m, void *v)
 {
 	int i;
-	pr_info("h%d t%d\n", log_head, log_tail);
+	//pr_info("h%d t%d\n", log_head, log_tail);
 	spin_lock(&log_lock);
-	for(i = 0; i < 10 && log_tail != log_head; i++){
+	for(i = 0; i < 200 && log_tail != log_head; i++){
 		//seq_printf(m, "%d %ld %d %d %d\n", log_tail, request_log[log_tail].timestamp, 
 		//request_log[log_tail].page, request_log[log_tail].length, request_log[log_tail].count);
-		seq_write(m, &(request_log[log_tail]), 20);
+		seq_write(m, &(request_log[log_tail]), RECORD_SIZE);
 		log_tail = (log_tail + 1)%LOG_BATCH_SIZE;
 	}
 	spin_unlock(&log_lock);
@@ -450,21 +503,28 @@ static struct file_operations cdf_fops = {
 static int __init rmem_init(void) {
 	int i;
 
-  for(i = 0; i < FCT_MAX_SIZE; i++)
-    fct_by_size[i] = 0;
+	if(sizeof(access_record) != RECORD_SIZE)
+		return -ENOMEM;
 
-  if(sizeof(access_record) != 20)
-    return -ENOMEM;
+	pr_info("%d, %p", get_record, request_log);
+	if(get_record && request_log == NULL)
+	{
+		request_log = (access_record*)vmalloc(sizeof(access_record) * LOG_BATCH_SIZE);
+		pr_info("Allocated space for %d", LOG_BATCH_SIZE);
+	}
+	for(i = 0; i < FCT_MAX_SIZE; i++)
+		fct_by_size[i] = 0;
+
   
 	pr_info("PAGE_SIZE: %lu", PAGE_SIZE);
 	
 	spin_lock_init(&rx_lock);
 	spin_lock_init(&tx_lock);
 	spin_lock_init(&log_lock);
-  spin_lock_init(&cdf_lock);
+	spin_lock_init(&cdf_lock);
 
 	log_file = proc_create("rmem_log", 0666, NULL, &log_fops);
-  cdf_file = proc_create("rmem_cdf", 0666, NULL, &cdf_fops);
+	cdf_file = proc_create("rmem_cdf", 0666, NULL, &cdf_fops);
 
 	if (!log_file || !cdf_file) {
 		return -ENOMEM;
@@ -545,6 +605,12 @@ out:
 static void __exit rmem_exit(void)
 {
 	int i;
+
+	if(get_record && request_log)
+	{
+		vfree(request_log);
+	}
+
 
 	del_gendisk(device.gd);
 	put_disk(device.gd);
