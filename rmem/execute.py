@@ -886,15 +886,17 @@ def install_elasticsearch():
 
 def elasticsearch_prepare():
   def get_elastic_conf(id):
-    all = get_slaves()
+    all = []#get_slaves()
     all.append(get_master())
     slaves = str([ s + ":9300" for s in all]).replace("'", "\"")
+    addr = get_master() if id == 0 else get_slaves()[id-1]
     conf = '''cluster.name: ddc
 node.name: ddc%s
 node.master: %s
 node.data: %s
+network.host: %s
 discovery.zen.ping.multicast.enabled: false
-discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", slaves)
+discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", addr, slaves)
     return conf
 
   with open("/etc/elasticsearch/elasticsearch.yml", "w") as f:
@@ -905,6 +907,13 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
       f.write(get_elastic_conf(i))
     scp_to("/mnt/elasticsearch.yml", "/etc/elasticsearch/elasticsearch.yml", get_slaves()[i-1])
   run("rm /mnt/elasticsearch.yml")
+
+
+def elasticsearch_run():
+  all_run("service elasticsearch stop")
+  all_run("service elasticsearch start")
+  
+
 
 def update_hdfs_conf():
   with open('/root/ephemeral-hdfs/conf/core-site.xml', 'r') as core_file:
