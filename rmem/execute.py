@@ -44,6 +44,7 @@ def parse_args():
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
+  parser.add_option("--dstat", action="store_true", default=False, help="Collect dstat trace")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
@@ -170,6 +171,23 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
     if slowdown_cdf != "":
       run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/fcts")
       slaves_run("cd /root/disaggregation/rmem; cat %s | python convert_fct_to_ns.py > fcts.txt ; cat fcts.txt | while read -r line; do echo \$line > /proc/rmem_cdf; done; diff /proc/rmem_cdf fcts.txt" % slowdown_cdf) 
+
+
+def dstat():
+  banner("Running dstats")
+  for s in get_slaves():
+    run("ssh -f %s \"nohup dstat -cnt -N eth0 2>&1 > /mnt2/dstat < /dev/null &\"" % s)
+
+def collect_dstat(task = "task"):
+  banner("Collecting dstat trace")
+  slaves_run("killall -SIGINT dstat")
+  result_dir = "/mnt2/dstat/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
+  run("mkdir -p %s" % result_dir)
+  slaves = get_slaves()
+  for i in range(len(slaves)):
+    s = slaves[i]
+    scp_from("/mnt2/dstat", "%s/%s-dstat.txt" % (result_dir, i), s)
+  return result_dir
 
 def log_trace():
   banner("log trace")
@@ -494,8 +512,11 @@ class ExpResult:
   def __str__(self):
     return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, profile = False, memcached_size=22):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
+
+  start_time = [-1]
+
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
   result.task = task
@@ -509,59 +530,67 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
 
   min_ram = 0
 
+  def app_start():
+    start_time[0] = time.time()
+    if profile:
+      mem_monitor_start()
+    if dstat_log:
+      dstat()
+    if trace:
+      log_trace()
+    if profile_io:
+      profile_io_start()
+
+
+  def app_end():
+    assert(start_time[0] > 0)
+    result.runtime = time.time() - start_time[0]
+    if profile:
+      result.min_ram_gb = mem_monitor_stop()
+    if dstat_log:
+      dir = collect_dstat(task)
+      print "dstat results in %s" % dir
+    if profile_io:
+      result.io_trace = str(profile_io_end())
+    if trace:
+      result.trace_dir = collect_trace(task)
+      result.overflow = str(get_overflow())
+      print "Overflow: %s" % result.overflow
+
+
   clean_existing_rmem(bw_gbps)
 
   setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, task)
 
-  if trace:
-    log_trace()
-
-  if profile_io:
-    profile_io_start()
 
   master = get_master()
 
   banner("Running app")
   if task == "wordcount" or task == "terasort-spark":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresult")
-    start_time = time.time()  
-    if profile:
-      mem_monitor_start() 
+    app_start()
     if task == "wordcount":
       run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % master )
     elif task == "terasort-spark":
       run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % master )
-    if profile:
-      min_ram = mem_monitor_stop()
-      result.min_ram_gb = min_ram
-    time_used = time.time() - start_time
+    app_end()
 
   elif task == "bdb":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresults")
-    start_time = time.time()  
-    if profile:
-      mem_monitor_start() 
+    app_start() 
     query = get_bdb_query("3a") # 2a or 3a
     run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
-    if profile:
-      min_ram = mem_monitor_stop()
-      result.min_ram_gb = min_ram
-    time_used = time.time() - start_time
+    app_end()
 
   elif task == "terasort" or task == "wordcount-hadoop":
     run("/root/ephemeral-hdfs/bin/start-mapred.sh")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /dfsresult")
-    start_time = time.time()
-    if profile:
-      mem_monitor_start()
+    app_start()
     if task == "terasort":
       run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /dfsresult")
     else:
       run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar wordcount -Dmapred.map.tasks=10 -Dmapred.reduce.tasks=5 -Dmapreduce.map.java.opts=-Xmx8000 -Dmapreduce.reduce.java.opts=-Xmx7000 -Dmapreduce.map.memory.mb=8000 -Dmapreduce.reduce.memory.mb=7000 -Dmapred.reduce.slowstart.completed.maps=1.0 /wiki /dfsresult")
-    if profile:
-      min_ram = mem_monitor_stop()
-      result.min_ram_gb = min_ram
-    time_used = time.time() - start_time
+    app_end()
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /hadoopoutput")
@@ -569,14 +598,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
 
   elif task == "graphlab":
     all_run("rm -rf /mnt2/netflix_m/out")
-    start_time = time.time()
-    if profile:
-      mem_monitor_start()  
+    app_start()
     run("mpiexec -n 5 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt2/netflix_m/ --max_iter=3 --ncpus=6 --minval=1 --maxval=5 --predictions=/mnt2/netflix_m/out/out")
-    if profile: 
-      min_ram = mem_monitor_stop()
-      result.min_ram_gb = min_ram     
-    time_used = time.time() - start_time
+    app_end()
 
   elif task == "memcached":
     slaves_run("memcached -d -m 26000 -u root")
@@ -590,10 +614,10 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     memcached_kill_loadgen_on = False
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
-    start_time = time.time()
+    app_start()
     slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
     (result.memcached_latency_us, result.memcached_throughput) = slaves_get_memcached_avg_latency()
-    time_used = time.time() - start_time
+    app_end()
     slaves_run("killall memcached")
 
   elif task == "storm":
@@ -601,11 +625,11 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     time.sleep(10)
     run("/root/apache-storm-0.9.5/bin/storm kill test")
     time.sleep(90)
-    start_time = time.time()
+    app_start()
     run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-topologies-0.9.5.jar storm.starter.WordCountTopology test")
     time.sleep(1800)
     run("/root/apache-storm-0.9.5/bin/storm kill test")
-    time_used = time.time() - start_time
+    app_end()
     time.sleep(20)
     storm_stop()
     get_storm_trace()
@@ -614,17 +638,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     result.storm_throughput = throughput
 
   elif task == "timely":
-    start_time = time.time()
+    app_start()
     timely_run()
-    time_used = time.time() - start_time
-
-  if profile_io:
-    result.io_trace = str(profile_io_end())
-
-  if trace:
-    result.trace_dir = collect_trace(task)
-    result.overflow = str(get_overflow())
-    print "Overflow: %s" % result.overflow
+    app_end()
 
   if bw_gbps >= 0:
     (reads, writes) = get_rw_bytes()
@@ -637,8 +653,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
 
   clean_existing_rmem(bw_gbps)
 
-  print "Execution time:" + str(time_used) + " Min Ram:" + str(min_ram)
-  result.runtime = time_used
+  print "Execution time:" + str(result.runtime) + " Min Ram:" + str(min_ram)
   log(str(result), level = 1)
 
   if trace:
@@ -661,12 +676,6 @@ def terasort_spark_prepare(size):
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
   run("/root/spark/bin/spark-submit --class \"TeraGen\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" %sg \"/sortinput\"" % (master, int(size)))
 
-def terasort_prepare_and_run(opts, size, bw_gb, latency_us, inject):
-  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
-  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
-  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortoutput")
-  teragen(opts.teragen_size)
-  return run_exp("terasort", opts.remote_memory, bw_gb, latency_us, 0, inject, False, opts.cdf, profile = True)
 
 def terasort_vary_size(opts):
   sizes = [180, 150, 120, 90, 60, 30]
@@ -736,7 +745,7 @@ def disk_vary_size(opts):
         all_run("rm /mnt2/netflix_m/netflix_mm; mkdir -p /mnt2/netflix_m; ln -s /mnt2/nf%d.txt /mnt2/netflix_m/netflix_mm" % (conf[3]))
       elif opts.task == "wordcount":
         wordcount_prepare(conf[3])
-      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, memcached_size = conf[3], profile = True).get()
+      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, False, False, memcached_size = conf[3], profile = True).get()
       results[conf].append(time)
 
 
@@ -994,7 +1003,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4], opts.profile_io).get()
+      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4], opts.profile_io, opts.dstat).get()
       results[conf].append(time)
 
 
@@ -1027,6 +1036,9 @@ def install_timely():
   run(cmd)
   run("cd /root; git clone https://github.com/frankmcsherry/pagerank.git; /root/spark-ec2/copy-dir /root/pagerank")
   all_run("cd /root/pagerank; cargo build --release --bin pagerank")
+
+def install_dstat():
+  all_run("yum install -y dstat")
 
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
