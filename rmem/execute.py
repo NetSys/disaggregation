@@ -175,18 +175,19 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
 
 def dstat():
   banner("Running dstats")
+  slaves_run("rm -rf /mnt/dstat")
   for s in get_slaves():
-    run("ssh -f %s \"nohup dstat -cnt -N eth0 2>&1 > /mnt2/dstat < /dev/null &\"" % s)
+    run("ssh -f %s \"nohup dstat -cnt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
 
 def collect_dstat(task = "task"):
   banner("Collecting dstat trace")
   slaves_run("killall -SIGINT dstat")
-  result_dir = "/mnt2/dstat/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
+  result_dir = "/mnt/dstat/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
   slaves = get_slaves()
   for i in range(len(slaves)):
     s = slaves[i]
-    scp_from("/mnt2/dstat", "%s/%s-dstat.txt" % (result_dir, i), s)
+    scp_from("/mnt/dstat", "%s/%s-dstat.txt" % (result_dir, i), s)
   return result_dir
 
 def log_trace():
@@ -1040,6 +1041,8 @@ def install_timely():
 def install_dstat():
   all_run("yum install -y dstat")
 
+
+
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
   slaves_run_parallel(cmd, master = True)
@@ -1106,6 +1109,8 @@ def install_all():
   install_mosh()
   install_s3cmd()
   install_timely()
+  install_dstat()
+
 
 def prepare_env():
   stop_tachyon()
@@ -1116,6 +1121,12 @@ def prepare_env():
   run("mkdir -p /mnt/local_commands")
   reconfig_hdfs()
   run("echo 1 > /mnt/env_prepared")
+
+def clear_all_data():
+  run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr \"/*\"") #spark and hadoop
+  all_run("rm -rf /mnt2/netflix_mm; rm -rf /mnt2/netflix_m") #graphlab
+  all_run("rm -rf /mnt2/timely") #timely
+
 
 def check_env():
   if not os.path.exists("/mnt/env_prepared"):
@@ -1148,6 +1159,8 @@ def main():
     teragen(opts.teragen_size)
   elif opts.task == "terasort-spark-prepare":
     terasort_spark_prepare(opts.teragen_size)
+  elif opts.task == "wordcount-hadoop-prepare":
+    wordcount_prepare()
   elif opts.task == "prepare-all":
     prepare_all(opts)
 
