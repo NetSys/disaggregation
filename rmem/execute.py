@@ -175,19 +175,22 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
 
 def dstat():
   banner("Running dstats")
-  slaves_run("rm -rf /mnt/dstat")
+  slaves_run("rm -rf /mnt/dstat; rm -rf /mnt/bwm")
   for s in get_slaves():
     run("ssh -f %s \"nohup dstat -cnt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
+    run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate /mnt/bwm 2>&1 > /dev/null < /dev/null &\"" % s)
 
 def collect_dstat(task = "task"):
   banner("Collecting dstat trace")
   slaves_run("killall -SIGINT dstat")
+  slaves_run("killall -SIGINT bwm-ng")
   result_dir = "/mnt/dstat/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
   slaves = get_slaves()
   for i in range(len(slaves)):
     s = slaves[i]
     scp_from("/mnt/dstat", "%s/%s-dstat.txt" % (result_dir, i), s)
+    scp_from("/mnt/bwm", "%s/%s-bwm.txt" % (result_dir, i), s)
   return result_dir
 
 def log_trace():
@@ -1036,12 +1039,14 @@ def install_timely():
   slaves_run(cmd, tt = True)
   run(cmd)
   run("cd /root; git clone https://github.com/frankmcsherry/pagerank.git; /root/spark-ec2/copy-dir /root/pagerank")
-  all_run("cd /root/pagerank; cargo build --release --bin pagerank")
+  compile_cmd = "cd /root/pagerank; cargo build --release --bin pagerank" 
+  slaves_run_parallel(compile_cmd, master = True)
 
 def install_dstat():
   all_run("yum install -y dstat")
 
-
+def install_bwmng():
+  all_run("yum install bwm-ng --enablerepo=epel")
 
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
@@ -1110,7 +1115,7 @@ def install_all():
   install_s3cmd()
   install_timely()
   install_dstat()
-
+  install_bwmng()
 
 def prepare_env():
   stop_tachyon()
