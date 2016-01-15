@@ -896,6 +896,9 @@ def succinct_install():
 
 def install_elasticsearch():
   all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
+  run("cd /root; git clone git@github.com:pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
+  run("/root/spark-ec2/copy-dir /root/YCSB")
+  install_mvn()
 
 def elasticsearch_prepare():
   def get_elastic_conf(id):
@@ -908,8 +911,11 @@ node.name: ddc%s
 node.master: %s
 node.data: %s
 network.host: %s
+path.data: /mnt2/es/data
+path.work: /mnt2/es/work
+path.logs: /mnt2/es/logs
 discovery.zen.ping.multicast.enabled: false
-discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", addr, slaves)
+discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", "0.0.0.0", slaves)
     return conf
 
   with open("/etc/elasticsearch/elasticsearch.yml", "w") as f:
@@ -920,11 +926,12 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
       f.write(get_elastic_conf(i))
     scp_to("/mnt/elasticsearch.yml", "/etc/elasticsearch/elasticsearch.yml", get_slaves()[i-1])
   run("rm /mnt/elasticsearch.yml")
+  all_run("rm -rf /mnt2/es; mkdir -p /mnt2/es/data; mkdir -p /mnt2/es/logs; mkdir -p /mnt2/es/work; chown elasticsearch:elasticsearch /mnt2/es/data; chown elasticsearch:elasticsearch /mnt2/es/logs; chown elasticsearch:elasticsearch /mnt2/es/work")
 
 
 def elasticsearch_run():
   all_run("service elasticsearch stop")
-  all_run("service elasticsearch start")
+  #all_run("service elasticsearch start")
   
 
 
@@ -1047,6 +1054,13 @@ def install_dstat():
 
 def install_bwmng():
   all_run("yum install bwm-ng --enablerepo=epel")
+
+def install_mvn():
+  cmd = '''wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+yum install -y apache-maven'''.replace("\n", ";")
+  slaves_run_parallel(cmd, master = True)
+
 
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
