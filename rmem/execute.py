@@ -178,7 +178,7 @@ def dstat():
   slaves_run("rm -rf /mnt/dstat; rm -rf /mnt/bwm")
   for s in get_slaves():
     run("ssh -f %s \"nohup dstat -cnt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
-    run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate /mnt/bwm 2>&1 > /dev/null < /dev/null &\"" % s)
+    run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate > /mnt/bwm 2>&1 < /dev/null &\"" % s)
 
 def collect_dstat(task = "task"):
   banner("Collecting dstat trace")
@@ -606,7 +606,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("mpiexec -n 5 -hostfile /root/spark-ec2/slaves /root/disaggregation/apps/collaborative_filtering/als --matrix /mnt2/netflix_m/ --max_iter=3 --ncpus=6 --minval=1 --maxval=5 --predictions=/mnt2/netflix_m/out/out")
     app_end()
 
-  elif task == "memcached":
+  elif task == "memcached" or task == "memcached-local":
     slaves_run("memcached -d -m 26000 -u root")
     set_memcached_size(memcached_size)
     run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
@@ -619,7 +619,11 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
     app_start()
-    slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
+    if task == "memcached":
+      slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
+    elif task == "memcached-local":
+      slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
+
     (result.memcached_latency_us, result.memcached_throughput) = slaves_get_memcached_avg_latency()
     app_end()
     slaves_run("killall memcached")
@@ -1046,7 +1050,7 @@ def install_dstat():
   all_run("yum install -y dstat")
 
 def install_bwmng():
-  all_run("yum install bwm-ng --enablerepo=epel")
+  all_run("yum install -y bwm-ng --enablerepo=epel")
 
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
@@ -1149,7 +1153,7 @@ def check_env():
 
 def main():
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "storm", "timely"]
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "memcached-local", "storm", "timely"]
  
   if opts.task != "prepare-env":
     check_env()
