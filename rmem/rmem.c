@@ -261,7 +261,7 @@ static void rmem_request(struct request_queue *q)
 				}
 			}
 			rmem_transfer(&device, blk_rq_pos(req), blk_rq_cur_sectors(req),
-					req->buffer, rq_data_dir(req), slowdown);
+					bio_data(req->bio), rq_data_dir(req), slowdown);
 			if(get_record)
 			{
 				last_dir = rq_data_dir(req);
@@ -317,7 +317,7 @@ static struct block_device_operations rmem_ops = {
 	.getgeo = rmem_getgeo
 };
 
-static ctl_table rmem_table[] = {
+static struct ctl_table rmem_table[] = {
 	{
 		.procname	= "latency_ns",
 		.data		= &latency_ns,
@@ -391,7 +391,7 @@ static ctl_table rmem_table[] = {
 	{ }
 };
 
-static ctl_table rmem_root[] = {
+static struct ctl_table rmem_root[] = {
 	{
 		.procname	= "rmem",
 		.mode		= 0555,
@@ -400,7 +400,7 @@ static ctl_table rmem_root[] = {
 	{ }
 };
 
-static ctl_table dev_root[] = {
+static struct ctl_table dev_root[] = {
 	{
 		.procname	= "fs",
 		.mode		= 0555,

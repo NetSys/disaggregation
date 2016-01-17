@@ -914,14 +914,14 @@ def succinct_install():
 
 def install_elasticsearch():
   all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
-  run("cd /root; git clone git@github.com:pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
-  run("/root/spark-ec2/copy-dir /root/YCSB")
   install_mvn()
+  #run("cd /root; git clone https://github.com/pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
+  #run("/root/spark-ec2/copy-dir /root/YCSB")
   es_bench()
 
 def es_bench():
   slaves_run_parallel("yum install -y python27; wget https://bootstrap.pypa.io/get-pip.py; python27 get-pip.py; rm get-pip.py; pip install https://github.com/mkocikowski/esbench/archive/dev.zip", master = True)
-  run("cd /root; git clone git@github.com:pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
+  run("cd /root; git clone https://github.com/pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
 
 def get_es_throughput():
   run("rm -rf /mnt/es_stats; mkdir -p /mnt/es_stats")
@@ -1162,6 +1162,7 @@ def install_all():
   install_blktrace()
   graphlab_install()
   memcached_install()
+  install_elasticsearch()
   storm_install()
   install_mosh()
   install_s3cmd()
