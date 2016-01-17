@@ -25,6 +25,9 @@ from xml.dom import minidom
 import threading
 import numpy as np
 from memcached_workload import *
+
+opts = None
+
 def parse_args():
   parser = OptionParser(usage="execute.py [options]")
  
@@ -48,6 +51,7 @@ def parse_args():
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
+  parser.add_option("--es-data", type="float", default=0.2, help="ElasticSearch data per server (GB)")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -491,6 +495,7 @@ class ExpResult:
   memcached_throughput = -1
   storm_latency_us = -1
   storm_throughput = -1
+  es_throughput = -1
   task = ""
   exp_start = ""
   reads = ""
@@ -510,11 +515,13 @@ class ExpResult:
       return str(self.runtime) + ":" + str(self.memcached_latency_us) + ":" + str(self.memcached_throughput)
     elif self.task == "storm":
       return str(self.storm_latency_us) + ":" + str(self.storm_throughput)
+    elif self.task == "elasticsearch":
+      return str(self.es_throughput)
     else:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
@@ -649,6 +656,13 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     app_start()
     timely_run()
     app_end()
+
+  elif task == "elasticsearch":
+    app_start()
+    elasticsearch_run()
+    app_end()
+    result.es_throughput = get_es_throughput()
+  
 
   if bw_gbps >= 0:
     (reads, writes) = get_rw_bytes()
@@ -900,8 +914,29 @@ def succinct_install():
 
 def install_elasticsearch():
   all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
+  run("cd /root; git clone git@github.com:pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
+  run("/root/spark-ec2/copy-dir /root/YCSB")
+  install_mvn()
+  es_bench()
+
+def es_bench():
+  slaves_run_parallel("yum install -y python27; wget https://bootstrap.pypa.io/get-pip.py; python27 get-pip.py; rm get-pip.py; pip install https://github.com/mkocikowski/esbench/archive/dev.zip", master = True)
+  run("cd /root; git clone git@github.com:pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
+
+def get_es_throughput():
+  run("rm -rf /mnt/es_stats; mkdir -p /mnt/es_stats")
+  throu = 0
+  slaves = get_slaves()
+  for i in len(slaves):
+    s = slaves[i]
+    scp_from("/mnt/esbench_throughput", "/mnt/es_stats/t%s" % i, s)
+    with open("/mnt/es_stats/t%s" % i) as f:
+      throu += float(f.read())
+  run("rm -rf /mnt/es_stats")
+  return throu
 
 def elasticsearch_prepare():
+  global opts
   def get_elastic_conf(id):
     all = []#get_slaves()
     all.append(get_master())
@@ -912,8 +947,11 @@ node.name: ddc%s
 node.master: %s
 node.data: %s
 network.host: %s
+path.data: /mnt2/es/data
+path.work: /mnt2/es/work
+path.logs: /mnt2/es/logs
 discovery.zen.ping.multicast.enabled: false
-discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", addr, slaves)
+discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", "0.0.0.0", slaves)
     return conf
 
   with open("/etc/elasticsearch/elasticsearch.yml", "w") as f:
@@ -924,12 +962,16 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
       f.write(get_elastic_conf(i))
     scp_to("/mnt/elasticsearch.yml", "/etc/elasticsearch/elasticsearch.yml", get_slaves()[i-1])
   run("rm /mnt/elasticsearch.yml")
+  all_run("export ES_HEAP_SIZE=25g; rm -rf /mnt2/es; mkdir -p /mnt2/es/data; mkdir -p /mnt2/es/logs; mkdir -p /mnt2/es/work; chown elasticsearch:elasticsearch /mnt2/es/data; chown elasticsearch:elasticsearch /mnt2/es/logs; chown elasticsearch:elasticsearch /mnt2/es/work")
 
+  #prepare data
+  slaves_run_parallel("esbench run %smb --prepare" % int(opts.es_data * 1024))
 
 def elasticsearch_run():
-  all_run("service elasticsearch stop")
   all_run("service elasticsearch start")
-  
+  slaves_run_parallel("rm -rf /mnt/esbench_throughput; esbench run %smb" % int(opts.es_data * 1024))  
+  all_run("service elasticsearch stop")
+
 
 
 def update_hdfs_conf():
@@ -1051,6 +1093,13 @@ def install_dstat():
 def install_bwmng():
   all_run("yum install -y bwm-ng --enablerepo=epel")
 
+def install_mvn():
+  cmd = '''wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+yum install -y apache-maven'''.replace("\n", ";")
+  slaves_run_parallel(cmd, master = True)
+
+
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
   slaves_run_parallel(cmd, master = True)
@@ -1151,8 +1200,9 @@ def check_env():
 
 
 def main():
+  global opts
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "memcached-local", "storm", "timely"]
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "memcached-local", "storm", "timely", "elasticsearch"]
  
   if opts.task != "prepare-env":
     check_env()
