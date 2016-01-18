@@ -3,8 +3,8 @@ do
   echo "~~~~~~~~app $app~~~~~~~"
   echo "~~~~~~~~~~~~~~~~clearing data~~~~~~~~~~~~~~~~"
   python execute.py --task clear-all-data
-  echo "~~~~~~~~~~~~~~~~preparing input data~~~~~~~~~~~~~~~~"
+  echo "~~~~~~~~~~~~~~~~preparing input data for $app~~~~~~~~~~~~~~~~"
   python execute.py --task $app-prepare
-  echo "~~~~~~~~~~~~~~~~running app~~~~~~~~~~~~~~~~"
+  echo "~~~~~~~~~~~~~~~~running app $app~~~~~~~~~~~~~~~~"
   python execute.py --task $app --dstat
 done
