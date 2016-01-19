@@ -322,7 +322,15 @@ def sync_rmem_code():
   slaves_run("cd /root/disaggregation/rmem; make")
 
 def mkfs_xvdc_ext4():
-  all_run("umount /mnt2;mkfs.ext4 /dev/xvdc;mount /dev/xvdc /mnt2")
+  dev = ""
+  devs = ["xvdc", "xvdf"]
+  for d in devs:
+    if d in os.popen("ls /dev/%s" % d).read():
+      dev = d
+      break
+  if dev == "":
+    assert(False)
+  all_run("umount /mnt2;mkfs.ext4 /dev/%s; mount /dev/%s /mnt2" % (dev, dev))
   
 
 def update_hadoop_conf():
@@ -590,7 +598,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresults")
     app_start() 
     query = get_bdb_query("3a") # 2a or 3a
-    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
+    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
     app_end()
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -839,7 +847,7 @@ def wordcount_prepare(size=125):
   run("/root/ephemeral-hdfs/bin/hadoop fs -mkdir /wiki")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
   src = " ".join( ["s3n://petergao/wiki_raw/w-part{0:03}".format(i) for i in range(0, size)])
-  run("/root/ephemeral-hdfs/bin/hadoop distcp %s /wiki/" % src)
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20  %s /wiki/" % src)
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 
@@ -848,8 +856,8 @@ def bdb_prepare():
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /uservisits")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /rankings")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/uservisits/ /uservisits/")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/rankings/ /rankings/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20 s3n://petergao/uservisits/ /uservisits/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20 s3n://petergao/rankings/ /rankings/")
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def storm_prepare():
