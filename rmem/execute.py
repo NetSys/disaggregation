@@ -25,6 +25,9 @@ from xml.dom import minidom
 import threading
 import numpy as np
 from memcached_workload import *
+
+opts = None
+
 def parse_args():
   parser = OptionParser(usage="execute.py [options]")
  
@@ -48,6 +51,7 @@ def parse_args():
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
+  parser.add_option("--es-data", type="float", default=0.2, help="ElasticSearch data per server (GB)")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -178,19 +182,19 @@ def dstat():
   slaves_run("rm -rf /mnt/dstat; rm -rf /mnt/bwm")
   for s in get_slaves():
     run("ssh -f %s \"nohup dstat -cndgt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
-    run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate > /mnt/bwm 2>&1 < /dev/null &\"" % s)
+    #run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate > /mnt/bwm 2>&1 < /dev/null &\"" % s)
 
 def collect_dstat(task = "task"):
   banner("Collecting dstat trace")
   slaves_run("killall -SIGINT dstat")
-  slaves_run("killall -SIGINT bwm-ng")
+  #slaves_run("killall -SIGINT bwm-ng")
   result_dir = "/mnt/dstat/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
   slaves = get_slaves()
   for i in range(len(slaves)):
     s = slaves[i]
     scp_from("/mnt/dstat", "%s/%s-dstat.txt" % (result_dir, i), s)
-    scp_from("/mnt/bwm", "%s/%s-bwm.txt" % (result_dir, i), s)
+    #scp_from("/mnt/bwm", "%s/%s-bwm.txt" % (result_dir, i), s)
   return result_dir
 
 def log_trace():
@@ -222,7 +226,7 @@ def log_trace():
 def collect_trace(task):
   banner("collect trace")
   slaves_run("killall -SIGINT fetch;killall -SIGINT tcpdump;killall -SIGINT blktrace")
-  time.sleep(5)
+  time.sleep(25)
   slaves_run_parallel("/root/disaggregation/rmem/parse /mnt2/rmem_log/rmem_dump /mnt2/rmem_log/rmem_log.txt")
   
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
@@ -318,7 +322,15 @@ def sync_rmem_code():
   slaves_run("cd /root/disaggregation/rmem; make")
 
 def mkfs_xvdc_ext4():
-  all_run("umount /mnt2;mkfs.ext4 /dev/xvdc;mount /dev/xvdc /mnt2")
+  dev = ""
+  devs = ["xvdc", "xvdf"]
+  for d in devs:
+    if d in os.popen("ls /dev/%s" % d).read():
+      dev = d
+      break
+  if dev == "":
+    assert(False)
+  all_run("umount /mnt2;mkfs.ext4 /dev/%s; mount /dev/%s /mnt2" % (dev, dev))
   
 
 def update_hadoop_conf():
@@ -491,6 +503,7 @@ class ExpResult:
   memcached_throughput = -1
   storm_latency_us = -1
   storm_throughput = -1
+  es_throughput = -1
   task = ""
   exp_start = ""
   reads = ""
@@ -510,11 +523,13 @@ class ExpResult:
       return str(self.runtime) + ":" + str(self.memcached_latency_us) + ":" + str(self.memcached_throughput)
     elif self.task == "storm":
       return str(self.storm_latency_us) + ":" + str(self.storm_throughput)
+    elif self.task == "elasticsearch":
+      return str(self.es_throughput)
     else:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
@@ -574,16 +589,16 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresult")
     app_start()
     if task == "wordcount":
-      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % master )
+      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % master )
     elif task == "terasort-spark":
-      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % master )
+      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % master )
     app_end()
 
   elif task == "bdb":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresults")
     app_start() 
     query = get_bdb_query("3a") # 2a or 3a
-    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
+    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
     app_end()
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -594,8 +609,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
       run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /dfsresult")
     else:
       run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar wordcount -Dmapred.map.tasks=10 -Dmapred.reduce.tasks=5 -Dmapreduce.map.java.opts=-Xmx8000 -Dmapreduce.reduce.java.opts=-Xmx7000 -Dmapreduce.map.memory.mb=8000 -Dmapreduce.reduce.memory.mb=7000 -Dmapred.reduce.slowstart.completed.maps=1.0 /wiki /dfsresult")
-    app_end()
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
+    app_end()
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /hadoopoutput")
     slaves_run("rm -rf /mnt/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt99/taskTracker/root/jobcache/*; rm -rf /mnt/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*;  rm -rf /mnt99/mapred/local/taskTracker/root/jobcache/*")
@@ -607,6 +622,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     app_end()
 
   elif task == "memcached" or task == "memcached-local":
+    app_start()
     slaves_run("memcached -d -m 26000 -u root")
     set_memcached_size(memcached_size)
     run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
@@ -618,15 +634,14 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     memcached_kill_loadgen_on = False
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
-    app_start()
     if task == "memcached":
       slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
     elif task == "memcached-local":
       slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
 
     (result.memcached_latency_us, result.memcached_throughput) = slaves_get_memcached_avg_latency()
-    app_end()
     slaves_run("killall memcached")
+    app_end()
 
   elif task == "storm":
     storm_start()
@@ -637,9 +652,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-topologies-0.9.5.jar storm.starter.WordCountTopology test")
     time.sleep(1800)
     run("/root/apache-storm-0.9.5/bin/storm kill test")
-    app_end()
     time.sleep(20)
     storm_stop()
+    app_end()
     get_storm_trace()
     (latency, throughput) = get_storm_perf()
     result.storm_latency_us = latency
@@ -649,6 +664,13 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     app_start()
     timely_run()
     app_end()
+
+  elif task == "elasticsearch":
+    app_start()
+    elasticsearch_run()
+    app_end()
+    result.es_throughput = get_es_throughput()
+  
 
   if bw_gbps >= 0:
     (reads, writes) = get_rw_bytes()
@@ -825,7 +847,7 @@ def wordcount_prepare(size=125):
   run("/root/ephemeral-hdfs/bin/hadoop fs -mkdir /wiki")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
   src = " ".join( ["s3n://petergao/wiki_raw/w-part{0:03}".format(i) for i in range(0, size)])
-  run("/root/ephemeral-hdfs/bin/hadoop distcp %s /wiki/" % src)
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20  %s /wiki/" % src)
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 
@@ -834,8 +856,8 @@ def bdb_prepare():
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /uservisits")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /rankings")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/uservisits/ /uservisits/")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/rankings/ /rankings/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20 s3n://petergao/uservisits/ /uservisits/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20 s3n://petergao/rankings/ /rankings/")
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def storm_prepare():
@@ -900,8 +922,29 @@ def succinct_install():
 
 def install_elasticsearch():
   all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
+  install_mvn()
+  #run("cd /root; git clone https://github.com/pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
+  #run("/root/spark-ec2/copy-dir /root/YCSB")
+  es_bench()
+
+def es_bench():
+  slaves_run_parallel("yum install -y python27; wget https://bootstrap.pypa.io/get-pip.py; python27 get-pip.py; rm get-pip.py; pip install https://github.com/mkocikowski/esbench/archive/dev.zip", master = True)
+  run("cd /root; git clone https://github.com/pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
+
+def get_es_throughput():
+  run("rm -rf /mnt/es_stats; mkdir -p /mnt/es_stats")
+  throu = 0
+  slaves = get_slaves()
+  for i in len(slaves):
+    s = slaves[i]
+    scp_from("/mnt/esbench_throughput", "/mnt/es_stats/t%s" % i, s)
+    with open("/mnt/es_stats/t%s" % i) as f:
+      throu += float(f.read())
+  run("rm -rf /mnt/es_stats")
+  return throu
 
 def elasticsearch_prepare():
+  global opts
   def get_elastic_conf(id):
     all = []#get_slaves()
     all.append(get_master())
@@ -912,8 +955,11 @@ node.name: ddc%s
 node.master: %s
 node.data: %s
 network.host: %s
+path.data: /mnt2/es/data
+path.work: /mnt2/es/work
+path.logs: /mnt2/es/logs
 discovery.zen.ping.multicast.enabled: false
-discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", addr, slaves)
+discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", "0.0.0.0", slaves)
     return conf
 
   with open("/etc/elasticsearch/elasticsearch.yml", "w") as f:
@@ -924,12 +970,16 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
       f.write(get_elastic_conf(i))
     scp_to("/mnt/elasticsearch.yml", "/etc/elasticsearch/elasticsearch.yml", get_slaves()[i-1])
   run("rm /mnt/elasticsearch.yml")
+  all_run("export ES_HEAP_SIZE=25g; rm -rf /mnt2/es; mkdir -p /mnt2/es/data; mkdir -p /mnt2/es/logs; mkdir -p /mnt2/es/work; chown elasticsearch:elasticsearch /mnt2/es/data; chown elasticsearch:elasticsearch /mnt2/es/logs; chown elasticsearch:elasticsearch /mnt2/es/work")
 
+  #prepare data
+  slaves_run_parallel("esbench run %smb --prepare" % int(opts.es_data * 1024))
 
 def elasticsearch_run():
-  all_run("service elasticsearch stop")
   all_run("service elasticsearch start")
-  
+  slaves_run_parallel("rm -rf /mnt/esbench_throughput; esbench run %smb" % int(opts.es_data * 1024))  
+  all_run("service elasticsearch stop")
+
 
 
 def update_hdfs_conf():
@@ -1051,6 +1101,13 @@ def install_dstat():
 def install_bwmng():
   all_run("yum install -y bwm-ng --enablerepo=epel")
 
+def install_mvn():
+  cmd = '''wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+yum install -y apache-maven'''.replace("\n", ";")
+  slaves_run_parallel(cmd, master = True)
+
+
 def timely_prepare():
   cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
   slaves_run_parallel(cmd, master = True)
@@ -1113,6 +1170,7 @@ def install_all():
   install_blktrace()
   graphlab_install()
   memcached_install()
+  install_elasticsearch()
   storm_install()
   install_mosh()
   install_s3cmd()
@@ -1151,8 +1209,9 @@ def check_env():
 
 
 def main():
+  global opts
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "memcached-local", "storm", "timely"]
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "memcached-local", "storm", "timely", "elasticsearch"]
  
   if opts.task != "prepare-env":
     check_env()
