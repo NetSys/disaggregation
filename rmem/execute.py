@@ -226,7 +226,7 @@ def log_trace():
 def collect_trace(task):
   banner("collect trace")
   slaves_run("killall -SIGINT fetch;killall -SIGINT tcpdump;killall -SIGINT blktrace")
-  time.sleep(5)
+  time.sleep(25)
   slaves_run_parallel("/root/disaggregation/rmem/parse /mnt2/rmem_log/rmem_dump /mnt2/rmem_log/rmem_log.txt")
   
   result_dir = "/mnt2/results/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
@@ -601,8 +601,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
       run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar terasort -Dmapred.map.tasks=20 -Dmapred.reduce.tasks=10 -Dmapreduce.map.java.opts=-Xmx25000 -Dmapreduce.reduce.java.opts=-Xmx25000 -Dmapreduce.map.memory.mb=26000 -Dmapreduce.reduce.memory.mb=26000 -Dmapred.reduce.slowstart.completed.maps=1.0 /sortinput /dfsresult")
     else:
       run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar wordcount -Dmapred.map.tasks=10 -Dmapred.reduce.tasks=5 -Dmapreduce.map.java.opts=-Xmx8000 -Dmapreduce.reduce.java.opts=-Xmx7000 -Dmapreduce.map.memory.mb=8000 -Dmapreduce.reduce.memory.mb=7000 -Dmapred.reduce.slowstart.completed.maps=1.0 /wiki /dfsresult")
-    app_end()
     run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
+    app_end()
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /mnt")
     run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /hadoopoutput")
     slaves_run("rm -rf /mnt/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/taskTracker/root/jobcache/*; rm -rf /mnt99/taskTracker/root/jobcache/*; rm -rf /mnt/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*; rm -rf /mnt2/ephemeral-hdfs/mapred/local/taskTracker/root/jobcache/*;  rm -rf /mnt99/mapred/local/taskTracker/root/jobcache/*")
@@ -614,6 +614,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     app_end()
 
   elif task == "memcached" or task == "memcached-local":
+    app_start()
     slaves_run("memcached -d -m 26000 -u root")
     set_memcached_size(memcached_size)
     run("/root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/jars; /root/spark-ec2/copy-dir /root/disaggregation/apps/memcached/workloads")
@@ -625,15 +626,14 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     memcached_kill_loadgen_on = False
     thrd.join()
     all_run("rm /root/disaggregation/apps/memcached/results.txt")
-    app_start()
     if task == "memcached":
       slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
     elif task == "memcached-local":
       slaves_run_parallel("cd /root/disaggregation/apps/memcached;java -cp jars/ycsb_local.jar:jars/spymemcached-2.7.1.jar:jars/slf4j-simple-1.6.1.jar:jars/slf4j-api-1.6.1.jar  com.yahoo.ycsb.LoadGenerator -t -P workloads/running")
 
     (result.memcached_latency_us, result.memcached_throughput) = slaves_get_memcached_avg_latency()
-    app_end()
     slaves_run("killall memcached")
+    app_end()
 
   elif task == "storm":
     storm_start()
@@ -644,9 +644,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/apache-storm-0.9.5/bin/storm jar /root/disaggregation/apps/storm/storm-starter-topologies-0.9.5.jar storm.starter.WordCountTopology test")
     time.sleep(1800)
     run("/root/apache-storm-0.9.5/bin/storm kill test")
-    app_end()
     time.sleep(20)
     storm_stop()
+    app_end()
     get_storm_trace()
     (latency, throughput) = get_storm_perf()
     result.storm_latency_us = latency
@@ -914,14 +914,14 @@ def succinct_install():
 
 def install_elasticsearch():
   all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
-  run("cd /root; git clone git@github.com:pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
-  run("/root/spark-ec2/copy-dir /root/YCSB")
   install_mvn()
+  #run("cd /root; git clone https://github.com/pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
+  #run("/root/spark-ec2/copy-dir /root/YCSB")
   es_bench()
 
 def es_bench():
   slaves_run_parallel("yum install -y python27; wget https://bootstrap.pypa.io/get-pip.py; python27 get-pip.py; rm get-pip.py; pip install https://github.com/mkocikowski/esbench/archive/dev.zip", master = True)
-  run("cd /root; git clone git@github.com:pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
+  run("cd /root; git clone https://github.com/pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
 
 def get_es_throughput():
   run("rm -rf /mnt/es_stats; mkdir -p /mnt/es_stats")
@@ -1162,6 +1162,7 @@ def install_all():
   install_blktrace()
   graphlab_install()
   memcached_install()
+  install_elasticsearch()
   storm_install()
   install_mosh()
   install_s3cmd()
