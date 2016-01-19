@@ -182,20 +182,20 @@ def dstat():
   banner("Running dstats")
   slaves_run("rm -rf /mnt/dstat; rm -rf /mnt/bwm")
   for s in get_slaves():
-    run("ssh -f %s \"nohup dstat -cnt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
-    run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate > /mnt/bwm 2>&1 < /dev/null &\"" % s)
+    run("ssh -f %s \"nohup dstat -cndgt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
+    #run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate > /mnt/bwm 2>&1 < /dev/null &\"" % s)
 
 def collect_dstat(task = "task"):
   banner("Collecting dstat trace")
   slaves_run("killall -SIGINT dstat")
-  slaves_run("killall -SIGINT bwm-ng")
+  #slaves_run("killall -SIGINT bwm-ng")
   result_dir = "/mnt/dstat/%s_%s" % (task, run_and_get("date +%y%m%d%H%M%S")[1])
   run("mkdir -p %s" % result_dir)
   slaves = get_slaves()
   for i in range(len(slaves)):
     s = slaves[i]
     scp_from("/mnt/dstat", "%s/%s-dstat.txt" % (result_dir, i), s)
-    scp_from("/mnt/bwm", "%s/%s-bwm.txt" % (result_dir, i), s)
+    #scp_from("/mnt/bwm", "%s/%s-bwm.txt" % (result_dir, i), s)
   return result_dir
 
 def log_trace():
@@ -323,7 +323,15 @@ def sync_rmem_code():
   slaves_run("cd /root/disaggregation/rmem; make")
 
 def mkfs_xvdc_ext4():
-  all_run("umount /mnt2;mkfs.ext4 /dev/xvdc;mount /dev/xvdc /mnt2")
+  dev = ""
+  devs = ["xvdc", "xvdf"]
+  for d in devs:
+    if d in os.popen("ls /dev/%s" % d).read():
+      dev = d
+      break
+  if dev == "":
+    assert(False)
+  all_run("umount /mnt2;mkfs.ext4 /dev/%s; mount /dev/%s /mnt2" % (dev, dev))
   
 
 def update_hadoop_conf():
@@ -582,16 +590,16 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresult")
     app_start()
     if task == "wordcount":
-      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % master )
+      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % master )
     elif task == "terasort-spark":
-      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % master )
+      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % master )
     app_end()
 
   elif task == "bdb":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresults")
     app_start() 
     query = get_bdb_query("3a") # 2a or 3a
-    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
+    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, query) )
     app_end()
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -840,7 +848,7 @@ def wordcount_prepare(size=125):
   run("/root/ephemeral-hdfs/bin/hadoop fs -mkdir /wiki")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
   src = " ".join( ["s3n://petergao/wiki_raw/w-part{0:03}".format(i) for i in range(0, size)])
-  run("/root/ephemeral-hdfs/bin/hadoop distcp %s /wiki/" % src)
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20  %s /wiki/" % src)
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 
@@ -849,8 +857,8 @@ def bdb_prepare():
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /uservisits")
   run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /rankings")
   run("/root/ephemeral-hdfs/bin/start-mapred.sh")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/uservisits/ /uservisits/")
-  run("/root/ephemeral-hdfs/bin/hadoop distcp s3n://petergao/rankings/ /rankings/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20 s3n://petergao/uservisits/ /uservisits/")
+  run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20 s3n://petergao/rankings/ /rankings/")
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
 def storm_prepare():
@@ -1016,6 +1024,8 @@ def execute(opts):
     for l in latencies:
       for b in bws:
         confs.append((True, l, b, opts.remote_memory, opts.cdf, 0))
+    if opts.task in ["wordcount", "terasort-spark", "bdb", "timely"]:
+      confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
     confs.append((False, 0, 40, opts.remote_memory, opts.cdf, 0))
