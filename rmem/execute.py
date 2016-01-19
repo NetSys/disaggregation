@@ -46,6 +46,7 @@ def parse_args():
   parser.add_option("--vary-bw", action="store_true", default=False, help="Experiment on different bw with 5us latency")
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
+  parser.add_option("--inject-40g-3us", action="store_true", default=False, help="Inject 40g/3us latency")
   parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
   parser.add_option("--dstat", action="store_true", default=False, help="Collect dstat trace")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
@@ -1005,6 +1006,9 @@ def execute(opts):
   if opts.inject_test:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
+  elif opts.inject_40g_3us:
+    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
+    confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_both_latency_bw:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
     latencies = [1, 5, 10]
