@@ -53,6 +53,7 @@ def parse_args():
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
   parser.add_option("--es-data", type="float", default=0.2, help="ElasticSearch data per server (GB)")
+  parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -182,7 +183,11 @@ def dstat():
   banner("Running dstats")
   slaves_run("rm -rf /mnt/dstat; rm -rf /mnt/bwm")
   for s in get_slaves():
-    run("ssh -f %s \"nohup dstat -cndgt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
+    nc = int(commands.getstatusoutput("nproc")[1])
+    if nc <= 8:
+      run("ssh -f %s \"nohup dstat -cndgt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
+    else:
+      run("ssh -f %s \"nohup dstat -cndgt -N eth0 -C 0,1,2,3,4,5,6,7,total --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
     #run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate > /mnt/bwm 2>&1 < /dev/null &\"" % s)
 
 def collect_dstat(task = "task"):
@@ -260,7 +265,7 @@ def cpuset():
   echo 0 > /mnt/cpuset/sw/mems
   echo 0 > /mnt/cpuset/other/mems
   echo 7 > /mnt/cpuset/sw/cpus
-  echo 0-5 > /mnt/cpuset/other/cpus
+  echo 0-6 > /mnt/cpuset/other/cpus
   echo 0 > /mnt/cpuset/other/sched_load_balance
   for T in $(cat /mnt/cpuset/tasks)
   do
@@ -532,7 +537,7 @@ class ExpResult:
   def __str__(self):
     return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, profile = False, memcached_size=22):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, no_sit, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
 
   start_time = [-1]
@@ -555,6 +560,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     if profile:
       mem_monitor_start()
     if dstat_log:
+      cpuset()
       dstat()
     if trace:
       log_trace()
@@ -570,6 +576,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     if dstat_log:
       dir = collect_dstat(task)
       print "dstat results in %s" % dir
+      slaves_run("umount /mnt/cpuset")
     if profile_io:
       result.io_trace = str(profile_io_end())
     if trace:
@@ -577,10 +584,10 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
       result.overflow = str(get_overflow())
       print "Overflow: %s" % result.overflow
 
+  if not no_sit: 
+    clean_existing_rmem(bw_gbps)
 
-  clean_existing_rmem(bw_gbps)
-
-  setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, task)
+    setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, task)
 
 
   master = get_master()
@@ -673,7 +680,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     result.es_throughput = get_es_throughput()
   
 
-  if bw_gbps >= 0:
+  if bw_gbps >= 0 and not no_sit:
     (reads, writes) = get_rw_bytes()
     print "Remote Reads:"
     print reads
@@ -682,7 +689,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     result.reads = str(reads).replace(" ", "")
     result.writes = str(writes).replace(" ", "")
 
-  clean_existing_rmem(bw_gbps)
+  if not no_sit:
+    clean_existing_rmem(bw_gbps)
 
   print "Execution time:" + str(result.runtime) + " Min Ram:" + str(min_ram)
   log(str(result), level = 1)
@@ -776,7 +784,7 @@ def disk_vary_size(opts):
         all_run("rm /mnt2/netflix_m/netflix_mm; mkdir -p /mnt2/netflix_m; ln -s /mnt2/nf%d.txt /mnt2/netflix_m/netflix_mm" % (conf[3]))
       elif opts.task == "wordcount":
         wordcount_prepare(conf[3])
-      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, False, False, memcached_size = conf[3], profile = True).get()
+      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, False, False, False, memcached_size = conf[3], profile = True).get()
       results[conf].append(time)
 
 
@@ -1070,7 +1078,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4], opts.profile_io, opts.dstat).get()
+      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4], opts.profile_io, opts.dstat, opts.no_sit).get()
       results[conf].append(time)
 
 
@@ -1119,33 +1127,50 @@ yum install -y apache-maven'''.replace("\n", ";")
 
 
 def timely_prepare():
-  cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely"
+  cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely; /root/spark-ec2/copy-dir /root/s3cmd; /root/spark-ec2/copy-dir /root/.s3cfg;"
   slaves_run_parallel(cmd, master = True)
 
-  run("rm -rf /mnt2/friendster; mkdir -p /mnt2/friendster")
-  def get_offsets():
+  slaves_run("rm -rf /mnt2/friendster; mkdir -p /mnt2/friendster")
+  def get_offsets(server = ""):
     for i in "abcd":
-      run("~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.offset_a%s /mnt2/friendster" % i)
-    run("cat /mnt2/friendster/friendster.offset* > /mnt2/timely/my-graph.offsets")
-  
-  def get_targets():
+      down_cmd = "~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.offset_a%s /mnt2/friendster/friendster.offset_a%s" % (i, i)
+      if server == "":
+        run(down_cmd)
+      else:
+        run("ssh %s \"%s\"" % (server, down_cmd))
+    merge_cmd = "cat /mnt2/friendster/friendster.offset* > /mnt2/timely/my-graph.offsets"
+    if server == "":
+      run(merge_cmd)
+    else:
+      run("ssh %s \"%s\"" % (server, merge_cmd))
+      
+  def get_targets(server = ""):
     for i in "abc":
-      run("~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.target_a%s /mnt2/friendster" % i)
-    run("cat /mnt2/friendster/friendster.target* > /mnt2/timely/my-graph.targets")
+      down_cmd = "~/s3cmd/s3cmd get s3://petergao/graph/friendster/friendster.target_a%s /mnt2/friendster/friendster.target_a%s" % (i, i)
+      if server == "":
+        run(down_cmd)
+      else:
+        run("ssh %s \"%s\"" % (server, down_cmd))
+    merge_cmd = "cat /mnt2/friendster/friendster.target* > /mnt2/timely/my-graph.targets"
+    if server == "":
+      run(merge_cmd)
+    else:
+      run("ssh %s \"%s\"" % (server, merge_cmd))
 
-  threads = [ threading.Thread(target=f) for f in [get_offsets, get_targets]]
+  threads = [ threading.Thread(target=get_offsets, args=(s,)) for s in get_slaves()] 
+  threads += [ threading.Thread(target=get_targets, args=(s,)) for s in get_slaves()] 
   [t.start() for t in threads]
   [t.join() for t in threads]
 
-  run("rm -rf /mnt2/friendster")
-  
+  slaves_run("rm -rf /mnt2/friendster")
+    
 
   hosts_file = open("/mnt2/timely/hosts.txt","w")
   for s in get_slaves():
-    for i in range(0,4):
+    for i in range(0,6):
       hosts_file.write(s + ":1988" + str(i) + "\n")
   hosts_file.close()
-  run("/root/spark-ec2/copy-dir /mnt2/timely/")
+  run("/root/spark-ec2/copy-dir /mnt2/timely/hosts.txt")
 
 
 def timely_run():
