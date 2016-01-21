@@ -265,7 +265,7 @@ def cpuset():
   echo 0 > /mnt/cpuset/sw/mems
   echo 0 > /mnt/cpuset/other/mems
   echo 7 > /mnt/cpuset/sw/cpus
-  echo 0-5 > /mnt/cpuset/other/cpus
+  echo 0-6 > /mnt/cpuset/other/cpus
   echo 0 > /mnt/cpuset/other/sched_load_balance
   for T in $(cat /mnt/cpuset/tasks)
   do
@@ -560,6 +560,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     if profile:
       mem_monitor_start()
     if dstat_log:
+      cpuset()
       dstat()
     if trace:
       log_trace()
@@ -575,6 +576,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     if dstat_log:
       dir = collect_dstat(task)
       print "dstat results in %s" % dir
+      slaves_run("umount /mnt/cpuset")
     if profile_io:
       result.io_trace = str(profile_io_end())
     if trace:
