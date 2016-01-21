@@ -1117,7 +1117,7 @@ yum install -y apache-maven'''.replace("\n", ";")
 
 
 def timely_prepare():
-  '''cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely; /root/spark-ec2/copy-dir /root/s3cmd; /root/spark-ec2/copy-dir /root/.s3cfg;"
+  cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely; /root/spark-ec2/copy-dir /root/s3cmd; /root/spark-ec2/copy-dir /root/.s3cfg;"
   slaves_run_parallel(cmd, master = True)
 
   slaves_run("rm -rf /mnt2/friendster; mkdir -p /mnt2/friendster")
@@ -1152,7 +1152,7 @@ def timely_prepare():
   [t.start() for t in threads]
   [t.join() for t in threads]
 
-  slaves_run("rm -rf /mnt2/friendster")'''
+  slaves_run("rm -rf /mnt2/friendster")
     
 
   hosts_file = open("/mnt2/timely/hosts.txt","w")
