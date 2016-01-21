@@ -183,7 +183,11 @@ def dstat():
   banner("Running dstats")
   slaves_run("rm -rf /mnt/dstat; rm -rf /mnt/bwm")
   for s in get_slaves():
-    run("ssh -f %s \"nohup dstat -cndgt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
+    nc = int(commands.getstatusoutput("nproc")[1])
+    if nc <= 8:
+      run("ssh -f %s \"nohup dstat -cndgt -N eth0 --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
+    else:
+      run("ssh -f %s \"nohup dstat -cndgt -N eth0 -C 0,1,2,3,4,5,6,7,total --output /mnt/dstat 2>&1 > /dev/null < /dev/null &\"" % s)
     #run("ssh -f %s \"nohup bwm-ng -o csv -t 1000 -I eth0 -T rate > /mnt/bwm 2>&1 < /dev/null &\"" % s)
 
 def collect_dstat(task = "task"):
