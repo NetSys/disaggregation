@@ -936,7 +936,7 @@ def get_es_throughput():
   run("rm -rf /mnt/es_stats; mkdir -p /mnt/es_stats")
   throu = 0
   slaves = get_slaves()
-  for i in len(slaves):
+  for i in range(len(slaves)):
     s = slaves[i]
     scp_from("/mnt/esbench_throughput", "/mnt/es_stats/t%s" % i, s)
     with open("/mnt/es_stats/t%s" % i) as f:
@@ -959,6 +959,10 @@ network.host: %s
 path.data: /mnt2/es/data
 path.work: /mnt2/es/work
 path.logs: /mnt2/es/logs
+index.store.type: memory
+index.store.fs.memory.enabled: true
+cache.memory.small_buffer_size: 4mb
+cache.memory.large_cache_size: 4096mb
 discovery.zen.ping.multicast.enabled: false
 discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", "0.0.0.0", slaves)
     return conf
@@ -977,7 +981,7 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
   slaves_run_parallel("esbench run %smb --prepare" % int(opts.es_data * 1024))
 
 def elasticsearch_run():
-  all_run("service elasticsearch start")
+  slaves_run_parallel("service elasticsearch start")
   slaves_run_parallel("rm -rf /mnt/esbench_throughput; esbench run %smb" % int(opts.es_data * 1024))  
   all_run("service elasticsearch stop")
 
