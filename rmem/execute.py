@@ -572,6 +572,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     if dstat_log:
       dir = collect_dstat(task)
       print "dstat results in %s" % dir
+      slaves_run("umount /mnt/cpuset")
     if profile_io:
       result.io_trace = str(profile_io_end())
     if trace:
