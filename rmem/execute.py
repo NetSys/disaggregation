@@ -175,7 +175,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
     slaves_run_bash(install_rmem)
 
     if slowdown_cdf != "":
-      assert(os.path.exists("/root/disaggregation/rmem/fcts/%s" % slowdown_cdf))
+      assert(os.path.exists(slowdown_cdf))
       run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/fcts")
       slaves_run("cd /root/disaggregation/rmem; cat %s | python convert_fct_to_ns.py > fcts.txt ; cat fcts.txt | while read -r line; do echo \$line > /proc/rmem_cdf; done; diff /proc/rmem_cdf fcts.txt" % slowdown_cdf) 
 
