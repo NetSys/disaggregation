@@ -932,6 +932,7 @@ def succinct_install():
 def install_elasticsearch():
   all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
   install_mvn()
+  run("/usr/share/elasticsearch/bin/plugin install mobz/elasticsearch-head")
   #run("cd /root; git clone https://github.com/pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
   #run("/root/spark-ec2/copy-dir /root/YCSB")
   es_bench()
@@ -1159,11 +1160,11 @@ def timely_prepare():
   [t.join() for t in threads]
 
   slaves_run("rm -rf /mnt2/friendster")
-    
+  
 
   hosts_file = open("/mnt2/timely/hosts.txt","w")
   for s in get_slaves():
-    for i in range(0,6):
+    for i in range(0,1):
       hosts_file.write(s + ":1988" + str(i) + "\n")
   hosts_file.close()
   run("/root/spark-ec2/copy-dir /mnt2/timely/hosts.txt")
@@ -1186,7 +1187,7 @@ def timely_run():
     hosts = hosts_file.readlines()
   for line in hosts:
     s = line.split(":")[0]
-    cmd = "cd /root/pagerank; cargo run --release --bin pagerank -- /mnt2/timely/my-graph -h /mnt2/timely/hosts.txt -n %s -p %s" % (len(hosts), count)
+    cmd = "cd /root/pagerank; cargo run --release --bin pagerank -- /mnt2/timely/my-graph -h /mnt2/timely/hosts.txt -n %s -p %s -w 6" % (len(hosts), count)
     threads.append(threading.Thread(target=ssh, args=(s, cmd, bash_run_counter,)))
     bash_run_counter += 1
     count += 1
