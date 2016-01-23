@@ -711,10 +711,10 @@ def teragen(size):
   run("/root/ephemeral-hdfs/bin/hadoop jar /root/disaggregation/apps/hadoop_terasort/hadoop-examples-1.0.4.jar teragen -Dmapred.map.tasks=20 %d hdfs://%s:9000/sortinput" % (num_record, master))
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
-def terasort_spark_prepare(size):
+def terasort_spark_prepare(size, input_dir = "sortinput"):
   master = get_master()
   run("/root/ephemeral-hdfs/bin/hadoop dfs -rmr /sortinput")
-  run("/root/spark/bin/spark-submit --class \"TeraGen\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" %sg \"/sortinput\"" % (master, int(size)))
+  run("/root/spark/bin/spark-submit --class \"TeraGen\" --master \"spark://%s:7077\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" %sg \"/%s\"" % (master, int(size), input_dir))
 
 
 def terasort_vary_size(opts):
@@ -997,16 +997,16 @@ def elasticsearch_run():
 
 
 
-def update_hdfs_conf():
+def update_hdfs_conf(new_temp = "/mnt/ephemeral-hdfs,/mnt2/ephemeral-hdfs", new_rep = 1, new_data = "/mnt/ephemeral-hdfs/data,/mnt2/ephemeral-hdfs/data"):
   with open('/root/ephemeral-hdfs/conf/core-site.xml', 'r') as core_file:
     core_file_content = core_file.read()
-  updated_core_file_content = core_file_content.replace("<value>/mnt/ephemeral-hdfs</value>","<value>/mnt/ephemeral-hdfs,/mnt2/ephemeral-hdfs</value>")
+  updated_core_file_content = core_file_content.replace("<value>/mnt/ephemeral-hdfs</value>","<value>%s</value>" % new_temp)
   with open('/root/ephemeral-hdfs/conf/core-site.xml', 'w') as core_file:
     core_file.write(updated_core_file_content)
 
   with open('/root/ephemeral-hdfs/conf/hdfs-site.xml', 'r') as hdfs_file:
     hdfs_file_content = hdfs_file.read()
-  updated_hdfs_file_content = hdfs_file_content.replace("<value>3</value>","<value>1</value>").replace("<value>/mnt/ephemeral-hdfs/data</value>","<value>/mnt/ephemeral-hdfs/data,/mnt2/ephemeral-hdfs/data</value>")
+  updated_hdfs_file_content = hdfs_file_content.replace("<value>3</value>","<value>%s</value>" % new_rep).replace("<value>/mnt/ephemeral-hdfs/data</value>","<value>%s</value>" % new_data)
   with open('/root/ephemeral-hdfs/conf/hdfs-site.xml', 'w') as hdfs_file:
     hdfs_file.write(updated_hdfs_file_content)
   
@@ -1017,7 +1017,7 @@ def reconfig_hdfs():
   slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
   slaves_run("rm -rf /mnt2/ephemeral-hdfs/*")
   run("/root/spark-ec2/copy-dir /root/ephemeral-hdfs/conf")
-  run("/root/ephemeral-hdfs/bin/hadoop namenode -format")
+  run("/root/ephemeral-hdfs/bin/hadoop namenode -format -y")
   run("/root/ephemeral-hdfs/bin/start-dfs.sh")
   #.....you need to manually modify the conf files
 
@@ -1233,16 +1233,49 @@ def clear_all_data():
 
 def check_env():
   if not os.path.exists("/mnt/env_prepared"):
-    print "You haven't run prepare_env. Run it now? (y/n)"
-    if sys.stdin.readline().strip() == "y":
+    print "You haven't run prepare_env. Run it now? (y/n/N)"
+    input = sys.stdin.readline().strip()
+    if input == "y":
       prepare_env()
-  
+    elif input == "N":
+      run("echo 2 > /mnt/env_prepared")
+ 
+ 
 
-#def prepare_all(opts):
-#  prepare_env()
-#  teragen(opts.teragen_size)
-#  graphlab_prepare()
-#  wordcount_prepare()
+def reconfig_hdfs_tachyon():
+  print "Have you attach a 1500G+ disk (/dev/xvdf) on slave? (y/n)"
+  if sys.stdin.readline().strip() != "y":
+    return
+
+  all_run("swapoff -a")
+  run("/root/tachyon/bin/tachyon-stop.sh")
+  run("/root/ephemeral-hdfs/bin/stop-all.sh")
+  update_hdfs_conf(new_temp = "/mnt/ephemeral-hdfs", new_rep = 1, new_data = "/mnt/ephemeral-hdfs/data")
+  slaves_run("umount /mnt/ramdisk; umount /mnt; rm -rf /mnt; mkdir /mnt; mount /dev/xvdf /mnt")
+  
+  
+  run("/root/spark-ec2/copy-dir /root/ephemeral-hdfs/conf")
+  run("/root/ephemeral-hdfs/bin/hadoop namenode -format -y")
+  run("/root/ephemeral-hdfs/bin/start-dfs.sh")
+  run("/root/tachyon/bin/tachyon-start.sh all Mount")
+  run("/root/ephemeral-hdfs/bin/hadoop dfsadmin -safemode leave") 
+
+
+def tachyon_prepare():
+  #all_run("swapoff -a")
+  #reconfig_hdfs_tachyon()
+  for sz in [32]:
+    terasort_spark_prepare(sz, "sparksort_input_%s" % sz)
+
+
+def tachyon_run():
+  sz = 32
+  master = get_master()
+  tachyon = True
+  if tachyon:
+    run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=64g\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"tachyon://%s:19998/sparksort_input_%s/\" \"tachyon://%s:19998/sparksort_ouput/\"" % (master, master, sz, master) )
+  else:
+    run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=64g\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sparksort_input_%s/\" \"/sparksort_ouput/\"" % (master, sz) )
 
 
 def main():
