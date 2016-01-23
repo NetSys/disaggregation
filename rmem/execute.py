@@ -1027,13 +1027,14 @@ def execute(opts):
     confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_both_latency_bw:
     confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
-    latencies = [1, 5, 10]
+    if opts.task in ["wordcount", "terasort-spark", "bdb", "timely"]:
+      latencies = [1, 3, 5, 10]
+    else:
+      latencies = [1, 5, 10]
     bws = [100, 40, 10]
     for l in latencies:
       for b in bws:
         confs.append((True, l, b, opts.remote_memory, opts.cdf, 0))
-    if opts.task in ["wordcount", "terasort-spark", "bdb", "timely"]:
-      confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0))
   elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
     confs.append((False, 0, 40, opts.remote_memory, opts.cdf, 0))
