@@ -969,7 +969,6 @@ network.host: %s
 path.data: /mnt2/es/data
 path.work: /mnt2/es/work
 path.logs: /mnt2/es/logs
-index.store.type: memory
 index.store.fs.memory.enabled: true
 cache.memory.small_buffer_size: 4mb
 cache.memory.large_cache_size: 4096mb
@@ -991,7 +990,7 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
   slaves_run_parallel("esbench run %smb --prepare" % int(opts.es_data * 1024))
 
 def elasticsearch_run():
-  slaves_run_parallel("service elasticsearch start")
+  slaves_run_parallel("service elasticsearch start", master = True)
   slaves_run_parallel("rm -rf /mnt/esbench_throughput; esbench run %smb" % int(opts.es_data * 1024))  
   all_run("service elasticsearch stop")
 
