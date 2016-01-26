@@ -51,6 +51,7 @@ def parse_args():
   parser.add_option("--dstat", action="store_true", default=False, help="Collect dstat trace")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
+  parser.add_option("--spark-mem", type="float", default=25, help="Spark executor memory")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
   parser.add_option("--es-data", type="float", default=0.2, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
@@ -540,7 +541,7 @@ class ExpResult:
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, no_sit, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
-
+  global opts
   start_time = [-1]
 
   result = ExpResult()
@@ -598,9 +599,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresult")
     app_start()
     if task == "wordcount":
-      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % master )
+      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % (master, int(opts.spark_mem * 1024)) )
     elif task == "terasort-spark":
-      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=25g\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % master )
+      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=40\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % (master, int(opts.spark_mem * 1024)) )
     app_end()
 
   elif task == "bdb":
