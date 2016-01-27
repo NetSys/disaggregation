@@ -1017,7 +1017,7 @@ def reconfig_hdfs():
   slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
   slaves_run("rm -rf /mnt2/ephemeral-hdfs/*")
   run("/root/spark-ec2/copy-dir /root/ephemeral-hdfs/conf")
-  run("/root/ephemeral-hdfs/bin/hadoop namenode -format -y")
+  run("/root/ephemeral-hdfs/bin/hadoop namenode -format")
   run("/root/ephemeral-hdfs/bin/start-dfs.sh")
   #.....you need to manually modify the conf files
 
