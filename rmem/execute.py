@@ -527,6 +527,8 @@ class ExpResult:
   slowdown_cdf = ""
   io_trace = ""
   overflow = ""
+  no_sid = ""
+  spark_mem = ""
   def get(self):
     if self.task == "memcached":
       return str(self.runtime) + ":" + str(self.memcached_latency_us) + ":" + str(self.memcached_throughput)
@@ -540,7 +542,7 @@ class ExpResult:
   def __str__(self):
     return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
 
-def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, no_sit, profile = False, memcached_size=22):
+def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, no_sit, spark_mem, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
   global opts
   start_time = [-1]
@@ -555,6 +557,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   result.inject = inject
   result.trace = trace
   result.slowdown_cdf = slowdown_cdf
+  result.no_sit = no_sit
+  result.spark_mem = spark_mem
 
   min_ram = 0
 
@@ -600,16 +604,16 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresult")
     app_start()
     if task == "wordcount":
-      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % (master, int(opts.spark_mem * 1024), opts.spark_cores_max) )
+      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % (master, int(spark_mem * 1024), opts.spark_cores_max) )
     elif task == "terasort-spark":
-      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % (master, int(opts.spark_mem * 1024), opts.spark_cores_max) )
+      run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % (master, int(spark_mem * 1024), opts.spark_cores_max) )
     app_end()
 
   elif task == "bdb":
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresults")
     app_start() 
     query = get_bdb_query("3a") # 2a or 3a
-    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, int(opts.spark_mem * 1024), opts.spark_cores_max, query) )
+    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/dfsresults\" \"%s\"" % (master, int(spark_mem * 1024), opts.spark_cores_max, query) )
     app_end()
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -787,7 +791,7 @@ def disk_vary_size(opts):
         all_run("rm /mnt2/netflix_m/netflix_mm; mkdir -p /mnt2/netflix_m; ln -s /mnt2/nf%d.txt /mnt2/netflix_m/netflix_mm" % (conf[3]))
       elif opts.task == "wordcount":
         wordcount_prepare(conf[3])
-      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, False, False, False, memcached_size = conf[3], profile = True).get()
+      time = run_exp(opts.task, conf[4] * 29.4567, conf[2], conf[1], 0, conf[0], False, opts.cdf, False, False, False, opts.spark_mem, memcached_size = conf[3], profile = True).get()
       results[conf].append(time)
 
 
@@ -1018,62 +1022,73 @@ def reconfig_hdfs():
   slaves_run("rm -rf /mnt/ephemeral-hdfs/*")
   slaves_run("rm -rf /mnt2/ephemeral-hdfs/*")
   run("/root/spark-ec2/copy-dir /root/ephemeral-hdfs/conf")
-  run("/root/ephemeral-hdfs/bin/hadoop namenode -format -y")
+  run("/root/ephemeral-hdfs/bin/hadoop namenode -format")
   run("/root/ephemeral-hdfs/bin/start-dfs.sh")
   #.....you need to manually modify the conf files
 
 def execute(opts):
+  spark_apps = ["wordcount", "terasort-spark", "bdb"]
+  if opts.task in spark_apps:
+    baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, True, 25)
+  else:
+    baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, False, 25)
 
   log("\n\n\n", level = 1)
-  confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf, e2e_latency
+  confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf, e2e_latency, no_sit, spark_mem
+
   if opts.inject_test:
-    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
-    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
+    confs.append(baseline)
+    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+
   elif opts.inject_40g_3us:
-    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
-    confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0))
+    confs.append(baseline)
+    confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+
   elif opts.vary_both_latency_bw:
-    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
-    if opts.task in ["wordcount", "terasort-spark", "bdb", "timely"]:
-      latencies = [1, 3, 5, 10]
-    else:
-      latencies = [1, 5, 10]
+    confs.append(baseline)
+    latencies = [1, 5, 10]
     bws = [100, 40, 10]
     for l in latencies:
       for b in bws:
-        confs.append((True, l, b, opts.remote_memory, opts.cdf, 0))
+        confs.append((True, l, b, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+
   elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
-    confs.append((False, 0, 40, opts.remote_memory, opts.cdf, 0))
+    confs.append(baseline)
     for l in latency_40g:
-      confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0))
+      confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+
   elif opts.vary_bw:
     bw_5us = [10, 20, 40, 60, 80, 100]
-    confs.append((False, 5, 1000, opts.remote_memory, opts.cdf, 0))
+    confs.append(baseline)
     for b in bw_5us:
-      confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0))                  
+      confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))                  
+
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
     local_rams.append(0.9999)
     for r in local_rams:
-      confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0))
-      confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0))
+      confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
+      confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
+
   elif opts.slowdown_cdf_exp:
     rack_scale_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
     dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0))
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0))
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, "", 0))
-  elif opts.vary_e2e_latency:
-    e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    for el in e2e_latency:
-      confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
-  elif opts.disk_vs_ram:
-    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
-    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
-    confs.append((True, -1, -1, opts.remote_memory, opts.cdf, 0))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
+    confs.append(baseline)
+
+
+#  elif opts.vary_e2e_latency:
+#    e2e_latency = [0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+#    for el in e2e_latency:
+#      confs.append((False, 0, 0, opts.remote_memory, opts.cdf, el))
+#  elif opts.disk_vs_ram:
+#    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0))
+#    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0))
+#    confs.append((True, -1, -1, opts.remote_memory, opts.cdf, 0))
   else:
-    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.cdf, 0))
+    confs.append((opts.inject, opts.latency, opts.bandwidth, opts.remote_memory, opts.cdf, 0, opts.no_sit, opts.spark_mem))
  
   results = {}
   for conf in confs:
@@ -1082,7 +1097,7 @@ def execute(opts):
   for i in range(0, opts.iter):
     for conf in confs:
       print "Running iter %d, conf %s" % (i, str(conf))
-      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4], opts.profile_io, opts.dstat, opts.no_sit).get()
+      time = run_exp(opts.task, conf[3], conf[2], conf[1], conf[5], conf[0], opts.trace, conf[4], opts.profile_io, opts.dstat, conf[6], conf[7]).get()
       results[conf].append(time)
 
 
