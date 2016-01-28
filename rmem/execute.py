@@ -57,6 +57,7 @@ def parse_args():
   parser.add_option("--es-data", type="float", default=1, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
   parser.add_option("--no-baseline", action="store_true", default=False, help="No baseline when run experiments")
+  parser.add_option("--new-spark-baseline", action="store_true", default=False, help="Use Spark L/4 baseline")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -528,7 +529,7 @@ class ExpResult:
   slowdown_cdf = ""
   io_trace = ""
   overflow = ""
-  no_sid = ""
+  no_sit = ""
   spark_mem = ""
   def get(self):
     if self.task == "memcached":
@@ -541,13 +542,15 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s  NoSIT: %s  SparkMem: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow, self.no_sit, self.spark_mem)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, no_sit, spark_mem, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
   global opts
-  spark_mem = 25
   start_time = [-1]
+
+  if not opts.new_spark_baseline:
+    spark_mem = 25
 
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
@@ -1032,7 +1035,7 @@ def reconfig_hdfs():
 
 def execute(opts):
   spark_apps = ["wordcount", "terasort-spark", "bdb"]
-  if opts.task in spark_apps:
+  if opts.task in spark_apps and opts.new_spark_baseline:
     baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, True, 25)
   else:
     baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, False, 25)
@@ -1083,10 +1086,10 @@ def execute(opts):
   elif opts.slowdown_cdf_exp:
     rack_scale_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
     dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
     if not opts.no_baseline:
       confs.append(baseline)
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
 
 
 #  elif opts.vary_e2e_latency:
