@@ -56,7 +56,7 @@ def parse_args():
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
   parser.add_option("--es-data", type="float", default=1, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
-  parser.add_option("--add-baseline", action="store_true", default=False, help="Add baseline in experiments")
+  parser.add_option("--no-baseline", action="store_true", default=False, help="No baseline when run experiments")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -1041,15 +1041,18 @@ def execute(opts):
   confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf, e2e_latency, no_sit, spark_mem
 
   if opts.inject_test:
-    confs.append(baseline)
+    if not opts.no_baseline:
+      confs.append(baseline)
     confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
 
   elif opts.inject_40g_3us:
-    confs.append(baseline)
+    if not opts.no_baseline:
+      confs.append(baseline)
     confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
 
   elif opts.vary_both_latency_bw:
-    confs.append(baseline)
+    if not opts.no_baseline:
+      confs.append(baseline)
     latencies = [1, 5, 10]
     bws = [100, 40, 10]
     for l in latencies:
@@ -1058,13 +1061,15 @@ def execute(opts):
 
   elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
-    confs.append(baseline)
+    if not opts.no_baseline:
+      confs.append(baseline)
     for l in latency_40g:
       confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
 
   elif opts.vary_bw:
     bw_5us = [10, 20, 40, 60, 80, 100]
-    confs.append(baseline)
+    if not opts.no_baseline:
+      confs.append(baseline)
     for b in bw_5us:
       confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))                  
 
@@ -1080,7 +1085,7 @@ def execute(opts):
     dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
-    if opts.add_baseline:
+    if not opts.no_baseline:
       confs.append(baseline)
 
 
