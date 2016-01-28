@@ -545,6 +545,7 @@ class ExpResult:
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, no_sit, spark_mem, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
   global opts
+  spark_mem = 25
   start_time = [-1]
 
   result = ExpResult()
