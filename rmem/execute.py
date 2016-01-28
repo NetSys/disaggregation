@@ -54,7 +54,7 @@ def parse_args():
   parser.add_option("--spark-mem", type="float", default=25, help="Spark executor memory")
   parser.add_option("--spark-cores-max", type="int", default=40, help="Spark cores")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
-  parser.add_option("--es-data", type="float", default=0.2, help="ElasticSearch data per server (GB)")
+  parser.add_option("--es-data", type="float", default=1, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
 
   (opts, args) = parser.parse_args()
@@ -937,7 +937,8 @@ def succinct_install():
 
 
 def install_elasticsearch():
-  all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
+  #all_run("wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.1.1/elasticsearch-2.1.1.rpm; rpm -ivh elasticsearch-2.1.1.rpm; rm elasticsearch-2.1.1.rpm")
+  all_run("wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.7.0.noarch.rpm; rpm -ivh elasticsearch-1.7.0.noarch.rpm; rm elasticsearch-1.7.0.noarch.rpm")
   install_mvn()
   run("/usr/share/elasticsearch/bin/plugin install mobz/elasticsearch-head")
   #run("cd /root; git clone https://github.com/pxgao/YCSB.git; cd /root/YCSB; mvn clean package")
@@ -975,6 +976,7 @@ network.host: %s
 path.data: /mnt2/es/data
 path.work: /mnt2/es/work
 path.logs: /mnt2/es/logs
+index.store.type: memory
 index.store.fs.memory.enabled: true
 cache.memory.small_buffer_size: 4mb
 cache.memory.large_cache_size: 4096mb
