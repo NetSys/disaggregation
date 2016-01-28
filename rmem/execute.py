@@ -47,7 +47,7 @@ def parse_args():
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--inject-40g-3us", action="store_true", default=False, help="Inject 40g/3us latency")
-  parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
+  parser.add_option("--slowdown-cdf-exp", type="string", default="", help="The dirctory that contains CDF file")
   parser.add_option("--dstat", action="store_true", default=False, help="Collect dstat trace")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
@@ -1083,9 +1083,9 @@ def execute(opts):
       confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
       confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
 
-  elif opts.slowdown_cdf_exp:
-    rack_scale_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
-    dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
+  elif opts.slowdown_cdf_exp != "":
+    rack_scale_file = "/root/disaggregation/rmem/fcts/%s/fcts_tmrs_pfabric_%s.txt" % (opts.slowdown_cdf_exp, opts.task)
+    dc_scale_file = "/root/disaggregation/rmem/fcts/%s/fcts_tm_pfabric_%s.txt" % (opts.slowdown_cdf_exp, opts.task)
     if not opts.no_baseline:
       confs.append(baseline)
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
