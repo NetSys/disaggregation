@@ -549,6 +549,9 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   global opts
   start_time = [-1]
 
+  if not opts.new_spark_baseline:
+    spark_mem = 25
+
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
   result.task = task
