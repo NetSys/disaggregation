@@ -1084,6 +1084,7 @@ def execute(opts):
       confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
 
   elif opts.slowdown_cdf_exp != "":
+    assert(os.path.isdir("/root/disaggregation/rmem/fcts/%s" % opts.slowdown_cdf_exp))
     rack_scale_file = "/root/disaggregation/rmem/fcts/%s/fcts_tmrs_pfabric_%s.txt" % (opts.slowdown_cdf_exp, opts.task)
     dc_scale_file = "/root/disaggregation/rmem/fcts/%s/fcts_tm_pfabric_%s.txt" % (opts.slowdown_cdf_exp, opts.task)
     if not opts.no_baseline:
