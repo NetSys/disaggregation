@@ -56,6 +56,7 @@ def parse_args():
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
   parser.add_option("--es-data", type="float", default=0.2, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
+  parser.add_option("--add-baseline", action="store_true", default=False, help="Add baseline in experiments")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -1076,7 +1077,8 @@ def execute(opts):
     dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
     confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
-    #confs.append(baseline)
+    if opts.add_baseline:
+      confs.append(baseline)
 
 
 #  elif opts.vary_e2e_latency:
