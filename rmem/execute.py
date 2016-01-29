@@ -1258,6 +1258,7 @@ def prepare_env():
   update_hadoop_conf()
   mkfs_xvdc_ext4()
   run("mkdir -p /mnt/local_commands")
+  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
   reconfig_hdfs()
   run("echo 1 > /mnt/env_prepared")
 
