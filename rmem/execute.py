@@ -47,7 +47,7 @@ def parse_args():
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--inject-40g-3us", action="store_true", default=False, help="Inject 40g/3us latency")
-  parser.add_option("--special-100g-3us", action="store_true", default=False, help="Inject 100g/3us latency")
+  parser.add_option("--special-100g-3us", type="float", default=-1.0, help="Inject 100g/3us latency with specified percent of local cache")
   parser.add_option("--slowdown-cdf-exp", type="string", default="", help="The dirctory that contains CDF file")
   parser.add_option("--dstat", action="store_true", default=False, help="Collect dstat trace")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
@@ -1049,9 +1049,10 @@ def execute(opts):
       confs.append(baseline)
     confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
 
-  elif opts.special_100g_3us:
-    confs.append((False, 0, 0, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
-    confs.append((True, 3, 100, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+  elif opts.special_100g_3us > 0:
+    assert(opts.special_100g_3us > 0 and opts.special_100g_3us <=1)
+    confs.append((False, 0, 0, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, 25))
+    confs.append((True, 3, 100, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, 25))
 
   elif opts.inject_40g_3us:
     if not opts.no_baseline:
