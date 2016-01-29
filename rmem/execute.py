@@ -331,7 +331,7 @@ def profile_io_end():
 def sync_rmem_code():
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
-  slaves_run("cd /root/disaggregation/rmem; make")
+  slaves_run("cd /root/disaggregation/rmem; make clean; make")
 
 def mkfs_xvdc_ext4():
   dev = ""
