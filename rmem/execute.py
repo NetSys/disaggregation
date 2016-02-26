@@ -1254,13 +1254,13 @@ def install_all():
   install_bwmng()
 
 def prepare_env():
+  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
   stop_tachyon()
   turn_off_os_swap()
   sync_rmem_code()
   update_hadoop_conf()
   mkfs_xvdc_ext4()
   run("mkdir -p /mnt/local_commands")
-  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
   reconfig_hdfs()
   run("echo 1 > /mnt/env_prepared")
 
