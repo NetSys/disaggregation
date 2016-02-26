@@ -58,6 +58,7 @@ def parse_args():
   parser.add_option("--es-data", type="float", default=1, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
   parser.add_option("--no-baseline", action="store_true", default=False, help="No baseline when run experiments")
+  parser.add_option("--all-run", type="string", default="", help="Command to run on all servers")
   parser.add_option("--new-spark-baseline", action="store_true", default=False, help="Use Spark L/4 baseline")
 
   (opts, args) = parser.parse_args()
@@ -1324,6 +1325,10 @@ def main():
   if opts.task != "prepare-env":
     check_env()
 
+  if opts.all_run != "":
+    all_run(opts.all_run)
+    return
+
   if opts.disk_vary_size:
     disk_vary_size(opts) 
   elif opts.task in run_exp_tasks:
@@ -1342,7 +1347,7 @@ def main():
   elif opts.task == "init-rmem":
     setup_rmem(5, 40, 10, 0, True, False, "wordcount", opts.task)
   elif opts.task == "exit-rmem":
-    clean_existing_rmem(40) 
+    clean_existing_rmem(40)
 
   elif opts.task == "test":
     update_hdfs_conf()
