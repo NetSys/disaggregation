@@ -3,7 +3,7 @@ for s in $(ls /dev/rmem*)
 do
   while [ -n "$(cat /proc/swaps | grep $s)" ]
   do
-    swapoff $s
+    swapoff -a
   done
 done
 

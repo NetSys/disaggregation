@@ -30,14 +30,17 @@ MODULE_LICENSE("Dual BSD/GPL");
 static int npages = 2048 * 1024; 
 module_param(npages, int, 0); 
 
+static int ndev = 1;
+module_param(ndev, int, 0);
+
 /*
  * We can tweak our hardware sector size, but the kernel talks to us
  * in terms of small sectors, always.
  */
 #define KERNEL_SECTOR_SIZE 	512
 #define SECTORS_PER_PAGE	(PAGE_SIZE / KERNEL_SECTOR_SIZE)
-#define DEVICE_BOUND 20
-#define DEVICE_NUM 2
+#define DEVICE_BOUND 100
+
 
 /*
  * The internal representation of our device.
@@ -150,7 +153,7 @@ static int __init rmem_init(void) {
   for(c = 0; c < DEVICE_BOUND; c++) {
     devices[c] = NULL;
   }
-  for(c = 0; c < DEVICE_NUM; c++) {
+  for(c = 0; c < ndev; c++) {
   	device = vmalloc(sizeof(*device));
   	/*
   	 * Set up our internal device.
