@@ -40,7 +40,7 @@ module_param(npages, int, 0);
 #define KERNEL_SECTOR_SIZE 	512
 #define SECTORS_PER_PAGE	(PAGE_SIZE / KERNEL_SECTOR_SIZE)
 #define DEVICE_BOUND 20
-#define DEVICE_NUM 2
+#define DEVICE_NUM 1
 /*
  * Our request queue
  */
@@ -173,8 +173,9 @@ static int __init rmem_init(void) {
   		device->data[i] = kmalloc(PAGE_SIZE, GFP_KERNEL);
   		if (device->data[i] == NULL) {
   			int j;
+        pr_info("rmem: can not allocate data\n");
   			for (j = 0; j < i - 1; j++)
-  				kfree(device->data[i]);
+  				kfree(device->data[j]);
   			vfree(device->data);
   			return -ENOMEM;
   		}
@@ -188,9 +189,11 @@ static int __init rmem_init(void) {
   	 * Get a request queue.
   	 */
   	queue = blk_init_queue(rmem_request, &device->lock);
-  	if (queue == NULL || queue->id < DEVICE_BOUND)
+  	if (queue == NULL)
   		goto out;
     pr_info("init queue id %d\n", queue->id);
+    if (queue->id >= DEVICE_BOUND) 
+      goto out;
     queues[queue->id] = queue;
     devices[queue->id] = device;
     scnprintf(dev_name, 20, "rmem%d", queue->id);
