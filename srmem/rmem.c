@@ -27,9 +27,6 @@
 
 MODULE_LICENSE("Dual BSD/GPL");
 
-static int major_num = 0;
-module_param(major_num, int, 0);
- 
 static int npages = 2048 * 1024; 
 module_param(npages, int, 0); 
 
@@ -40,11 +37,7 @@ module_param(npages, int, 0);
 #define KERNEL_SECTOR_SIZE 	512
 #define SECTORS_PER_PAGE	(PAGE_SIZE / KERNEL_SECTOR_SIZE)
 #define DEVICE_BOUND 20
-#define DEVICE_NUM 1
-/*
- * Our request queue
- */
-struct request_queue* queues[DEVICE_BOUND];
+#define DEVICE_NUM 2
 
 /*
  * The internal representation of our device.
@@ -54,6 +47,7 @@ struct rmem_device {
 	spinlock_t lock;
 	u8 **data;
 	struct gendisk *gd;
+  int major_num;
 };
 
 struct rmem_device* devices[DEVICE_BOUND];
@@ -149,12 +143,11 @@ static struct block_device_operations rmem_ops = {
 
 
 static int __init rmem_init(void) {
-	int i,c;
-  struct request_queue* queue;
+	int i,c,major_num;
   struct rmem_device* device;
+  struct request_queue *queue;
   char dev_name[20];
   for(c = 0; c < DEVICE_BOUND; c++) {
-    queues[c] = NULL;
     devices[c] = NULL;
   }
   for(c = 0; c < DEVICE_NUM; c++) {
@@ -194,7 +187,6 @@ static int __init rmem_init(void) {
     pr_info("init queue id %d\n", queue->id);
     if (queue->id >= DEVICE_BOUND) 
       goto out;
-    queues[queue->id] = queue;
     devices[queue->id] = device;
     scnprintf(dev_name, 20, "rmem%d", queue->id);
   	blk_queue_physical_block_size(queue, PAGE_SIZE);
@@ -204,8 +196,10 @@ static int __init rmem_init(void) {
   	/*
   	 * Get registered.
   	 */
-  	major_num = register_blkdev(major_num, dev_name);
-  	if (major_num < 0) {
+  	major_num = register_blkdev(0, dev_name);
+    device->major_num = major_num;
+    pr_info("Registering blkdev %s major_num %d\n", dev_name, major_num);
+    if (major_num < 0) {
   		printk(KERN_WARNING "rmem: unable to get major number\n");
   		goto out;
   	}
@@ -218,7 +212,7 @@ static int __init rmem_init(void) {
   	device->gd->major = major_num;
   	device->gd->first_minor = 0;
   	device->gd->fops = &rmem_ops;
-  	device->gd->private_data = &device;
+  	device->gd->private_data = device;
   	strcpy(device->gd->disk_name, dev_name);
   	set_capacity(device->gd, npages * SECTORS_PER_PAGE);
   	device->gd->queue = queue;
@@ -243,15 +237,16 @@ static void __exit rmem_exit(void)
     if(devices[c] != NULL){
     	del_gendisk(devices[c]->gd);
   	  put_disk(devices[c]->gd);
-    	unregister_blkdev(major_num, devices[c]->gd->disk_name);
-  	  blk_cleanup_queue(queues[c]);
+      pr_info("Unregistering blkdev %s major_num %d\n", devices[c]->gd->disk_name, devices[c]->major_num);
+    	unregister_blkdev(devices[c]->major_num, devices[c]->gd->disk_name);
+  	  blk_cleanup_queue(devices[c]->gd->queue);
 
   	  for (i = 0; i < npages; i++)
 	    	kfree(devices[c]->data[i]);
   
     	vfree(devices[c]->data);
       vfree(devices[c]);
-
+      devices[c] = NULL;
     }
   }
 
