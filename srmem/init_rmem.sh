@@ -8,7 +8,7 @@ insmod rmem.ko npages=$1 ndev=$2
 
 for s in $(ls /dev/rmem*);
 do
-  mkswap $s
+  mkswap -f $s
   swapon $s
 done
             
