@@ -55,7 +55,7 @@ def parse_args():
   parser.add_option("--spark-mem", type="float", default=25, help="Spark executor memory")
   parser.add_option("--spark-cores-max", type="int", default=40, help="Spark cores")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
-  parser.add_option("--es-data", type="float", default=1, help="ElasticSearch data per server (GB)")
+  parser.add_option("--es-data", type="float", default=2, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
   parser.add_option("--no-baseline", action="store_true", default=False, help="No baseline when run experiments")
   parser.add_option("--all-run", type="string", default="", help="Command to run on all servers")
@@ -954,7 +954,7 @@ def install_elasticsearch():
 
 def es_bench():
   slaves_run_parallel("yum install -y python27; wget https://bootstrap.pypa.io/get-pip.py; python27 get-pip.py; rm get-pip.py; pip install https://github.com/mkocikowski/esbench/archive/dev.zip", master = True)
-  run("cd /root; git clone https://github.com/pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
+  run("cd /root; git clone https://github.com/pxgao/esbench.git; rm -rf /usr/local/lib/python2.7/site-packages/esbench; cp -r /root/esbench /usr/local/lib/python2.7/site-packages/; /root/spark-ec2/copy-dir /usr/local/lib/python2.7/site-packages/esbench/")
 
 def get_es_throughput():
   run("rm -rf /mnt/es_stats; mkdir -p /mnt/es_stats")
@@ -983,10 +983,10 @@ network.host: %s
 path.data: /mnt2/es/data
 path.work: /mnt2/es/work
 path.logs: /mnt2/es/logs
-index.store.type: memory
+index.store.type: mmapfs
 index.store.fs.memory.enabled: true
-cache.memory.small_buffer_size: 4mb
-cache.memory.large_cache_size: 4096mb
+cache.memory.small_buffer_size: 1000mb
+cache.memory.large_cache_size: 16000mb
 discovery.zen.ping.multicast.enabled: false
 discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", "0.0.0.0", slaves)
     return conf
@@ -1007,7 +1007,7 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
 def elasticsearch_run():
   slaves_run_parallel("service elasticsearch start", master = True)
   slaves_run_parallel("rm -rf /mnt/esbench_throughput; esbench run %smb" % int(opts.es_data * 1024))  
-  all_run("service elasticsearch stop")
+  #all_run("service elasticsearch stop")
 
 
 
