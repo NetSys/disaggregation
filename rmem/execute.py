@@ -1006,7 +1006,7 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
 
 def elasticsearch_run():
   slaves_run_parallel("service elasticsearch start", master = True)
-  time.sleep(10)
+  time.sleep(30)
   slaves_run_parallel("rm -rf /mnt/esbench_throughput; esbench run %smb" % int(opts.es_data * 1024))  
   #all_run("service elasticsearch stop")
 
