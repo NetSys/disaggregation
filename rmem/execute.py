@@ -1346,9 +1346,9 @@ def main():
     prepare_all(opts)
 
   elif opts.task == "init-rmem":
-    setup_rmem(5, 40, 10, 0, True, False, "wordcount", opts.task)
+    setup_rmem(opts.remote_memory, opts.latency, opts.bandwidth, 0, opts.inject, opts.trace, opts.slowdown_cdf_exp, opts.task)
   elif opts.task == "exit-rmem":
-    clean_existing_rmem(40)
+    clean_existing_rmem(opts.bandwidth)
 
   elif opts.task == "test":
     update_hdfs_conf()
