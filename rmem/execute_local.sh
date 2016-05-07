@@ -10,8 +10,10 @@ cd /root/disaggregation/rmem
 for i in `seq 0 $(($ITER-1))`
 do
 	free > /dev/null && sync && echo 3 > /proc/sys/vm/drop_caches && free > /dev/null
-	a=$(cd /root/stream-scaling/; export OMP_NUM_THREADS=16; ./stream | tail -n 4 | grep Triad: | awk '{print $2}')	
-	echo $@ $a
+	cd /root/disaggregation/apps/stream-scaling; export OMP_NUM_THREADS=8; ./stream	> .temp
+  a=$(cat .temp | tail -n 4 | grep Triad: | awk '{print $2}')
+  cd -
+  echo $@ $a
 	res[$i]=$a
 done
 
