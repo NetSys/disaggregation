@@ -878,6 +878,10 @@ def bdb_prepare():
   run("/root/ephemeral-hdfs/bin/hadoop distcp -m 20 s3n://petergao/rankings/ /rankings/")
   run("/root/ephemeral-hdfs/bin/stop-mapred.sh")
 
+def streaming_prepare():
+    run('''echo "sc.textFile(\"s3n://petergao/wiki_raw_chunked/\\").saveAsTextFile(\"/wiki_raw_chunked/\") | /root/spark/bin/spark-shell''')
+
+
 def storm_prepare():
   master = get_master()
   storm_cfg = '''storm.zookeeper.servers:
@@ -1308,7 +1312,7 @@ def tachyon_run():
 def main():
   global opts
   opts = parse_args()
-  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "memcached-local", "storm", "timely", "elasticsearch"]
+  run_exp_tasks = ["wordcount", "bdb", "wordcount-hadoop", "terasort", "terasort-spark", "graphlab", "memcached", "memcached-local", "storm", "timely", "elasticsearch", "streaming"]
  
   if opts.task != "prepare-env":
     check_env()
