@@ -9,7 +9,4 @@ do
   sudo rmmod rmem
 done
 
-while [ -d "swap" ]
-do
-  rmdir swap
-done
+free > /dev/null && sync && echo 3 > /proc/sys/vm/drop_caches && free > /dev/null;

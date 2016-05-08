@@ -283,8 +283,9 @@ static void rmem_request(struct request_queue *q)
 		}
 	}
 	if(fct_record_count){
-		begin = sched_clock();
-		u64 fct = get_fct(count);
+    u64 fct;
+    begin = sched_clock();
+		fct = get_fct(count);
 		while ((sched_clock() - begin) < fct) {
 			// wait for RTT latency */
 			;

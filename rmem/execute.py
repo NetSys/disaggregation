@@ -47,16 +47,19 @@ def parse_args():
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--inject-40g-3us", action="store_true", default=False, help="Inject 40g/3us latency")
-  parser.add_option("--slowdown-cdf-exp", action="store_true", default=False, help="Variable latency injected with given CDF file")
+  parser.add_option("--special-100g-3us", type="float", default=-1.0, help="Inject 100g/3us latency with specified percent of local cache")
+  parser.add_option("--slowdown-cdf-exp", type="string", default="", help="The dirctory that contains CDF file")
   parser.add_option("--dstat", action="store_true", default=False, help="Collect dstat trace")
   parser.add_option("--disk-vary-size", action="store_true", default=False, help="Use disk as swap, vary input size")
   parser.add_option("--iter", type="int", default=1, help="Number of iterations")
   parser.add_option("--spark-mem", type="float", default=25, help="Spark executor memory")
   parser.add_option("--spark-cores-max", type="int", default=40, help="Spark cores")
   parser.add_option("--teragen-size", type="float", default=125.0, help="Sort input data size (GB)")
-  parser.add_option("--es-data", type="float", default=1, help="ElasticSearch data per server (GB)")
+  parser.add_option("--es-data", type="float", default=2, help="ElasticSearch data per server (GB)")
   parser.add_option("--no-sit", action="store_true", default=False, help="Don't run special instrumentation")
   parser.add_option("--no-baseline", action="store_true", default=False, help="No baseline when run experiments")
+  parser.add_option("--all-run", type="string", default="", help="Command to run on all servers")
+  parser.add_option("--new-spark-baseline", action="store_true", default=False, help="Use Spark L/4 baseline")
 
   (opts, args) = parser.parse_args()
   return opts
@@ -329,7 +332,7 @@ def profile_io_end():
 def sync_rmem_code():
   banner("Sync rmem code")
   run("cd /root/disaggregation/rmem; /root/spark-ec2/copy-dir .")
-  slaves_run("cd /root/disaggregation/rmem; make")
+  slaves_run("cd /root/disaggregation/rmem; make clean; make")
 
 def mkfs_xvdc_ext4():
   dev = ""
@@ -528,7 +531,7 @@ class ExpResult:
   slowdown_cdf = ""
   io_trace = ""
   overflow = ""
-  no_sid = ""
+  no_sit = ""
   spark_mem = ""
   def get(self):
     if self.task == "memcached":
@@ -541,13 +544,15 @@ class ExpResult:
       return self.runtime
 
   def __str__(self):
-    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow)
+    return "ExpStart: %s  Task: %s  RmemGb: %s  BwGbps: %s  LatencyUs: %s  E2eLatencyUs: %s  Inject: %s  Trace: %s  SldCdf: %s  MinRamGb: %s  Runtime: %s  MemCachedLatencyUs: %s  MemCachedThroughput: %s  StormLatencyUs: %s  StormThroughput: %s  ESThroughput: %s  Reads: %s  Writes: %s  TraceDir: %s  IOTrace: %s  Overflow: %s  NoSIT: %s  SparkMem: %s" % (self.exp_start, self.task, self.rmem_gb, self.bw_gbps, self.latency_us, self.e2e_latency_us, self.inject, self.trace, self.slowdown_cdf, self.min_ram_gb, self.runtime, self.memcached_latency_us, self.memcached_throughput, self.storm_latency_us, self.storm_throughput, self.es_throughput, self.reads, self.writes, self.trace_dir, self.io_trace, self.overflow, self.no_sit, self.spark_mem)
 
 def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slowdown_cdf, profile_io, dstat_log, no_sit, spark_mem, profile = False, memcached_size=22):
   global memcached_kill_loadgen_on
   global opts
-  spark_mem = 25
   start_time = [-1]
+
+  if not opts.new_spark_baseline:
+    spark_mem = 25
 
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
@@ -953,7 +958,7 @@ def install_elasticsearch():
 
 def es_bench():
   slaves_run_parallel("yum install -y python27; wget https://bootstrap.pypa.io/get-pip.py; python27 get-pip.py; rm get-pip.py; pip install https://github.com/mkocikowski/esbench/archive/dev.zip", master = True)
-  run("cd /root; git clone https://github.com/pxgao/esbench.git; cp -r /root/esbench /usr/lib/python2.7/dist-packages/; /root/spark-ec2/copy-dir /usr/lib/python2.7/dist-packages/esbench/")
+  run("cd /root; git clone https://github.com/pxgao/esbench.git; rm -rf /usr/local/lib/python2.7/site-packages/esbench; cp -r /root/esbench /usr/local/lib/python2.7/site-packages/; /root/spark-ec2/copy-dir /usr/local/lib/python2.7/site-packages/esbench/")
 
 def get_es_throughput():
   run("rm -rf /mnt/es_stats; mkdir -p /mnt/es_stats")
@@ -982,10 +987,10 @@ network.host: %s
 path.data: /mnt2/es/data
 path.work: /mnt2/es/work
 path.logs: /mnt2/es/logs
-index.store.type: memory
+index.store.type: mmapfs
 index.store.fs.memory.enabled: true
-cache.memory.small_buffer_size: 4mb
-cache.memory.large_cache_size: 4096mb
+cache.memory.small_buffer_size: 1000mb
+cache.memory.large_cache_size: 16000mb
 discovery.zen.ping.multicast.enabled: false
 discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "false" if id == 0 else "true", "0.0.0.0", slaves)
     return conf
@@ -1005,8 +1010,9 @@ discovery.zen.ping.unicast.hosts: %s''' % (id, "true" if id == 0 else "false", "
 
 def elasticsearch_run():
   slaves_run_parallel("service elasticsearch start", master = True)
+  time.sleep(30)
   slaves_run_parallel("rm -rf /mnt/esbench_throughput; esbench run %smb" % int(opts.es_data * 1024))  
-  all_run("service elasticsearch stop")
+  #all_run("service elasticsearch stop")
 
 
 
@@ -1036,7 +1042,7 @@ def reconfig_hdfs():
 
 def execute(opts):
   spark_apps = ["wordcount", "terasort-spark", "bdb"]
-  if opts.task in spark_apps:
+  if opts.task in spark_apps and opts.new_spark_baseline:
     baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, True, 25)
   else:
     baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, False, 25)
@@ -1048,6 +1054,11 @@ def execute(opts):
     if not opts.no_baseline:
       confs.append(baseline)
     confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+
+  elif opts.special_100g_3us > 0:
+    assert(opts.special_100g_3us > 0 and opts.special_100g_3us <=1)
+    confs.append((False, 0, 0, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, 25))
+    confs.append((True, 3, 100, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, 25))
 
   elif opts.inject_40g_3us:
     if not opts.no_baseline:
@@ -1084,13 +1095,14 @@ def execute(opts):
       confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
       confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
 
-  elif opts.slowdown_cdf_exp:
-    rack_scale_file = "/root/disaggregation/rmem/fcts/fcts_tmrs_pfabric_%s.txt" % opts.task
-    dc_scale_file = "/root/disaggregation/rmem/fcts/fcts_tm_pfabric_%s.txt" % opts.task
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
+  elif opts.slowdown_cdf_exp != "":
+    assert(os.path.isdir("/root/disaggregation/rmem/fcts/%s" % opts.slowdown_cdf_exp))
+    rack_scale_file = "/root/disaggregation/rmem/fcts/%s/fcts_tmrs_pfabric_%s.txt" % (opts.slowdown_cdf_exp, opts.task)
+    dc_scale_file = "/root/disaggregation/rmem/fcts/%s/fcts_tm_pfabric_%s.txt" % (opts.slowdown_cdf_exp, opts.task)
     if not opts.no_baseline:
       confs.append(baseline)
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
 
 
 #  elif opts.vary_e2e_latency:
@@ -1247,6 +1259,7 @@ def install_all():
   install_bwmng()
 
 def prepare_env():
+  slaves_run("mkdir -p /root/disaggregation/rmem/.remote_commands")
   stop_tachyon()
   turn_off_os_swap()
   sync_rmem_code()
@@ -1317,6 +1330,10 @@ def main():
   if opts.task != "prepare-env":
     check_env()
 
+  if opts.all_run != "":
+    all_run(opts.all_run)
+    return
+
   if opts.disk_vary_size:
     disk_vary_size(opts) 
   elif opts.task in run_exp_tasks:
@@ -1333,9 +1350,9 @@ def main():
     prepare_all(opts)
 
   elif opts.task == "init-rmem":
-    setup_rmem(5, 40, 10, 0, True, False, "wordcount", opts.task)
+    setup_rmem(opts.remote_memory, opts.latency, opts.bandwidth, 0, opts.inject, opts.trace, opts.slowdown_cdf_exp, opts.task)
   elif opts.task == "exit-rmem":
-    clean_existing_rmem(40) 
+    clean_existing_rmem(opts.bandwidth)
 
   elif opts.task == "test":
     update_hdfs_conf()
