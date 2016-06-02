@@ -1,9 +1,0 @@
-*.o
-Dataset/
-*.pyc
-*.3
-*.Plo
-*.lo
-*.la
-*.Po
-.DS_Store

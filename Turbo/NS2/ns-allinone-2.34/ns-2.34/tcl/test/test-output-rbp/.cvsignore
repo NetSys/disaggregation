@@ -1,8 +1,0 @@
-*.test
-reno_pacing
-vegas_pacing_rate
-vegas_pacing_cwnd
-reno_slow_start_restart
-reno_no_slow_start_restart
-vegas_slow_start_restart
-vegas_no_slow_start_restart
