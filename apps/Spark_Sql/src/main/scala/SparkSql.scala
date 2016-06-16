@@ -16,12 +16,12 @@ object SparkSql {
       val sc = new SparkContext(conf)
       val sqlCtx = new org.apache.spark.sql.SQLContext(sc)
       import sqlCtx.implicits._
-      val visits = sc.textFile("/uservisits").map(_.split(",")).map(v => Visit(v(0), v(1), v(2), v(3).toDouble, v(4), v(5), v(6), v(7), v(8).toInt)).toDF()
+      val visits = sc.textFile(args(0)).map(_.split(",")).map(v => Visit(v(0), v(1), v(2), v(3).toDouble, v(4), v(5), v(6), v(7), v(8).toInt)).toDF()
       visits.registerTempTable("uservisits")
-      val rankings = sc.textFile("/rankings").map(_.split(",")).map(r => Ranking(r(0), r(1).toInt, r(2).toInt)).toDF()
+      val rankings = sc.textFile(args(1)).map(_.split(",")).map(r => Ranking(r(0), r(1).toInt, r(2).toInt)).toDF()
       rankings.registerTempTable("rankings")
-      val result = sqlCtx.sql(args(1))
-      result.rdd.saveAsTextFile(args(0))
+      val result = sqlCtx.sql(args(3))
+      result.rdd.saveAsTextFile(args(2))
   }
 }
 
