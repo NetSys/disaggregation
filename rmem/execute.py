@@ -47,6 +47,7 @@ def parse_args():
   parser.add_option("--vary-remote-mem", action="store_true", default=False, help="Experiment that varies percentage of remote memory with 40G/5us latency injected")
   parser.add_option("--inject-test", action="store_true", default=False, help="Test latency injection")
   parser.add_option("--inject-40g-3us", action="store_true", default=False, help="Inject 40g/3us latency")
+  parser.add_option("--rdma", action="store_true", default=False, help="Use rdma swap")
   parser.add_option("--special-100g-3us", type="float", default=-1.0, help="Inject 100g/3us latency with specified percent of local cache")
   parser.add_option("--slowdown-cdf-exp", type="string", default="", help="The dirctory that contains CDF file")
   parser.add_option("--dstat", action="store_true", default=False, help="Collect dstat trace")
@@ -100,7 +101,7 @@ def turn_off_os_swap():
 
 def clean_existing_rmem(bw_gbps):
   banner("exiting rmem")
-  if bw_gbps < 0:
+  if bw_gbps == -1: #use disk
     close_rmem = '''
       while [ -n "$(mount | grep /root/disaggregation/rmem/tmpfs)" ];
         do umount /root/disaggregation/rmem/tmpfs;
@@ -113,6 +114,10 @@ def clean_existing_rmem(bw_gbps):
       done;
       rm /mnt2/swapdisk/swap;
     '''
+  elif bw_gbps == -2: #use rdma
+    close_rmem = '''
+      cd /root/srmem
+      ./exit_rmem_30g.sh'''
   else:
     close_rmem = '''
       cd /root/disaggregation/rmem;
@@ -142,7 +147,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
   inject_int = 1 if inject and slowdown_cdf == "" else 0
   trace_int = 1 if trace else 0
 
-  if bw_gbps < 0:
+  if bw_gbps == -1: #use disk
     rmem_mb = int(rmem_gb * 1024)
     install_rmem = '''
       cd /root/disaggregation/rmem
@@ -159,6 +164,8 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       swapon /mnt2/swapdisk/swap
     ''' % (rmem_mb, rmem_mb, rmem_mb)
     slaves_run_bash(install_rmem)
+  elif bw_gbps == -2: #use rdma
+    slaves_run_bash("cd /root/srmem; ./init_rmem_30g_with_npage.sh %d" % remote_page)
   else:
     install_rmem = '''
       cd /root/disaggregation/rmem
@@ -620,7 +627,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresults")
     app_start() 
     query = get_bdb_query("3a") # 2a or 3a
-    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"/uservisits\" \"/rankings\" \"/dfsresults\" \"%s\"" % (master, int(spark_mem * 1024), opts.spark_cores_max, query) )
+    run("/root/spark/bin/spark-submit --class \"SparkSql\" --master \"spark://{0}:7077\" --conf \"spark.executor.memory={1}m\" --conf \"spark.cores.max={2}\" \"/root/disaggregation/apps/Spark_Sql/target/scala-2.10/spark-sql_2.10-1.0.jar\" \"hdfs://{0}:9000/uservisits\" \"hdfs://{0}:9000/rankings\" \"hdfs://{0}:9000/dfsresults\" \"{3}\"".format(master, int(spark_mem * 1024), opts.spark_cores_max, query) )
     app_end()
 
   elif task == "terasort" or task == "wordcount-hadoop":
@@ -1073,6 +1080,12 @@ def execute(opts):
     for l in latencies:
       for b in bws:
         confs.append((True, l, b, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+
+  elif opts.rdma:
+    if not opts.no_baseline:
+      confs.append(baseline)
+    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+    confs.append((True, 0, -2, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
 
   elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
