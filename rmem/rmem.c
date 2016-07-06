@@ -41,6 +41,7 @@ module_param(get_record, int, 0);
  */
 #define KERNEL_SECTOR_SIZE 	512
 #define SECTORS_PER_PAGE	(PAGE_SIZE / KERNEL_SECTOR_SIZE)
+#define MERGE 0
 /*
  * Our request queue
  */
@@ -213,6 +214,12 @@ static void rmem_request(struct request_queue *q)
 	int last_page = -2;
 	int last_dir = -1;
 
+	bool has_req = false;
+	sector_t sector, last_sector;
+	unsigned long nsect, last_nsect;
+	char *buffer, *last_buffer;
+	int write, last_write;
+
 	if(inject_latency){
 		begin = sched_clock();
 		while ((sched_clock() - begin) < latency_ns) {
@@ -260,8 +267,38 @@ static void rmem_request(struct request_queue *q)
 					record.page = blk_rq_pos(req) / SECTORS_PER_PAGE * (rq_data_dir(req)?1:-1);
 				}
 			}
+			#if MERGE
+			if(!has_req)
+			{
+				last_sector = blk_rq_pos(req);
+				last_nsect = blk_rq_cur_sectors(req);
+				last_buffer = bio_data(req->bio);
+				last_write = rq_data_dir(req);
+				has_req = true;
+			}
+			else
+			{
+				sector = blk_rq_pos(req);
+				nsect = blk_rq_cur_sectors(req);
+				buffer = bio_data(req->bio);
+				write = rq_data_dir(req);
+				if(last_sector + last_nsect == sector && last_buffer + nsect * KERNEL_SECTOR_SIZE == buffer && write == last_write)
+				{
+					last_nsect += nsect;
+				}
+				else
+				{
+					rmem_transfer(&device, last_sector, last_nsect, last_buffer, last_write, slowdown);
+					last_sector = sector;
+					last_nsect = nsect;
+					last_buffer = buffer;
+					last_write = write;
+				}
+			}
+			#else
 			rmem_transfer(&device, blk_rq_pos(req), blk_rq_cur_sectors(req),
 					bio_data(req->bio), rq_data_dir(req), slowdown);
+			#endif
 			if(get_record)
 			{
 				last_dir = rq_data_dir(req);
@@ -269,6 +306,10 @@ static void rmem_request(struct request_queue *q)
 			}
 			count++;
 			if ( ! __blk_end_request_cur(req, 0) ) {
+				#if MERGE
+				rmem_transfer(&device, last_sector, last_nsect, last_buffer, last_write, slowdown);
+				has_req = false;
+				#endif
 				req = blk_fetch_request(q);
 			}
 		}
