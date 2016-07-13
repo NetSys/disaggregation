@@ -132,7 +132,8 @@ def clean_existing_rmem(bw_gbps):
       while [ -d "swap" ];
         do rmdir swap;
       done;
-
+    ''' 
+  '''
       free > /dev/null && sync && echo 3 > /proc/sys/vm/drop_caches && free > /dev/null;
   '''
 
@@ -165,7 +166,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
     ''' % (rmem_mb, rmem_mb, rmem_mb)
     slaves_run_bash(install_rmem)
   elif bw_gbps == -2: #use rdma
-    slaves_run_bash("cd /root/srmem; ./init_rmem_30g_with_npage.sh %d" % remote_page)
+    slaves_run_parallel("cd /root/srmem; ./init_rmem_30g_with_npage.sh %d" % remote_page)
   else:
     install_rmem = '''
       cd /root/disaggregation/rmem
@@ -187,6 +188,7 @@ def setup_rmem(rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, slow
       ''' % (remote_page, trace_int, bandwidth_bps, latency_ns, e2e_latency_ns, inject_int)
     slaves_run_bash(install_rmem)
 
+      
     if slowdown_cdf != "":
       assert(os.path.exists(slowdown_cdf))
       run("/root/spark-ec2/copy-dir /root/disaggregation/rmem/fcts")
@@ -558,8 +560,8 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
   global opts
   start_time = [-1]
 
-  if not opts.new_spark_baseline:
-    spark_mem = 25
+  if opts.new_spark_baseline:
+    spark_mem = 30 - rmem_gb
 
   result = ExpResult()
   result.exp_start = str(datetime.datetime.now())
@@ -618,7 +620,7 @@ def run_exp(task, rmem_gb, bw_gbps, latency_us, e2e_latency_us, inject, trace, s
     run("/root/ephemeral-hdfs/bin/hadoop fs -rmr /dfsresult")
     app_start()
     if task == "wordcount":
-      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"/wiki/\" \"/dfsresult\"" % (master, int(spark_mem * 1024), opts.spark_cores_max) )
+      run("/root/spark/bin/spark-submit --class \"WordCount\" --master \"spark://{0}:7077\" --conf \"spark.executor.memory={1}m\" --conf \"spark.cores.max={2}\" \"/root/disaggregation/apps/WordCount_spark/target/scala-2.10/simple-project_2.10-1.0.jar\" \"hdfs://{0}:9000/wiki/\" \"hdfs://{0}:9000/dfsresult\"".format(master, int(spark_mem * 1024), opts.spark_cores_max) )
     elif task == "terasort-spark":
       run("/root/spark/bin/spark-submit --class \"TeraSort\" --master \"spark://%s:7077\" --conf \"spark.executor.memory=%sm\" --conf \"spark.cores.max=%s\" \"/root/disaggregation/apps/spark_terasort/target/scala-2.10/terasort_2.10-1.0.jar\" \"/sortinput/\" \"/dfsresult\"" % (master, int(spark_mem * 1024), opts.spark_cores_max) )
     app_end()
@@ -1050,9 +1052,9 @@ def reconfig_hdfs():
 def execute(opts):
   spark_apps = ["wordcount", "terasort-spark", "bdb"]
   if opts.task in spark_apps and opts.new_spark_baseline:
-    baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, True, 25)
+    baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, True, opts.spark_mem)
   else:
-    baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, False, 25)
+    baseline = (False, 0, 0, opts.remote_memory, opts.cdf, 0, False, opts.spark_mem)
 
   log("\n\n\n", level = 1)
   confs = [] #inject, latency_us, bw_gbps, rmem_gb, cdf, e2e_latency, no_sit, spark_mem
@@ -1060,17 +1062,17 @@ def execute(opts):
   if opts.inject_test:
     if not opts.no_baseline:
       confs.append(baseline)
-    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, opts.spark_mem))
 
   elif opts.special_100g_3us > 0:
     assert(opts.special_100g_3us > 0 and opts.special_100g_3us <=1)
-    confs.append((False, 0, 0, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, 25))
-    confs.append((True, 3, 100, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, 25))
+    confs.append((False, 0, 0, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, opts.spark_mem))
+    confs.append((True, 3, 100, 29.45 * (1 - opts.special_100g_3us), opts.cdf, 0, False, opts.spark_mem))
 
   elif opts.inject_40g_3us:
     if not opts.no_baseline:
       confs.append(baseline)
-    confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+    confs.append((True, 3, 40, opts.remote_memory, opts.cdf, 0, False, opts.spark_mem))
 
   elif opts.vary_both_latency_bw:
     if not opts.no_baseline:
@@ -1079,34 +1081,34 @@ def execute(opts):
     bws = [100, 40, 10]
     for l in latencies:
       for b in bws:
-        confs.append((True, l, b, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+        confs.append((True, l, b, opts.remote_memory, opts.cdf, 0, False, opts.spark_mem))
 
   elif opts.rdma:
     if not opts.no_baseline:
-      confs.append(baseline)
-    confs.append((True, 5, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
-    confs.append((True, 0, -2, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+      confs.append((False, 0, 0, 22.5, opts.cdf, 0, False, opts.spark_mem))
+    #confs.append((True, 5, 40, 22.5, opts.cdf, 0, False, 25))
+    confs.append((True, 0, -2, 22.5, opts.cdf, 0, False, opts.spark_mem))
 
   elif opts.vary_latency:
     latency_40g = [1, 5, 10, 20, 40]
     if not opts.no_baseline:
       confs.append(baseline)
     for l in latency_40g:
-      confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))
+      confs.append((True, l, 40, opts.remote_memory, opts.cdf, 0, False, opts.spark_mem))
 
   elif opts.vary_bw:
     bw_5us = [10, 20, 40, 60, 80, 100]
     if not opts.no_baseline:
       confs.append(baseline)
     for b in bw_5us:
-      confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0, False, 30 - opts.remote_memory))                  
+      confs.append((True, 5, b, opts.remote_memory, opts.cdf, 0, False, opts.spark_mem))                  
 
   elif opts.vary_remote_mem:
     local_rams = map(lambda x: x/10.0, range(1,10))
     local_rams.append(0.9999)
     for r in local_rams:
-      confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
-      confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0, False, r * 29.45 + 0.5))
+      confs.append((True, 5, 40, (1-r) * 29.45, opts.cdf, 0, False, opts.spark_mem))
+      confs.append((False, 0, 10000, (1-r) * 29.45, opts.cdf, 0, False, opts.spark_mem))
 
   elif opts.slowdown_cdf_exp != "":
     assert(os.path.isdir("/root/disaggregation/rmem/fcts/%s" % opts.slowdown_cdf_exp))
@@ -1114,8 +1116,8 @@ def execute(opts):
     dc_scale_file = "/root/disaggregation/rmem/fcts/%s/fcts_tm_pfabric_%s.txt" % (opts.slowdown_cdf_exp, opts.task)
     if not opts.no_baseline:
       confs.append(baseline)
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, 30 - opts.remote_memory))
-    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, 30 - opts.remote_memory))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, dc_scale_file, 0, False, opts.spark_mem))
+    confs.append((False, opts.latency, opts.bandwidth, opts.remote_memory, rack_scale_file, 0, False, opts.spark_mem))
 
 
 #  elif opts.vary_e2e_latency:
@@ -1185,8 +1187,9 @@ yum install -y apache-maven'''.replace("\n", ";")
 
 
 def timely_prepare():
-  cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely; /root/spark-ec2/copy-dir /root/s3cmd; /root/spark-ec2/copy-dir /root/.s3cfg;"
+  cmd = "rm -rf /mnt2/timely; mkdir -p /mnt2/timely;"
   slaves_run_parallel(cmd, master = True)
+  run("/root/spark-ec2/copy-dir /root/s3cmd; /root/spark-ec2/copy-dir /root/.s3cfg;")
 
   slaves_run("rm -rf /mnt2/friendster; mkdir -p /mnt2/friendster")
   def get_offsets(server = ""):
@@ -1234,7 +1237,7 @@ def timely_prepare():
 def timely_run():
   global bash_run_counter
   def ssh(machine, cmd, counter):
-    command = "ssh " + machine + " '" + cmd + "' &> /mnt/local_commands/cmd_" + str(counter) + ".log"
+    command = "ssh " + machine + " '" + cmd + "' 2>&1 1> /mnt/local_commands/cmd_" + str(counter) + ".log"
     print "#######Running cmd:" + command
     os.system(command)
     print "#######Server " + machine + " command finished"

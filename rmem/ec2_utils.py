@@ -45,7 +45,7 @@ def slaves_run(cmd, background = False, tt = False):
 def slaves_run_parallel(cmd, master=False):
   global bash_run_counter
   def ssh(machine, cmd, counter):
-    command = "ssh " + machine + " '" + cmd + "' &> /mnt/local_commands/cmd_" + str(counter) + ".log"
+    command = "ssh " + machine + " '" + cmd + "' 2>&1 1> /mnt/local_commands/cmd_" + str(counter) + ".log"
     print "#######Running cmd:" + command
     os.system(command)
     print "#######Server " + machine + " command finished"
