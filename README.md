@@ -42,11 +42,12 @@ To run experiment,
 python execute.py --task terasort --vary-both-latency-bw --iter 10
 ```
 This will run terasort with different bandwith (10Gbps - 100Gbps) and latency(1us - 40us) combinations for 10 times. (This will take a long time. You may want to reduce that to 1 times for initial test
-To run other experiment such as "fix latency at 5us and vary bandwidth", "fix bandwidth at 40g and vary latency", "vary percentage of local memory", run
+To run other experiment such as "fix latency at 5us and vary bandwidth", "fix bandwidth at 40g and vary latency", "vary percentage of local memory", and "application degradation in a network" run
 ```
 python execute.py --task terasort --vary-latency --iter 10
 python execute.py --task terasort --vary-bw --iter 10
 python execute.py --task terasort --vary-remote-mem --iter 10
+python execute.py --task terasort --slowdown-cdf-exp 100g --iter 10
 ```
 You can run other application by replacing "terasort" with "wordcount" (Spark Wordcount), "wordcount-hadoop" (Hadoop Wordcount), "terasort-spark" (Spark Terasort), "graphlab", "memcached", "bdb" (Spark SQL), "memcached", "timely" (Timely Dataflow).
 
