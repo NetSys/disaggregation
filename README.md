@@ -45,7 +45,7 @@ python execute.py --task terasort --vary-latency --iter 10
 python execute.py --task terasort --vary-bw --iter 10
 python execute.py --task terasort --vary-remote-mem --iter 10
 ```
-You can run other application by replacing terasort with "wordcount" (Spark Wordcount), "wordcount-hadoop" (Hadoop Wordcount), "terasort-spark" (Spark Terasort), "graphlab", "memcached", "bdb" (Spark SQL), "memcached", "timely" (Timely Dataflow).
+You can run other application by replacing "terasort" with "wordcount" (Spark Wordcount), "wordcount-hadoop" (Hadoop Wordcount), "terasort-spark" (Spark Terasort), "graphlab", "memcached", "bdb" (Spark SQL), "memcached", "timely" (Timely Dataflow).
 
 ##Folders##
 
