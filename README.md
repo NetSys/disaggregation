@@ -1,4 +1,4 @@
-##Disaggregation Emulator##
+#Disaggregation Emulator#
 This is an Emulator for evaluating current application performance in disaggregated datacenter. The current code can run on EC2 without any modification. So you need an EC2 account to run the experiment. But there is no fundamental limitation that prevents you from using your own cluster. 
 
 ##Qucik Start##
