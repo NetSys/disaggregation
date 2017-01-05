@@ -1,6 +1,8 @@
 #Disaggregation Emulator#
 This is an emulator for evaluating current application performance in disaggregated datacenter. The current code can run on EC2 without any modification. So you need an EC2 account to run the experiment. But there is no fundamental limitation that prevents you from using your own cluster. 
 
+The RDMA-based swap device is available at https://github.com/pxgao/rdma_swap_dev
+
 ##Quick Start##
 On your local computer, go to ec2 folder
 
