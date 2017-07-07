@@ -3,7 +3,7 @@ This is an emulator for evaluating current application performance in disaggrega
 
 The RDMA-based swap device is available at https://github.com/pxgao/rdma_swap_dev
 
-Memory access trace is available on s3 arn:aws:s3:::disaggregation-trace
+Memory access trace is available on s3 https://github.com/NetSys/disaggregation/blob/master/download-trace.sh
 
 ##Quick Start##
 On your local computer, go to ec2 folder
